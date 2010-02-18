@@ -669,7 +669,7 @@ $Data =
       :name => 'digging stick',
       :plural => 'digging sticks',
       :desc => 'a sharpened stick for digging',
-      :weight => 2,
+      :weight => 1,
       :break_odds => 20,
       :craftable => true,
       :craft_ap => 5,
@@ -801,8 +801,8 @@ $Data =
       :weapon_class => :blunt,
       :weight => 0,
       
-      :accuracy => {:default => 10, :unarmed2 => 20},
-      :effect => {:default => 1, :unarmed1 => 1},
+      :accuracy => {:default => 10, :unarmed1 => 20},
+      :effect => {:default => 1, :unarmed2 => 2},
     },
     
     :test_weapon =>
@@ -1051,11 +1051,11 @@ $Data =
       :weight => 7,
       
       :craftable => true,
-      :craft_ap => 20,
+      :craft_ap => 16,
       :craft_xp => 5,
       :craft_skill => :milling,
       :tools => [:grinding_stone, :stone],
-      :materials => {:wheat => 3, :pot => 1}
+      :materials => {:wheat => 4, :pot => 1}
     },
     
     :bread =>
@@ -1067,7 +1067,7 @@ $Data =
       :use => :food,
       
       :craftable => true,
-      :craft_amount => 6,
+      :craft_amount => 10,
       :craft_ap => 8,
       :craft_xp => 4,
       :craft_xp_type => :herbal,
@@ -2019,7 +2019,24 @@ $Data =
       :Autumn => 'You are standing in a field. Ripe, golden wheat stalks are waving in the breeze.',
       :Winter => 'It looks like there was a crop growing in this field, but it was left unharvested and has rotted.',
     },
-    
+
+    :wheat_field_watered =>
+    {:id => 92,
+      :ap => 1,
+      :altitude => 0,
+      :restore_odds => 0, 
+      :image => {:Summer => 'p_sfield.jpg', :Autumn => 'p_afield.jpg', :default => 'p_efield.jpg'},
+      :actions => [:harvest], # removed watering
+      :class => :open,
+      :transition => :wheat_field, # instead of empty_field
+      :transition_odds => 100, # always changes back to normal wheat field at the end of the day
+      :Spring => 'You are standing in a ploughed field. It looks like something was recently planted here, though nothing has grown yet. It has been recently watered.',
+      :Summer => 'You are standing in a field. Wheat is growing here, green and unripe. It has been recently watered.',
+      :Autumn => 'You are standing in a field. Ripe, golden wheat stalks are waving in the breeze.',
+      :Winter => 'It looks like there was a crop growing in this field, but it was left unharvested and has rotted.',
+    },  
+
+  
     :marsh =>
     {:id => 10,
       :class => :wetland,

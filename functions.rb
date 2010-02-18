@@ -1,7 +1,7 @@
-load 'data.rb'
-load 'mysql-connect.rb'
-load 'functions-html.rb'
-load 'functions-mysql.rb'
+load '/var/www/shn/data.rb'
+load '/var/www/shn/mysql-connect.rb'
+load '/var/www/shn/functions-html.rb'
+load '/var/www/shn/functions-mysql.rb'
 
 require 'digest/md5'
 require 'parsedate'
@@ -2386,7 +2386,7 @@ def sow(user, item_id)
   # possibly decrease tile fertility
   if rand(5) == 1
     mysql_bounded_update('grid', 'hp', {'x'=>tile['x'], 'y'=>tile['y']}, -1, 0)
-    if (0..1) === tile['hp']
+    if tile['hp'] <= "1" 
       mysql_update('grid', {'x'=>tile['x'], 'y'=>tile['y']}, {'terrain' => 8})
       return "This field has been overfarmed; " +
         "no crops can be grown here until the land recovers."
@@ -2541,7 +2541,14 @@ def tick_grow_fields
   tiles = mysql_select('grid',{'terrain'=>91})
   tiles.each_hash do
     |tile|
-    growth = tile['hp'].to_i * 3
+    growth = tile['hp'].to_i * 6
+    mysql_bounded_update('grid', 'building_hp', 
+      {'x'=>tile['x'], 'y'=>tile['y']}, +growth, 200)
+  end  
+  tiles = mysql_select('grid',{'terrain'=>92})
+  tiles.each_hash do
+    |tile|
+    growth = tile['hp'].to_i * 6
     mysql_bounded_update('grid', 'building_hp', 
       {'x'=>tile['x'], 'y'=>tile['y']}, +growth, 200)
   end  
@@ -2927,28 +2934,21 @@ def water(user)
   unless user_has_item?(user, :water_pot)
     return "You dont have any water." end
 
-  growth =
   if season == :Spring || season == :Summer
-    if tile.building_hp < 15 then rand(4)
-    else rand(14) - 10 end
+  growth = tile.hp + 3    
   else
-    0
+    return "You don't need to water at this time of year." 
   end
 
-  if growth > 0
-    mysql_bounded_update('grid','building_hp',tile.mysql_id,+growth)
-  else
-    mysql_bounded_update('grid','building_hp',tile.mysql_id,growth,0)
-    mysql_bounded_update('grid','hp',tile.mysql_id,-1,0)
-  end
+  mysql_bounded_update('grid','building_hp',tile.mysql_id,+growth)
+  mysql_bounded_update('grid','terrain',tile.mysql_id,1) # change tile to "watered field"
   mysql_change_inv(user, :water_pot, -1)
   mysql_change_inv(user, :pot, +1)
   mysql_change_ap(user, -1)
   mysql_give_xp(:herbal, 1, user)
+
   "You pour a pot of water on the field. " +
-  if growth > 0 then "You can almost hear the wheat growing."
-  elsif growth == 0 then ''
-  else "This area appears to be be waterlogged, damaging the crops." end
+  "You can almost hear the wheat growing."
 end
 
 def weight(user)

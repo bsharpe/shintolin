@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 print "Content-type: text/html\r\n\r\n"
 
-load 'functions.rb'
+load '/var/www/shn/functions.rb'
 puts tick_change_leader
 puts tick_grow_fields
 puts tick_inactive
