@@ -739,8 +739,12 @@ def attack(attacker, target, item_id)
     return "You don't have #{a_an(db_field(:item, item_id, :name))}" end
   if attacker.mysql == nil || target.mysql == nil
     return '' end
+  if attacker == target
+	return "You stop yourself before inflicting any self-injury. Realizing that this is a cry for help, you turn to your caveman bretheren for their sympathetic counsel." end
   if target.hp == 0
     return "You attack #{target.name}, but they're already knocked out." end
+  if attacker.hp == 0
+    return "You can't attack while dazed." end
   unless same_location?(attacker, target)
     return "#{target.name.capitalize} isn't in the vicinity." end
   if target.kind_of?(Building) && target.special == :settlement
@@ -2142,7 +2146,8 @@ def revive (healer_id, target_id, item_id)
   if healer == target
     return "You cannot revive yourself." end
 
-  hp_healed = item[:effect]
+  hp_healed = mysql_bounded_update('users', 'hp',
+    target.mysql_id, +item_stat(item_id, :effect, healer), target.maxhp)
   xp = (hp_healed.to_f / 2).ceil + 10
   mysql_update('users',target_id,{'hp'=>hp_healed})
   mysql_change_ap(healer_id, -10)
