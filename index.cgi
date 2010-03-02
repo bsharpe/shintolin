@@ -163,6 +163,8 @@ case $cgi['msg']
     puts "\t<b>Username is already taken</b>\n"
   when 'pw_not_match'
     puts "\t<b>Passwords do not match</b>\n"
+  when 'invalid_name'
+	puts "\t<b>Invalid username</b>\n"
 end
 
 if $cgi['msg'] != 'account_made'

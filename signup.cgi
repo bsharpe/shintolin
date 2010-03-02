@@ -15,6 +15,17 @@ if $cgi['username'].length < 2 || $cgi['password_1'].length < 4
   exit
 end
 
+if $cgi['username'] != $cgi['username'].strip
+puts $cgi.header('Location'=>$return_page + '&msg=invalid_name')
+  exit
+end
+
+if not $cgi['username'] =~ /^\s?[a-zA-Z0-9 .\-]*\s?$/
+  puts $cgi.header('Location'=>$return_page + '&msg=invalid_name')
+  exit
+end
+
+
 if mysql_row('users',{'name'=>$cgi['username']})
   puts $cgi.header('Location'=>$return_page + '&msg=name_taken')
   exit
