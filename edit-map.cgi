@@ -1,10 +1,28 @@
 #!/usr/bin/ruby
-print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 require 'cgi/session'
 load 'functions.rb'
 $cgi = CGI.new
 $params = $cgi.str_params
+
+UserID = get_validated_id
+if UserID != false
+  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+else
+  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
+  exit
+end
+
+puts $cgi.header($header)
+$user = User.new(UserID)
+
+if not ["Isaac","Woody"].include?($user.name)
+puts <<ENDTEXT
+You cannot edit the map.
+ENDTEXT
+exit
+end
+
 
 def input_action(action)
   case action

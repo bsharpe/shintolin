@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `inventories` (
 CREATE TABLE IF NOT EXISTS `ips` (
   `hits` int(10) unsigned NOT NULL default '0',
   `user_id` int(11) NOT NULL,
-  `ip` varchar(14) collate utf8_unicode_ci NOT NULL,
+  `ip` varchar(15) collate utf8_unicode_ci NOT NULL,
   PRIMARY KEY  (`ip`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

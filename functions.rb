@@ -1867,7 +1867,7 @@ end
 
 def logout(user)
   # delete cookies
-
+  $cookie.expires = Time.now 
 
   # redirect to homepage
   $header['Location']= 'index.cgi'
