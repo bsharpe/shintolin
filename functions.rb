@@ -996,7 +996,7 @@ def can_attack_totem?(totem)
 end
 
 def can_act? (user)
-  user.ap > 0 && ($ip_hits == nil || $ip_hits <= 330)
+  user.ap >= 1 && ($ip_hits == nil || $ip_hits <= 330)
 end
 
 def can_build? (user, building)
@@ -1978,7 +1978,7 @@ def msg_dazed(player)
 end
 
 def msg_tired(player)
-  if player['ap'].to_f <= 0
+  if player['ap'].to_f < 1
     "Totally exhausted, you collapse where you stand."
   elsif $ip_hits > 330
     "<span class='ipwarning'>" +
@@ -2573,6 +2573,21 @@ def tick_hunger
       mysql_update('users',player['id'],{'hunger'=>(player['hunger'].to_i - 1)})
       next
     end
+
+	# if user has noobcake, and is < level 2, auto eat
+	if user_has_item?(player['id'], 23) 
+ 	  query = "SELECT * FROM `skills` WHERE " +
+      "`user_id` = '#{player['id']}'"
+	  skills = $mysql.query(query)
+		if skills.num_rows < 2 
+       	  mysql_change_inv(player['id'], 23, -1) #23 -> noobcake
+       	  mysql_put_message('action',
+          "Feeling hungry, $ACTOR ate #{a_an('noobcake')}", 
+	  	  player['id'], player['id'])
+		  puts "Om nom nom noobarific"
+		  next
+		end
+	end
 
     # if user has food, auto eat
     foods = all_where(:item, :use, :food)
