@@ -1002,6 +1002,10 @@ end
 def can_build? (user, building)
   tile = user.tile
 
+  if user.hp == 0
+	return false, "In your dazed state, you can't remember how to build."
+  end 
+
   if building.kind_of? Symbol
     building = db_row(:building, building) end
 
@@ -1137,6 +1141,10 @@ def chop_tree_ap(user_id)
 end
 
 def craft(user, item_id)
+  if user.hp == 0
+	return "In your dazed state, you can't remember how to craft."
+  end 
+
   product = db_row(:item, item_id)
   if product[:craftable] != true
     return 'That item cannot be crafted.'
@@ -2447,6 +2455,10 @@ def take(user_id, amount, item_id)
     return 'There is nothing you can take here.'
   end
 
+  if user.hp == 0
+	return "You can't take items while dazed."
+  end 
+
   stockpile_settlement = user.tile.settlement
   if stockpile_settlement and stockpile_settlement != user.settlement
     return "You are not a citizen of #{stockpile_settlement.name}, " +
@@ -2986,6 +2998,10 @@ def write(user, msg)
   building = Building.new(user.x, user.y)
   unless building.exists?
     return 'There is no building to write on in the vicinity.' end
+
+  if user.hp == 0
+	return "You don't have the cognizance to write while dazed."
+  end 
 
   if building.unwritable
     return "You cannot write on #{building.a}." end
