@@ -1780,6 +1780,8 @@ $Data =
       :altitude => 0,
       :class => :beach,
       :image => 'p_rshore.jpg',
+      :search => {:stone => 25},
+      :build_small? => true,
       :Spring => 'You are on the rocky shore of a lake, sunlight glinting off the crests of small waves.',
       :Summer => 'You are on the rocky shore of a lake. The placid surface reflects the almost cloudless blue sky.',
       :Autumn => 'You are on the rocky shore of a lake. The water is grey and choppy.',

@@ -2144,15 +2144,23 @@ def revive (healer_id, target_id, item_id)
   target = User.new target_id
   item = db_row(:item, item_id)
   item_desc = a_an(item[:name])
+  if healer == target and healer.hp != 0
+    return "You can't revive yourself. Especially when you're not dazed."
+  end
+  if healer == target
+    return "You can't revive yourself. You'll have to find someone else to revive you."
+  end
   if target.hp != 0
     return "You try using #{item_desc} on " +
-      you_or_him(healer_id,target_id,'yourself',:no_link) +
-      ", however it doesn't have any effect. " +
+      "#{target.name}, however it doesn't have any effect. " +
       "Try using it on someone who has been knocked out."
   end
 
-  if healer == target
-    return "You cannot revive yourself." end
+  if healer.hp == 0
+    return "You try using #{item_desc} on " +
+      "#{target.name} with little success. " +
+      "You can't revive others while you're dazed."
+  end
 
   hp_healed = mysql_bounded_update('users', 'hp',
     target.mysql_id, +item_stat(item_id, :effect, healer), target.maxhp)
