@@ -131,9 +131,10 @@ end
 def mysql_get_messages(x, y, z, user)
   query = "SELECT * FROM `messages` WHERE " +
 
-  # spoken, whispered, game or /me at same x, y, z
+  # spoken, whispered, game, /me or actions visible to all at same x, y, z
   "((`type` = 'talk' OR `type` = 'whisper' " +
-  "OR `type` = 'slash_me' OR `type` = 'game') " +
+  "OR `type` = 'slash_me' OR `type` = 'game' " +
+  "OR `type` = 'visible_all')" +
   "AND `x` = '#{x}' AND `y` = '#{y}' AND `z` = '#{z}' " +
   "AND (`time` + INTERVAL 1 MINUTE) > '#{user.lastaction}')" +
 

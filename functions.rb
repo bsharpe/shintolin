@@ -1405,6 +1405,9 @@ def describe_message(msg, user_id=nil)
   when 'slash_me'
       insert_names(msg['message'], msg['speaker_id'].to_i, 
         msg['target_id'].to_i, user_id)
+  when 'visible_all'
+      insert_names(msg['message'], msg['speaker_id'].to_i, 
+        msg['target_id'].to_i, user_id)
   when 'chat'
       html_userlink(msg['speaker_id']) + ': ' + msg['message']
     else return ''
@@ -2010,6 +2013,30 @@ def msg_no_ip
   'You have used up your IP hits for the day. Return tomorrow, " +
   "or donate to lift the IP limit.' 
 end
+
+def ocarina(user, target, item_id)
+  item = db_row(:item, item_id)
+  item_desc = a_an(item[:name])
+  if user == target
+    mysql_put_message('visible_all', 
+      "$ACTOR played a haunting melody on the ocarina", 
+      user)
+
+  if rand < 0.3
+    msg = "You play a haunting melody on your ocarina. " +
+      "A whirlwind appears and attempts to carry you off, " +
+      "but you're too heavy."
+  else
+    msg = "You play a haunting melody on your ocarina." end
+
+  else
+    mysql_put_message('visible_all', 
+      "$ACTOR played a haunting melody on the ocarina for $TARGET",
+      user, target)
+    "You play a haunting melody on you ocarina " +
+    "for #{target.name}."
+    end
+  end
 
 def offset_to_dir(x_offset, y_offset, z_offset=0, length=:short)
   case z_offset
@@ -2837,6 +2864,8 @@ def use (user, target, item_id)
 	  "with a picture of a cuddly bear surrounded by hearts."
 	else '' end
       end
+  when :ocarina
+        ocarina(user, target, item_id)
   when :revive
       revive(user.mysql_id, target.mysql_id, item_id)
   end

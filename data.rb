@@ -1016,7 +1016,7 @@ $Data =
       :name => 'ocarina',
       :plural => 'ocarinas',
       :desc => 'a small wind instrument',
-      :use => "You play a haunting melody on your ocarina.",
+      :use => :ocarina,
       
       :weight => 1,
       :craftable => true,

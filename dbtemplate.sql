@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `messages` (
   `x` smallint(6) NOT NULL,
   `y` smallint(6) NOT NULL,
   `z` tinyint(4) NOT NULL,
-  `type` enum('whisper','talk','shout','distant','reply','action','game','persistent','slash_me','chat') NOT NULL default 'action',
+  `type` enum('whisper','talk','shout','distant','reply','action','game','persistent','slash_me','chat','visible_all') NOT NULL default 'action',
   `time` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`),
   KEY `x` (`x`,`y`,`z`)
