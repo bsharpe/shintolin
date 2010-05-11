@@ -64,6 +64,8 @@ puts <<ENDTEXT
 	<hr>
         <i>You are carrying:</i>
 	#{Inventory}
+        <hr>
+        #{Drop}
       </div>
     </td>
     <td>

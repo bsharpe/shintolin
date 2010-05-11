@@ -29,6 +29,21 @@ def html_chat_box(chats=30)
   '<hr>' + chats
 end
 
+def html_drop_item(user)
+# generate the buttons that should be visible to user
+  tile = user.tile
+  user_id = user.mysql_id
+  actions = user_actions(user)
+  html = ''
+  if actions.include? :drop
+    html += html_action_form('Drop') { 
+      html_select_num(15) + 
+      html_select_item(:plural) {
+        |item| user_has_item?(user_id, item[:id])}}
+  end
+end
+
+
 def html_forms(user)
 # generate the buttons that should be visible to user
   tile = user.tile
@@ -99,13 +114,6 @@ def html_forms(user)
       html_select_item(:plural) {
         |item| stockpile_has_item?(user.x,user.y,item[:id])} +
       " from the stockpile."} 
-  end
-
-  if actions.include? :drop
-    html += html_action_form('Drop') { 
-      html_select_num(10) + 
-      html_select_item(:plural) {
-        |item| user_has_item?(user_id, item[:id])}}
   end
 
   if actions.include?(:speak) && has_players
