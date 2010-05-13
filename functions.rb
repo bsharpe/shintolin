@@ -171,6 +171,10 @@ class Animal
   def name
     "the " + data[:name]
   end
+
+  def name_only
+    data[:name]
+  end
 end
 
 class Building
@@ -783,14 +787,16 @@ def attack(attacker, target, item_id)
     when "User"
         mysql_change_stat(attacker, 'kills', +1)
         mysql_change_stat(target, 'deaths', +1)
-        msg += ", knocking them out!"
+        msg += ", knocking $TARGET out."
         msg += ' ' + transfer_frags(attacker, target)
+        mysql_put_message('visible_all', "$ACTOR dazed $TARGET with #{a_an(db_field(:item, item_id, :name))}", attacker, target)
 
     when "Animal"
         target.loot.each do 
 	  |item, amt| mysql_change_inv(attacker, item, +amt) end      
         msg += ", killing it! From the carcass you collect " +
         "#{describe_items_list(target.loot, 'long')}."
+        mysql_put_message('visible_all', "$ACTOR killed #{a_an(target.name_only)} with #{a_an(db_field(:item, item_id, :name))}", attacker, target)
 
     when "Building"
         msg +=", destroying it!"
@@ -1626,7 +1632,7 @@ def give(giver, receiver, amount, item_id)
   mysql_change_inv(receiver, item_id, amt_given)
   if receiver.kind_of? Building
     mysql_put_message('persistent', 
-      "$ACTOR dropped #{items_desc} on the stockpile", giver.mysql_id)
+      "$ACTOR dropped #{items_desc} in the stockpile", giver.mysql_id)
   else 
     mysql_put_message('action', 
       "$ACTOR gave #{items_desc} to $TARGET", giver.mysql_id, receiver.mysql_id) end
@@ -2504,7 +2510,7 @@ def take(user_id, amount, item_id)
   mysql_change_inv(user_id, item_id, +amt_taken)
   if amt_taken == 0
     return "There aren't any #{db_field(:item, item_id, :plural)} " +
-      "on the stockpile." end
+      "in the stockpile." end
   
   items_desc = describe_items(amt_taken, item_id, :long)
   mysql_change_ap(user_id, -1)
@@ -2817,8 +2823,8 @@ def transfer_frags(attacker, target)
   mysql_bounded_update('accounts', 'frags', attacker.mysql_id, +frags)
   mysql_bounded_update('accounts', 'frags', target.mysql_id, -frags, 0)
   if frags != 0 
-    "#{describe_number(frags).capitalize} " +
-      "of their frags were transferred to you."
+    "$TARGET lost #{describe_number(frags)} " +
+      "frags; they have been transferred to $ACTOR."
   else
     ''
   end
