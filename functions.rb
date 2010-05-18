@@ -789,14 +789,18 @@ def attack(attacker, target, item_id)
         mysql_change_stat(target, 'deaths', +1)
         msg += ", knocking $TARGET out."
         msg += ' ' + transfer_frags(attacker, target)
-        mysql_put_message('visible_all', "$ACTOR dazed $TARGET with #{a_an(db_field(:item, item_id, :name))}", attacker, target)
+        mysql_put_message('visible_all',
+         "$ACTOR dazed $TARGET with #{a_an(db_field(:item, item_id, :name))}",
+          attacker, target)
 
     when "Animal"
         target.loot.each do 
 	  |item, amt| mysql_change_inv(attacker, item, +amt) end      
         msg += ", killing it! From the carcass you collect " +
         "#{describe_items_list(target.loot, 'long')}."
-        mysql_put_message('visible_all', "$ACTOR killed #{a_an(target.name_only)} with #{a_an(db_field(:item, item_id, :name))}", attacker, target)
+        mysql_put_message('visible_all',
+         "$ACTOR killed #{a_an(target.name_only)} with #{a_an(db_field(:item, item_id, :name))}",
+          attacker, target)
 
     when "Building"
         msg +=", destroying it!"
@@ -2407,6 +2411,8 @@ def settle(user, settlement_name)
   mysql_update('grid',tile.mysql_id,{'building_id'=>4}) # 4 -> totem pole
   mysql_insert('settlements',
     {'name'=>settlement_name,'x'=>tile.x,'y'=>tile.y,'founded'=>:Today})
+  mysql_update('accounts', user.mysql_id, 
+    {'settlement_id'=>tile.settlement_id})
   mysql_put_message('persistent', 
     "$ACTOR established the settlement of #{settlement_name}", user)
 

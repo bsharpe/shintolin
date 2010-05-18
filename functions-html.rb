@@ -24,9 +24,9 @@ def html_chat_box(chats=30)
     chats << "<div>#{describe_message(chat)}</div>" 
   end
   html_action_form('Chat',false,nil,'chat.cgi') {
-    html_text_box(200) +
-    ' <a class="buttonlink" href="chat.cgi">Refresh</a>'} +
-  '<hr>' + chats
+    html_text_box(200)} +
+    '<hr><br><a class="buttonlink" href="chat.cgi">Refresh</a><br><br>' +
+    chats
 end
 
 def html_drop_item(user)
