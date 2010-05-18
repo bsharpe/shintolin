@@ -101,7 +101,7 @@ def html_forms(user)
 
   if actions.include?(:give) && has_targets
     html += html_action_form('Give') { 
-      html_select_num(10) + 
+      html_select_num(15) + 
       html_select_item(:plural) {
         |item| user_has_item?(user_id, item[:id])} + 
       ' to ' +
@@ -116,7 +116,7 @@ def html_forms(user)
       " from the stockpile."} 
   end
 
-  if actions.include?(:speak) && has_players
+  if actions.include?(:speak)
     html += html_action_form('Say') {
       html_text_box(200) + ' to ' +
       html_select_target(players) +

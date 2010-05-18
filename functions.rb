@@ -127,7 +127,7 @@ end
 class Time
   def Time.str_to_time(str)
     time_a = ParseDate.parsedate(str)
-    Time.gm(time_a[0], time_a[1], time_a[2], time_a[3], time_a[4], time_a[5])
+    Time.local(time_a[0], time_a[1], time_a[2], time_a[3], time_a[4], time_a[5])
   end
 
   def ago
@@ -2274,7 +2274,7 @@ def say(speaker, message, volume, target=nil)
     if volume == 'talk' then volume = 'say' end
     "You #{volume} <i>\"#{message}\"</i>" + 
     if target.exists? then " to #{target.name}."
-    else "."
+    else ""
     end
   end
 end
