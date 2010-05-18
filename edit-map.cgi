@@ -74,7 +74,7 @@ Hidden =
   html_hidden('x',$x) + html_hidden('y',$y) + 
   html_hidden('size',$size)
 
-Map = html_map($tile, $size, nil, :no_occupants) do
+Map = html_map($tile, $size, nil, :show_occupants) do
   |tile|
   "<div class=\"small\">#{tile.region_name}</div>" +
   "<input type=\"text\" " +

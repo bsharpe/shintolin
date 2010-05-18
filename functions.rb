@@ -2039,7 +2039,7 @@ def ocarina(user, target, item_id)
     mysql_put_message('visible_all', 
       "$ACTOR played a haunting melody on the ocarina for $TARGET",
       user, target)
-    "You play a haunting melody on you ocarina " +
+    "You play a haunting melody on your ocarina " +
     "for #{target.name}."
     end
   end

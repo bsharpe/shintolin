@@ -163,6 +163,17 @@ $Data =
       :loot => {:honeycomb => 3}
     },
     
+    :mammoth => 
+    {:id => 15,
+      :name => "mammoth",
+      :plural => "mammoths",
+      :habitats => [:open],
+      :max_hp => 750,
+      :attack_dmg => 8,
+      :hit_msg => "tramples you underfoot",
+      :when_attacked => {:flee => 15, :attack =>70},
+      :loot => {:raw_meat => 35, :tusk => 2}
+    },
   },
   
   :building =>
@@ -1087,6 +1098,18 @@ $Data =
       :weight => 1,
     },
     
+    :tusk =>
+    {:id => 49,
+      :name => 'mammoth tusk',
+      :plural => 'mammoth tusks',
+      :use => :weapon,
+      :weapon_class => :stab,
+      :desc => "a huge mammoth's tusk, very unwieldy",
+      :weight => 8,
+      :break_odds => 5,
+      :accuracy => 20,
+      :effect => 6,
+    },
   },
   
   :region =>
@@ -1155,7 +1178,7 @@ $Data =
     :Latis_Plains => 
     {:id => 12,
       :name => 'Latis Plains',
-      :animals_per_100 => {:buffalo => 1.4, :sabre_tooth => 0.2} 
+      :animals_per_100 => {:buffalo => 1.4, :sabre_tooth => 0.2, :mammoth => 0.1} 
     },
     
     :River_Dea => 
