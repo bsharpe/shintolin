@@ -131,7 +131,7 @@ class Time
   end
 
   def ago
-    ((self - 3600) - Time.now).to_t + " ago"
+    ((self - 0) - Time.now).to_t + " ago"
   end
 end
 
@@ -728,7 +728,7 @@ def ap_recovery(user_id)
   tile = user.tile
   ap = AP_Recovery.to_f
   building_bonus = db_field(:building, tile.building_id, :ap_recovery)
-  ap += building_bonus if building_bonus != nil
+  ap += building_bonus if building_bonus != nil && user.z !=0
 
   tile_bonus = db_field(:terrain, tile.terrain, :ap_recovery)
   ap += tile_bonus if tile_bonus != nil
