@@ -1030,8 +1030,11 @@ def can_build? (user, building)
   elsif building[:size] == :large
     if db_field(:terrain, tile.terrain, :build_large?) != true
       return false, "You cannot build #{a_an(building[:name])} here." end
-  else
+  elsif building[:size] == :small
     if db_field(:terrain, tile.terrain, :build_small?) != true
+      return false, "You cannot build #{a_an(building[:name])} here." end
+  else
+    if db_field(:terrain, tile.terrain, :build_tiny?) != true
       return false, "You cannot build #{a_an(building[:name])} here." end
   end
 
