@@ -766,12 +766,14 @@ def attack(attacker, target, item_id)
 
   weapon = db_row(:item, item_id)
   return "You can't attack with that." if weapon[:use] != :weapon
+    if target.kind_of?(Building) && weapon[:id] != 8
+    return "You need a stone axe to attack buildings." end
 
   mysql_change_ap(attacker, -1)
 
   accuracy = item_stat(item_id, :accuracy, attacker)
   dmg = 
-  if target.kind_of? Building then rand_to_i(0.333)
+  if target.kind_of? Building then rand_to_i(1.333)
   else item_stat(item_id, :effect, attacker) end
 
   if rand(100) > accuracy
