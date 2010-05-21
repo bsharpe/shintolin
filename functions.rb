@@ -200,10 +200,18 @@ class Building
     return '' unless self.exists?
 
     dmg = case (hp.to_f / max_hp)
-    when (0...0.33) then 'ruined '
-    when (0.33...0.67) then 'damaged '
-    when (0.67...1) then 'dilapidated '
-      else ''
+    when (0...0.33) 
+      if mysql['building_id'] == "5" then 'dying '
+      else 'ruined ' end
+    when (0.33...0.67)
+      if mysql['building_id'] == "5" then ''
+      else 'damaged ' end
+    when (0.67...1)
+      if mysql['building_id'] == "5" then 'roaring '
+      else 'dilapidated ' end
+   when 1
+     if mysql['building_id'] == "5" then 'raging '
+      else '' end
     end
 
     if z == 0
@@ -246,7 +254,7 @@ class Building
   end
 
   def improvements
-    if self.exists?
+    if self.exists? && mysql['building_id'] != "5"
       return [self.repair] if hp < max_hp
       key = id_to_key(:building, mysql['building_id'])
     else
@@ -2411,7 +2419,7 @@ def settle(user, settlement_name)
     return "There is already a settlement of that name." end
 
   mysql_change_inv(user, :log, -1)
-  mysql_update('grid',tile.mysql_id,{'building_id'=>4}) # 4 -> totem pole
+  mysql_update('grid',tile.mysql_id,{'building_id'=>4,'building_hp'=>30}) # 4 -> totem pole
   mysql_insert('settlements',
     {'name'=>settlement_name,'x'=>tile.x,'y'=>tile.y,'founded'=>:Today})
   mysql_update('accounts', user.mysql_id, 
