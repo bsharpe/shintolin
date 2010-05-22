@@ -469,6 +469,25 @@ $Data =
       :interior => "You are inside a wooden building. " +
       "The smell of baking bread hits your nose and a pleasant warmth fills the air"
     },
+
+    :fertility_shrine =>
+    {:id => 16,
+      :name => "fertility shrine",
+      :size => :small,
+      :prereq => :hut,
+      :floors => 1,
+      :max_hp => 30,
+      :ap_recovery => +1,
+      :build_ap => 50,
+      :build_xp => 50,
+      :build_skill => :divine_inspiration,
+      :materials => {:water_pot => 3,  :wheat => 10, :stone_sickle => 3, :poultice => 10, :tea => 10,},
+      
+      :build_msg =>  "Placing your offerings on a small altar, you ask for the blessings of the spirits of fertility. You sense that they are pleased with your gifts; this building is now a fertility shrine.",
+      :interior => "You are in a wooden shrine decorated with offerings to the fertility spirits. " +
+      "Fresh food sits on a small altar, offerings to the fertility spirits in hopes of a bountiful harvest. " +
+      "You feel at peace within the shrine's walls"
+    },
   },
   
   :item =>
@@ -2053,7 +2072,7 @@ $Data =
       :restore_odds => 0,
       :class => :open,
       :transition => :grassland,
-      :transition_odds => 20,
+      :transition_odds => {:default => 0, :Spring => 10},
       :build_tiny? => true,
       :build_small? => true,
       
