@@ -1110,6 +1110,44 @@ $Data =
       :accuracy => 20,
       :effect => 6,
     },
+
+    :ivory_spear =>
+    {:id => 50,
+      :name => 'ivory spear',
+      :plural => 'ivory spear',
+      :desc => 'a finely-crafted spear made from the tusks of a mammoth and decorated with fur',
+      :use => :weapon,
+      :weight => 8,
+      :break_odds => 1,
+      :weapon_class => :stab,
+      :tools => [:stone],
+      :accuracy => {:default => 30, :spear2 => 40, :spear4 => 50},
+      :effect => {:default => 6, :spear1 => 7, :spear3 => 8},
+      :craftable => true,
+      :craft_ap => 15,
+      :craft_xp => 15,
+      :craft_skill => :hafting,
+      :materials => {:tusk => 2, :staff => 1, :small_pelt => 1}
+    },
+
+    :ivory_axe =>
+    {:id => 51,
+      :name => 'ivory axe',
+      :plural => 'ivory axes',
+      :desc => 'an finely-crafted axe made from the tusks of a mammoth and decorated with fur',
+      :use => :weapon,
+      :break_odds => 1,
+      :weapon_class => :slash,
+      :tools => [:stone],
+      :accuracy => {:default => 30, :axe2 => 40, :axe4 => 50},
+      :effect => {:default => 6, :axe1 => 7, :axe3 => 8},
+      :weight => 8,
+      :craftable => true,
+      :craft_ap => 15,
+      :craft_xp => 15,
+      :craft_skill => :hafting,
+      :materials => {:tusk => 2, :stick => 1, :small_pelt => 1}
+    },
   },
   
   :region =>

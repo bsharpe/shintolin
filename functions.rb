@@ -766,8 +766,8 @@ def attack(attacker, target, item_id)
 
   weapon = db_row(:item, item_id)
   return "You can't attack with that." if weapon[:use] != :weapon
-    if target.kind_of?(Building) && weapon[:id] != 8
-    return "You need a stone axe to attack buildings." end
+    if target.kind_of?(Building) && weapon[:weapon_class] != :slash
+    return "You need an axe to attack buildings." end
 
   mysql_change_ap(attacker, -1)
 
