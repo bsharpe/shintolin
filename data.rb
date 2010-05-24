@@ -172,7 +172,7 @@ $Data =
       :attack_dmg => 8,
       :hit_msg => "tramples you underfoot",
       :when_attacked => {:flee => 15, :attack =>70},
-      :loot => {:raw_meat => 35, :tusk => 2}
+      :loot => {:raw_meat => 65, :tusk => 2}
     },
   },
   
@@ -441,7 +441,6 @@ $Data =
       :floors => 0,
       :max_hp => 50,
       :settlement_level => :village,
-      :prereq => :hut,
       :build_ap => 50,
       :build_xp => 35,
       :build_skill => :masonry,
@@ -1382,13 +1381,6 @@ $Data =
       :prereq => nil
     },
     
-    :butchering =>
-    {:id => 7,
-      :name => 'butchering',
-      :type => :wanderer,
-      :desc => 'obtain more meat from slain animals',
-      :prereq => :foraging
-    },
     
     :carpentry =>
     {:id => 8,
@@ -1454,13 +1446,6 @@ $Data =
       :prereq => :medicine
     }, 
     
-    :javelin =>
-    {:id => 26,
-      :name => 'javelin',
-      :type => :warrior,
-      :desc => 'use spears as a ranged weapon',
-      :prereq => :spear1
-    }, 
     
     :lumberjack =>
     {:id => 15,
