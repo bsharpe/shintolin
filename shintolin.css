@@ -148,8 +148,8 @@ border-top-width:0px;
 {
 width:25em;
 max-width:25em;
-height: 3em;
-overflow: scroll;
+height: 20em;
+overflow: auto;
 }
 .header
 {

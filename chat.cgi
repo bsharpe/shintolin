@@ -35,7 +35,7 @@ puts <<ENDTEXT
 <body>
 <a class="buttonlink" href="game.cgi">Return</a>
 <hr>
-#{html_chat_box(100)}
+#{html_chat_large(150)}
 </body>
 </html>
 ENDTEXT

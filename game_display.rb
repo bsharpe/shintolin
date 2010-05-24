@@ -76,9 +76,17 @@ if Messages != ''
 end
 
 puts <<ENDTEXT
-      <div class="gamebox chatbox">
-        <i>The chat box has been moved. <a href='chat.cgi'>Chat here</a>.</i>
-      </div>
+      <div class="gamebox">
+       <b>Chat:</b>
+        <div class="chatbox">
+        #{html_chat_box(30)}
+        <center>
+         <a class="buttonlink" href="chat.cgi">Older chats</a>
+        </center>
+      </div> 
+       #{html_action_form('Chat',false,nil,'game.cgi') {
+    html_text_box(200)}}
+     </div>
     </td>
   </tr>
 </table>
