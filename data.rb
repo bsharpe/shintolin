@@ -830,8 +830,8 @@ $Data =
       :weapon_class => :blunt,
       :weight => 0,
       
-      :accuracy => {:default => 10, :unarmed1 => 20},
-      :effect => {:default => 1, :unarmed2 => 2},
+      :accuracy => {:default => 10, :unarmed1 => 20, :unarmed3 => 30},
+      :effect => {:default => 1, :unarmed2 => 2, :unarmed4 => 3},
     },
     
     :test_weapon =>
@@ -1531,7 +1531,7 @@ $Data =
     {:id => 20,
       :name => 'advanced spear',
       :type => :warrior,
-      :desc => 'spears do an additonal +1 damage',
+      :desc => 'spears do an additional +1 damage',
       :prereq => :spear2
     }, 
     
@@ -1595,7 +1595,7 @@ $Data =
     {:id => 36,
       :name => 'basic Shin-Jitsu',
       :type => :warrior,
-      :desc => 'fists hit with an additional 10% accuracy',
+      :desc => 'fists hit with +10% accuracy',
       :prereq => nil
     }, 
     
@@ -1605,6 +1605,22 @@ $Data =
       :type => :warrior,
       :desc => 'fists do +1 damage',
       :prereq => :unarmed1
+    }, 
+
+    :unarmed3 =>
+    {:id => 38,
+      :name => 'advanced Shin-Jitsu',
+      :type => :warrior,
+      :desc => 'fists hit with an additional 10% accuracy',
+      :prereq => :unarmed2
+    }, 
+
+    :unarmed4 =>
+    {:id => 39,
+      :name => 'elite Shin-Jitsu',
+      :type => :warrior,
+      :desc => 'fists do an additional +1 damage',
+      :prereq => :unarmed3
     }, 
   },
   
