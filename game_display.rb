@@ -26,7 +26,6 @@ puts <<ENDTEXT
   <a class="buttonlink" href="rankings.cgi">Rankings</a>
   <a class="buttonlink" href="http://shintolin.forumcircle.com">Forum</a>
   <a class="buttonlink" href="http://shintolin.wikia.com/wiki/Shintolin">Help/Wiki</a>
-  <a class="buttonlink" href="chat.cgi">Chat</a>
   <a class="buttonlink" href="faq.html">FAQ</a>
   #{Logout_Button}
 
@@ -81,7 +80,7 @@ puts <<ENDTEXT
         <div class="chatbox">
         #{html_chat_box(30)}
         <center>
-         <a class="buttonlink" href="chat.cgi">Older chats</a>
+         <a class="buttonlink" href="chat.cgi">Chat page</a>
         </center>
       </div> 
        #{html_action_form('Chat',false,nil,'game.cgi') {

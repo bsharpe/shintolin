@@ -30,7 +30,7 @@ def html_chat_large(chats=150)
   query = "SELECT * FROM `messages` " +
     "WHERE `type` = 'chat' " +
     "ORDER BY `time` DESC " +
-    "LIMIT 30,#{chats}"
+    "LIMIT 0,#{chats}"
   db_chats = $mysql.query(query)
   chats = ''
   db_chats.each_hash do
@@ -38,7 +38,10 @@ def html_chat_large(chats=150)
     next if chat['speaker_id'] == "0"
     chats << "<div>#{describe_message(chat)}</div>" 
   end
-    chats
+  html_action_form('Chat',false,nil,'chat.cgi') {
+    html_text_box(200)} +
+    '<hr><br><a class="buttonlink" href="chat.cgi">Refresh</a><br><br>' +
+  chats
 end
 
 def html_drop_item(user)
