@@ -2337,17 +2337,26 @@ def search(user)
   end
   total_odds = sum_coll(items.values)
 
+  tile_change = user.tile.mysql
   if !has_skill?(user, :foraging)
     hp_msg = 
     case total_odds
     when 0
+      if tile_change['terrain'] == "1" then
+        mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 8})
         'This area appears to have been picked clean.'
+       else
+        'This area appears to have been picked clean.' end
       else ''
     end
   else
     case total_odds
     when 0
-        hp_msg = 'This area appears to have been picked clean.'
+      if tile_change['terrain'] == "1" then
+       mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 8})
+       hp_msg = 'This area appears to have been picked clean.'
+      else
+       hp_msg = 'This area appears to have been picked clean.' end
     when (1..10)
         hp_msg = 'This area appears to have very limited resources.'
     when (11..20)
