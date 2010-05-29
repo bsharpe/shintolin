@@ -1141,13 +1141,13 @@ def chop_tree(user_id)
     new_terrain = 
     case tile['terrain']
     when "21" then 1
-        if tile['hp'] == "0" then 8 else 4 end
+        if tile['hp'] == "0" then 82 else 24 end
     when "22" then 21
     when "23" then 22
     when "6" then 2
     when "2" then 7
     when "7"
-        if tile['hp'] == "0" then 8 else 4 end
+        if tile['hp'] == "0" then 81 else 4 end
     end
     mysql_update('grid', {'x'=>tile['x'], 'y'=>tile['y']}, 
       {'terrain' => new_terrain})
@@ -2345,6 +2345,12 @@ def search(user)
       if tile_change['terrain'] == "1" then
         mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 8})
         'This area appears to have been picked clean.'
+      elsif tile_change['terrain'] == "4" then
+        mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 81})
+        'This area appears to have been picked clean.'
+      elsif tile_change['terrain'] == "24" then
+        mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 82})
+        'This area appears to have been picked clean.'
        else
         'This area appears to have been picked clean.' end
       else ''
@@ -2355,6 +2361,12 @@ def search(user)
       if tile_change['terrain'] == "1" then
        mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 8})
        hp_msg = 'This area appears to have been picked clean.'
+      elsif tile_change['terrain'] == "4" then
+        mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 81})
+        hp_msg = 'This area appears to have been picked clean.'
+      elsif tile_change['terrain'] == "24" then
+        mysql_update('grid', {'x'=>tile_change['x'], 'y'=>tile_change['y']}, {'terrain' => 82})
+        hp_msg = 'This area appears to have been picked clean.'
       else
        hp_msg = 'This area appears to have been picked clean.' end
     when (1..10)

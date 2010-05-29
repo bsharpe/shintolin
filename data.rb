@@ -1152,7 +1152,7 @@ $Data =
     {:id => 51,
       :name => 'ivory axe',
       :plural => 'ivory axes',
-      :desc => 'an finely-crafted axe made from the tusks of a mammoth and decorated with fur',
+      :desc => 'a finely-crafted axe made from the tusks of a mammoth and decorated with fur',
       :use => :weapon,
       :break_odds => 1,
       :weapon_class => :slash,
@@ -1724,6 +1724,28 @@ $Data =
       :Winter => 'You are in a dense pine forest. Snow hangs heavy on the branches ' +
       'of the trees.',
     },
+
+    :cleared_pine =>
+    {:id => 24,
+      :ap => 1,
+      :build_tiny? => true,
+      :build_small? => true,
+      :build_large? => true,
+      :class => :open,
+      :altitude => 0,
+      :image => 'p_grass.jpg',
+      :search => {:onion => 12, :thyme => 12, :wheat => 5},
+      
+      :transition => :pine_forest_1,
+      :transition_odds => {:default => 0, :Spring => 10},
+      
+      :Spring => 'You are walking through a verdant grassland. Some small flowers are starting to grow here.',
+      :Summer => 'You are walking through a verdant grassland, with many dandelions and other flowers. Crickets are chirping in the long grass.',
+      :Autumn => 'You are walking through a grassland. The cold weather is beginning to turn the grass brown.',
+      :Winter => 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.',
+      
+    },
+    
     
     :wilderness =>
     {:id => 3,
@@ -2083,7 +2105,45 @@ $Data =
       :Autumn => 'You are standing on bare dirt; the muddy ground here has seen the passage of many feet.',
       :Winter => 'You are standing on bare dirt; the frozen ground here has seen the passage of many feet.',
     },
+
+    :track_forest =>
+    {:id => 81,
+      :ap => 0.5,
+      :build_tiny? => true,
+      :build_small? => true,
+      :build_large? => true,
+      :class => :open,
+      :altitude => 0,
+      :image => 'p_dirt.jpg',      
+      :transition => :cleared_wood,
+      :transition_odds => {:default => 0, :Spring => 15},
+      :build_small? => true,
+      :build_large? => true,
+      :Spring => 'You are standing on bare dirt; the muddy ground here has seen the passage of many feet.',
+      :Summer => 'You are standing on bare dirt; the dusty ground here has seen the passage of many feet.',
+      :Autumn => 'You are standing on bare dirt; the muddy ground here has seen the passage of many feet.',
+      :Winter => 'You are standing on bare dirt; the frozen ground here has seen the passage of many feet.',      
+    },
     
+    :track_pine =>
+    {:id => 82,
+      :ap => 0.5,
+      :build_tiny? => true,
+      :build_small? => true,
+      :build_large? => true,
+      :class => :open,
+      :altitude => 0,
+      :image => 'p_dirt.jpg',      
+      :transition => :cleared_pine,
+      :transition_odds => {:default => 0, :Spring => 15},
+      :build_small? => true,
+      :build_large? => true,
+      :Spring => 'You are standing on bare dirt; the muddy ground here has seen the passage of many feet.',
+      :Summer => 'You are standing on bare dirt; the dusty ground here has seen the passage of many feet.',
+      :Autumn => 'You are standing on bare dirt; the muddy ground here has seen the passage of many feet.',
+      :Winter => 'You are standing on bare dirt; the frozen ground here has seen the passage of many feet.',      
+    },
+
     :empty_field =>
     {:id => 9,
       :ap => 1,
