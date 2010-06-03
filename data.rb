@@ -1183,6 +1183,37 @@ $Data =
       :tools => [:stone_carpentry],
       :materials => {:tusk => 1}
     },
+
+    :huckleberry =>
+    {:id => 53,
+      :name => 'handful of huckleberries',
+      :plural => 'handfuls of huckleberries',
+      :desc => 'a handful of juicy huckleberries',
+      :use => :food,
+      :weight => 1,
+      :Spring => 0.3,
+      :Autumn => 1.5,
+      :Winter => 0.5
+    },
+
+    :hberry_pie =>
+    {:id => 54,
+      :name => 'slice of huckleberry pie',
+      :plural => 'slices of huckleberry pie',
+      :desc => 'a slice of mouth-watering huckleberry pie',
+      :weight => 1,
+      :use => :food,
+      
+      :craftable => true,
+      :craft_amount => 15,
+      :craft_ap => 8,
+      :craft_xp => 4,
+      :craft_xp_type => :herbal,
+      :craft_skill => :baking,
+      :craft_building => :bakery,
+      :materials => {:flour_pot => 1, :water_pot => 1, :huckleberry => 3},
+      :extra_products => {:pot => 2}
+    },
   },
   
   :region =>
@@ -2233,7 +2264,7 @@ $Data =
       :build_small? => true,
       :build_large? => true, 
       :image => 'p_lightgrey.jpg',
-      :search => {:stone => 10, :flint => 15},
+      :search => {:stone => 10, :flint => 15, :huckleberry => 15},
       
       :Spring => 'This area is almost devoid of vegetation, with many rocks scattered around.',
       :Summer => 'This area is almost devoid of vegetation, with many rocks scattered across the dusty ground.',
@@ -2249,7 +2280,7 @@ $Data =
       :altitude => 0, 
       :build_tiny? => true,
       :image => 'p_grey.jpg',
-      :search => {:stone => 10, :flint => 15},
+      :search => {:stone => 10, :flint => 15, :huckleberry => 15},
       :actions => [:quarry],
       
       :description => 'You are standing at the bottom of a cliff. Many large boulders, broken free from the rock face, are lying around.',
