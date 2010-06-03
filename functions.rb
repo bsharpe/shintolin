@@ -2016,8 +2016,13 @@ def msg_tired(player)
     "Totally exhausted, you collapse where you stand."
   elsif $ip_hits > 330
     "<span class='ipwarning'>" +
-    "You have exceeded your IP limit for their day (330 hits). " +
+    "You have exceeded your IP limit for the day (330 hits). " +
     "Please wait until tomorrow to play again.</span>"
+  elsif $ip_hits > 315 && $ip_hits < 331
+    "<br><br><span class='ipwarning'>" +
+    "You are nearing your IP limit for the day (330 hits). " +
+    "You might want to finish up what you are doing " +
+    "or get somewhere safe.</span>"
   else
     ''
   end
@@ -2438,6 +2443,11 @@ def settle(user, settlement_name)
   unless can_build
     return build_msg end
 
+
+  if $cgi['text'].length < 2
+    return "Your settlement name must be at least two characters." end
+  if not $cgi['text'] =~ /^\s?[a-zA-Z0-9 .\-']*\s?$/
+    return "Your settlement name must not contain invalid characters." end
   if mysql_row('settlements',{'name'=>settlement_name}) != nil
     return "There is already a settlement of that name." end
 
