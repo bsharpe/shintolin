@@ -1136,7 +1136,7 @@ $Data =
       :desc => 'a finely-crafted spear made from the tusks of a mammoth and decorated with fur',
       :use => :weapon,
       :weight => 8,
-      :break_odds => 1,
+      :break_odds => 0.25,
       :weapon_class => :stab,
       :tools => [:stone],
       :accuracy => {:default => 30, :spear2 => 40, :spear4 => 50},
@@ -1145,7 +1145,7 @@ $Data =
       :craft_ap => 15,
       :craft_xp => 15,
       :craft_skill => :hafting,
-      :materials => {:tusk => 2, :staff => 1, :small_pelt => 1}
+      :materials => {:tusk => 1, :staff => 1, :small_pelt => 1}
     },
 
     :ivory_axe =>
@@ -1154,17 +1154,34 @@ $Data =
       :plural => 'ivory axes',
       :desc => 'a finely-crafted axe made from the tusks of a mammoth and decorated with fur',
       :use => :weapon,
-      :break_odds => 1,
+      :break_odds => 0.25,
       :weapon_class => :slash,
       :tools => [:stone],
-      :accuracy => {:default => 30, :axe2 => 40, :axe4 => 50},
+      :accuracy => {:default => 20, :axe2 => 30, :axe4 => 40},
       :effect => {:default => 6, :axe1 => 7, :axe3 => 8},
       :weight => 8,
       :craftable => true,
       :craft_ap => 15,
       :craft_xp => 15,
       :craft_skill => :hafting,
-      :materials => {:tusk => 2, :stick => 1, :small_pelt => 1}
+      :materials => {:tusk => 1, :stick => 1, :small_pelt => 1}
+    },
+
+    :ivory_pick =>
+    {:id => 52,
+      :name => 'ivory pick',
+      :plural => 'ivory picks',
+      :desc => 'a pick crafted from the tusk of a mammoth',
+      :weight => 3,
+      :break_odds => 0.25,
+      
+      :craftable => true,
+      :craft_ap => 15,
+      :craft_xp => 15,
+      :craft_skill => :carpentry,
+      :craft_building => :workshop,
+      :tools => [:stone_carpentry],
+      :materials => {:tusk => 1}
     },
   },
   
