@@ -1109,7 +1109,7 @@ def can_settle?(tile)
 end
 
 def chat(user, text)
-  mysql_put_message('chat',text,user)
+  mysql_put_message('chat',CGI::escapeHTML(text),user)
   "You shout <i>\"#{text}\"</i> really loudly."
  end
 
@@ -2270,6 +2270,7 @@ def say(speaker, message, volume, target=nil)
     return "#{target.name} is not in the vicinity."
   end
 
+  message = CGI::escapeHTML(message)
   mysql_change_ap(speaker, -0.2)
   mysql_put_message(volume, message, speaker, target)
 
@@ -3106,7 +3107,7 @@ def write(user, msg)
 
   
   mysql_change_ap(user, -3)
-
+  msg = CGI::escapeHTML(msg)
   # check for existing messages
   if mysql_row('writings',{'x'=>user.x, 'y'=>user.y, 'z'=>user.z}) == nil
     mysql_insert('writings', 

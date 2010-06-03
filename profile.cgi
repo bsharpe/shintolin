@@ -9,10 +9,10 @@ def input_action(action)
   case action
     when 'description'
       mysql_update('accounts', $user.mysql_id, 
-        {'description' => insert_breaks($params['text'])})
+        {'description' => insert_breaks(CGI::escapeHTML($params['text']))})
     when 'image'
       mysql_update('accounts', $user.mysql_id, 
-        {'image' => $params['text']})
+        {'image' => CGI::escapeHTML($params['text'])})
     else ''
   end
 end

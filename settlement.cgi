@@ -8,27 +8,27 @@ $cgi = CGI.new
 def input_action(action)
   case action
     when 'allow_new_users'
-      puts $params
-      mysql_update('settlements', $params['id'], 
-        {'allow_new_users' => $params['option']})
+      # puts $params
+      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+        {'allow_new_users' => CGI::escapeHTML($params['option'])})
     when 'description'
-      mysql_update('settlements', $params['id'], 
-        {'description' => insert_breaks($params['text'])})
+      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+        {'description' => insert_breaks(CGI::escapeHTML($params['text']))})
     when 'image'
-      mysql_update('settlements', $params['id'], 
-        {'image' => $params['text']})
+      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+        {'image' => CGI::escapeHTML($params['text'])})
     when 'motto'
-      mysql_update('settlements', $params['id'], 
-        {'motto' => $params['text']})
+      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+        {'motto' => CGI::escapeHTML($params['text'])})
     when 'name'
-      mysql_update('settlements', $params['id'], 
-        {'name' => $params['text']})
+      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+        {'name' => CGI::escapeHTML($params['text'])})
     when 'title'
-      mysql_update('settlements', $params['id'], 
-        {'title' => $params['text']})
+      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+        {'title' => CGI::escapeHTML($params['text'])})
     when 'website'
-      mysql_update('settlements', $params['id'], 
-        {'website' => $params['text']})
+      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+        {'website' => CGI::escapeHTML($params['text'])})
 
     else ''
   end
