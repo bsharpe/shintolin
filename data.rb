@@ -327,7 +327,7 @@ $Data =
       :floors => 0,
       :max_hp => 5,
       :build_skill => :trailblazing,
-      :build_ap => 20,
+      :build_ap => 8,
       :build_xp => 5,
       :materials => {:timber => 2},
       :build_msg => "You build a signpost."
@@ -1627,7 +1627,7 @@ $Data =
     {:id => 24,
       :name => 'trailblazing',
       :type => :crafter,
-      :desc => 'build dirt tracks',
+      :desc => 'build dirt tracks and make signposts',
       :prereq => :construction
     }, 
     
