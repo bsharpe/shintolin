@@ -694,6 +694,8 @@ def altitude_mod(dest_terrain, start_terrain, user_id = nil)
   altitude = dest_altitude - start_altitude
   case altitude
   when (-1..0) then 0
+  when 0.25 then 4
+  when 0.50 then 89
   when 1 
       if user_id != nil && has_skill?(user_id,17) then 1 # 17=mountaineering
       else 2
@@ -734,6 +736,7 @@ def ap_recovery(user_id)
   user = User.new(user_id)
   return 1 if user.hp == 0
   tile = user.tile
+  return 1.5 if tile.building_id == 17
   ap = AP_Recovery.to_f
   building_bonus = db_field(:building, tile.building_id, :ap_recovery)
   ap += building_bonus if building_bonus != nil && user.z !=0
@@ -911,6 +914,18 @@ def build(user, building_id)
       terrain_id = db_field(:terrain, building[:terrain_type], :id)
       update_hash['terrain'] = terrain_id
       update_hash['hp'] = building[:build_hp]
+
+  when :walls
+      terrain_id = db_field(:terrain, building[:terrain_type], :id)
+      update_hash['terrain'] = terrain_id
+      update_hash['hp'] = building[:build_hp]
+      update_hash['building_id'] = building_id
+      update_hash['building_hp'] = 
+      if building[:build_hp] != nil
+        building[:build_hp]
+      else 
+        building[:max_hp]
+      end
 
   when nil
       update_hash['building_id'] = building_id
@@ -1508,6 +1523,9 @@ def destroy_building(building)
     {'building_hp' => 0, 'building_id' => 0})
   if building.special == :settlement
     destroy_settlement(building.tile.settlement) end
+  if building.special == :walls
+       mysql_update('grid', building.mysql_id, 
+    {'building_hp' => 0, 'building_id' => 0, 'terrain' => 8 , 'hp' => 0}) end
 end
 
 def destroy_settlement(settlement)

@@ -487,6 +487,58 @@ $Data =
       "Fresh food sits on a small altar, offerings to the fertility spirits in hopes of a bountiful harvest. " +
       "You feel at peace within the shrine's walls"
     },
+     
+     :wall =>
+    {:id => 17,
+      :name => 'stone wall',
+      :max_hp => 80,
+      :size => :large,
+      :special => :walls,
+      :terrain_type => :wall,
+      :build_ap => 50,
+      :build_xp => 35,
+      :build_skill => :masonry,
+      :tools => [:masonry_tools],
+      :materials => {:stone_block => 8},
+      :build_msg =>  "You carefully survey the ground before you, and set the stone blocks into a sturdy stone wall."
+    },
+
+     :guardstand1 =>
+    {:id => 171,
+      :name => 'guard stand (1/2)',
+      :max_hp => 40,
+      :special => :walls,
+      :terrain_type => :wall_low,
+      :size => :large,
+      :settlement_level => :village,
+      :build_ap => 50,
+      :build_xp => 35,
+      :build_skill => :masonry,
+      :tools => [:masonry_tools],
+      :materials => {:stone_block => 6},
+      :build_msg =>  "You dig trenches for a foundation, then set to work building the walls of the guard stand. It isn't finished yet: you still need to build the roof and ladder."
+    },
+
+     :guardstand2 =>
+    {:id => 172,
+      :name => 'guard stand',
+      :max_hp => 70,
+      :prereq => :guardstand1,
+      :special => :walls,
+      :terrain_type => :wall_low,
+      :size => :tiny,
+      :floors => 1,
+      :settlement_level => :village,
+      :ap_recovery => +0.5,
+      :build_ap => 50,
+      :build_xp => 35,
+      :build_skill => :construction,
+      :materials => {:timber => 10},
+      :tools => [:stone_carpentry],
+      :build_msg => "You build the roof and ladder, and the guard stand is complete.",
+      :interior => "You are inside a sparsely-equipped, stone guard stand. " +
+      "Sunlight streams through the open doorway"
+    },
   },
   
   :item =>
@@ -1919,7 +1971,35 @@ $Data =
       :Autumn => 'You are atop a high hill, looking at the countryside slowly dissapearing into the autumn mist.',
       :Winter => 'You are atop a high hill, looking at the countryside stretching away in all directions. A cold wind is blowing.',
     },
+
+    :wall =>
+    {:id => 44,
+      :ap => 1,
+      :altitude => 0.50,
+      :restore_odds => 0,
+      :class => :wall,
+      :build_tiny? => true,
+      :image => 'p_wall.jpg',
+      :Spring => 'You are standing high atop a stone wall. The wind roars, requiring all your strength to maintain your balance.',
+      :Summer => 'You are standing high atop a stone wall. Hot summer winds roar, requiring all your strength to maintain your balance.',
+      :Autumn => 'You are standing high atop a stone wall. The wind roars, requiring all your strength to maintain your balance.',
+      :Winter => 'You are standing high atop a stone wall. Icy winds batter your position, requiring all your strength to maintain your balance.',
+    },
     
+    :wall_low =>
+    {:id => 45,
+      :ap => 1,
+      :altitude => 0.25,
+      :restore_odds => 0,
+      :class => :wall,
+      :build_tiny? => true,
+      :image => 'p_wall.jpg',
+      :Spring => 'You are standing atop a low stone wall.',
+      :Summer => 'You are standing atop a low stone wall.',
+      :Autumn => 'You are standing atop a low stone wall.',
+      :Winter => 'You are standing atop a low stone wall.',
+    },
+
     :stream =>
     {:id => 5,
       :class => :shallow_water,
