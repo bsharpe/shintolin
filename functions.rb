@@ -1767,10 +1767,10 @@ def heal (healer, target, item_id)
   mysql_give_xp(:herbal, xp, healer)
 
   if healer == target
-    "You use #{item_desc} on yourself, healing #{hp_healed} hp"
+    "You use #{item_desc} on yourself, healing #{hp_healed} hp."
   else
     mysql_put_message('action', 
-      "$ACTOR used #{item_desc} on $TARGET, healing #{hp_healed} hp", 
+      "$ACTOR used #{item_desc} on $TARGET, healing #{hp_healed} hp.", 
       healer, target)
     "You use #{item_desc} on #{target.name}, " +
     "healing #{hp_healed} hp of damage. " +
@@ -1953,7 +1953,7 @@ def move(user_id, x, y, z)
   mover = mysql_user(user_id)
   current_tile = mysql_tile(mover['x'], mover['y'])
   user = User.new user_id
-  if weight(user) > Max_Weight
+  if weight(user) >= Max_Weight
     return 'You are over-encumbered and cannot move.' end
 
   if z == 0

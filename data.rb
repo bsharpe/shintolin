@@ -976,6 +976,7 @@ $Data =
       :name => 'lump of rotten food',
       :plural => 'lumps of rotten food',
       :desc => "whatever it was, it's not edible anymore",
+      :use => "You stare at the lump of rotten food questioningly. It stares back.",
       :weight => 1,
     },
     
@@ -2408,7 +2409,7 @@ Image_Folder = 'images/'
 Max_Hunger = 12
 AP_Recovery = 3.0
 Max_AP = 100
-Max_Weight = 70
+Max_Weight = 71
 Max_Items = 1000
 Max_HP = 50
 Max_Level = 17
