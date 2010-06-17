@@ -50,15 +50,7 @@ puts <<ENDTEXT
 
 
 <td>
-<b>Shintolin is nearing the bandwidth limit for its webhost. Please contribute to the new server costs:</b>
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="8325424">
-<input type="image" src="https://www.paypal.com/en_US/GB/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online.">
-<img alt="" border="0" src="https://www.paypal.com/en_GB/i/scr/pixel.gif" width="1" height="1">
-</form>
-<i>Donations are handled through Paypal, but you don't need a Paypal account to donate.</i><br/>
-<i>For donations above £5, include a note with your character ID and the IP limit will be lifted for that character.</i><br/>
+<i>Now that enough money was donated to buy a new server, Shintolin is no longer taking donations. A big thank you to everyone who gave money, very much appreciated.</i>
 </td>
 
 </tr>

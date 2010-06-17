@@ -2065,21 +2065,21 @@ def ocarina(user, target, item_id)
   item_desc = a_an(item[:name])
   if user == target
     mysql_put_message('visible_all', 
-      "$ACTOR played a haunting melody on the ocarina", 
+      "$ACTOR played a lively melody on the ocarina", 
       user)
 
   if rand < 0.3
-    msg = "You play a haunting melody on your ocarina. " +
+    msg = "You play a lively melody on your ocarina. " +
       "A whirlwind appears and attempts to carry you off, " +
       "but you're too heavy."
   else
-    msg = "You play a haunting melody on your ocarina." end
+    msg = "You play a lively melody on your ocarina." end
 
   else
     mysql_put_message('visible_all', 
-      "$ACTOR played a haunting melody on the ocarina for $TARGET",
+      "$ACTOR played a lively melody on the ocarina for $TARGET",
       user, target)
-    "You play a haunting melody on your ocarina " +
+    "You play a lively melody on your ocarina " +
     "for #{target.name}."
     end
   end
@@ -2466,6 +2466,8 @@ def settle(user, settlement_name)
   if $cgi['text'].length < 2
     return "Your settlement name must be at least two characters." end
   if not $cgi['text'] =~ /^\s?[a-zA-Z0-9 .\-']*\s?$/
+    return "Your settlement name must not contain invalid characters." end
+  if $cgi['text'] != $cgi['text'].strip
     return "Your settlement name must not contain invalid characters." end
   if mysql_row('settlements',{'name'=>settlement_name}) != nil
     return "There is already a settlement of that name." end

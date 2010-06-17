@@ -88,6 +88,17 @@ puts <<ENDTEXT
 
 ENDTEXT
 
+if $settlement.name.length < 2
+      mysql_update('settlements',($params['id']), 
+        {'name' =>'Unnamed Settlement'})
+   puts "<div class=\"ipwarning\"><h2>Your settlement name must contain at least two characters.</div></h2>"
+end
+  if $settlement.name != $settlement.name.strip or not $settlement.name =~ /^\s?[a-zA-Z0-9 .\-']*\s?$/
+      mysql_update('settlements',($params['id']), 
+        {'name' =>'Unnamed Settlement'})
+  puts "<div class=\"ipwarning\"><h2>Your settlement name contains invalid characters.</div></h2>"
+end
+
 if $user == $leader
   puts <<ENDTEXT
   <td rowspan='3'>
