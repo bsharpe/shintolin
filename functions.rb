@@ -140,7 +140,7 @@ class Animal
   @@mysql_table = 'animals'
 
   data_fields 'attack_odds','attack_dmg','habitats','hit_msg','loot',
-    'max_hp','when_attacked'
+    'max_hp','when_attacked','loot_bonus'
 
   mysql_int_fields 'mysql', 'x', 'y', 'z', 'hp'
 
@@ -811,10 +811,13 @@ def attack(attacker, target, item_id)
 	  |item, amt| mysql_change_inv(attacker, item, +amt) end      
         msg += ", killing it! From the carcass you collect " +
         "#{describe_items_list(target.loot, 'long')}."
+            if has_skill?(attacker, 7) # 7 ->butchering temporary fix for butchering
+              target.loot_bonus.each do
+	        |item, amt| mysql_change_inv(attacker, item, +amt)
+              msg += "<br><br>You also manage to collect #{describe_items_list(target.loot_bonus, 'long')} extra with your butchering prowess." end 
         mysql_put_message('visible_all',
          "$ACTOR killed #{a_an(target.name_only)} with #{a_an(db_field(:item, item_id, :name))}",
-          attacker, target)
-
+          attacker, target) end
     when "Building"
         msg +=", destroying it!"
     end

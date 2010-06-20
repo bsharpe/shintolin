@@ -9,7 +9,8 @@ $Data =
       :habitats => [:forest,:open],
       :max_hp => 30,
       :when_attacked => {:flee => 60},
-      :loot => {:raw_meat => 8, :pelt => 1}
+      :loot => {:raw_meat => 8, :pelt => 1},
+      :loot_bonus => {:raw_meat => 2}
     },
     
     :boar =>
@@ -21,7 +22,8 @@ $Data =
       :attack_dmg => 2,
       :hit_msg => "gores you with its tusk",
       :when_attacked => {:flee => 25, :attack => 25},
-      :loot => {:raw_meat => 3, :pelt => 1}
+      :loot => {:raw_meat => 3, :pelt => 1},
+      :loot_bonus => {:raw_meat => 1}
     },
     
     :wolf =>
@@ -33,7 +35,8 @@ $Data =
       :max_hp => 50,
       :when_attacked => {:attack => 45},
       :hit_msg => "sinks it's teeth into your thigh",
-      :loot => {:raw_meat => 6, :wolf_pelt => 1}
+      :loot => {:raw_meat => 6, :wolf_pelt => 1},
+      :loot_bonus => {:raw_meat => 2}
     },
     
     :hare =>
@@ -45,7 +48,8 @@ $Data =
       :attack_dmg => 1,
       :hit_msg => "kicks you",
       :when_attacked => {:flee => 80, :attack => 10},
-      :loot => {:raw_meat => 2, :small_pelt => 1}
+      :loot => {:raw_meat => 2, :small_pelt => 1},
+      :loot_bonus => {:raw_meat => 1}
     },
     
     :mountain_lion =>
@@ -57,7 +61,8 @@ $Data =
       :max_hp => 70,
       :when_attacked => {:attack => 45},
       :hit_msg => "sinks it's teeth into your thigh",
-      :loot => {:raw_meat => 8, :lion_pelt => 1}
+      :loot => {:raw_meat => 8, :lion_pelt => 1},
+      :loot_bonus => {:raw_meat => 2}
     },
     
     :sabre_tooth =>
@@ -69,7 +74,8 @@ $Data =
       :max_hp => 100,
       :when_attacked => {:attack => 45},
       :hit_msg => "sinks it's teeth into your thigh",
-      :loot => {:raw_meat => 10, :pelt => 1, :sabre_tooth => 2}
+      :loot => {:raw_meat => 10, :pelt => 1, :sabre_tooth => 2},
+      :loot_bonus => {:raw_meat => 3}
     },
     
     :bear =>
@@ -81,7 +87,8 @@ $Data =
       :max_hp => 200,
       :when_attacked => {:attack => 30, :flee => 8},
       :hit_msg => "sinks it's teeth into your thigh",
-      :loot => {:raw_meat => 20, :bear_skin => 1}
+      :loot => {:raw_meat => 20, :bear_skin => 1},
+      :loot_bonus => {:raw_meat => 5}
     },
     
     :squirrel =>
@@ -93,7 +100,8 @@ $Data =
       :max_hp => 6,
       :when_attacked => {:attack => 10, :flee => 80},
       :hit_msg => "nips you on the pinky",
-      :loot => {:raw_meat => 1, :small_pelt => 1}
+      :loot => {:raw_meat => 1, :small_pelt => 1},
+      :loot_bonus => {:raw_meat => 1}
     },
     
     :croc =>
@@ -105,7 +113,8 @@ $Data =
       :attack_dmg => 5,
       :hit_msg => "bites you",
       :when_attacked => {:flee => 10, :attack => 40},
-      :loot => {:croc_skin => 1, :raw_meat => 7}
+      :loot => {:croc_skin => 1, :raw_meat => 7},
+      :loot_bonus => {:raw_meat => 2}
     },
     
     :goose =>
@@ -115,7 +124,8 @@ $Data =
       :habitats => [:shallow_water, :deep_water, :beach, :wetland],
       :max_hp => 15,
       :when_attacked => {:flee => 60},
-      :loot => {:raw_meat => 3}
+      :loot => {:raw_meat => 3},
+      :loot_bonus => {:raw_meat => 1}
     },
     
     :buffalo =>
@@ -127,7 +137,8 @@ $Data =
       :attack_dmg => 4,
       :hit_msg => "tramples you with its hooves",
       :when_attacked => {:flee => 15, :attack => 40},
-      :loot => {:raw_meat => 20, :pelt => 1, :horn => 2}
+      :loot => {:raw_meat => 20, :pelt => 1, :horn => 2},
+      :loot_bonus => {:raw_meat => 5}
     },
     
     :pheasant =>
@@ -137,7 +148,8 @@ $Data =
       :habitats => [:forest],
       :max_hp => 10,
       :when_attacked => {:flee => 60},
-      :loot => {:raw_meat => 3}
+      :loot => {:raw_meat => 3},
+      :loot_bonus => {:raw_meat => 1}
     },
     
     :stag => 
@@ -147,20 +159,21 @@ $Data =
       :habitats => [:forest,:open],
       :max_hp => 45,
       :when_attacked => {:flee => 60},
-      :loot => {:raw_meat => 10, :pelt => 1, :antler => 2}
+      :loot => {:raw_meat => 10, :pelt => 1, :antler => 2},
+      :loot_bonus => {:raw_meat => 3}
     },
     
     :beehive =>
     {:id => 14,
       :name => "beehive",
-      :plural => "beehive",
+      :plural => "beehives",
       :habitats => [:forest],
       :immobile => :true,
       :max_hp => 20,
       :attack_dmg => 1,
       :hit_msg => "is surrounded by a swarm of angry bees, which sting you",
       :when_attacked => {:attack => 80},
-      :loot => {:honeycomb => 3}
+      :loot => {:honeycomb => 3},
     },
     
     :mammoth => 
@@ -172,7 +185,8 @@ $Data =
       :attack_dmg => 8,
       :hit_msg => "tramples you underfoot",
       :when_attacked => {:flee => 15, :attack =>70},
-      :loot => {:raw_meat => 65, :tusk => 2}
+      :loot => {:raw_meat => 65, :tusk => 2},
+      :loot_bonus => {:raw_meat => 17}
     },
   },
   
@@ -1185,7 +1199,7 @@ $Data =
     :ivory_spear =>
     {:id => 50,
       :name => 'ivory spear',
-      :plural => 'ivory spear',
+      :plural => 'ivory spears',
       :desc => 'a finely-crafted spear made from the tusks of a mammoth and decorated with fur',
       :use => :weapon,
       :weight => 8,
@@ -1482,6 +1496,13 @@ $Data =
       :prereq => nil
     },
     
+    :butchering =>
+    {:id => 7,
+      :name => 'butchering',
+      :type => :wanderer,
+      :desc => 'obtain more meat from slain animals',
+      :prereq => :foraging
+    },
     
     :carpentry =>
     {:id => 8,
