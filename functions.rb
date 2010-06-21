@@ -1549,6 +1549,7 @@ def dig(user)
   found_item = random_select(diggables, 100)
   if found_item == nil
     msg = "You dig a hole, but find nothing of use."
+    mysql_change_ap(user, -2)
   else
     mysql_change_inv(user, found_item, 1)
     mysql_change_ap(user, -2)
@@ -2124,7 +2125,8 @@ def quarry(user)
   return 'You cannot quarry here.' unless user.tile.actions.include?(:quarry)
   unless has_skill?(user,:quarrying)
     return 'You do not have the required skills to quarry.' end
-  return 'You need a pick to quarry here.' unless user_has_item?(user, :bone_pick)
+  return 'You need a pick to quarry here.' unless user_has_item?(user, :bone_pick) ||
+  user_has_item?(user, :ivory_pick)
   mysql_change_ap(user, -4)
   if rand < 0.5
     msg = "Chipping away at the rock face, you manage to work free " +
@@ -2133,7 +2135,10 @@ def quarry(user)
     mysql_give_xp(:craft, 2.5, user)
   else
     msg = "You chip away at the rock face, but fail to remove anything." end
-  msg += ' ' + break_attempt(user, :bone_pick)
+  if user_has_item?(user, :ivory_pick)
+  msg += ' ' + break_attempt(user, :ivory_pick)
+  else
+    msg += ' ' + break_attempt(user, :bone_pick) end
 end
 
 def random_dir
