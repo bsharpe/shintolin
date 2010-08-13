@@ -2586,6 +2586,9 @@ def take(user_id, amount, item_id)
   end
 
   amt_taken = -mysql_change_inv(stockpile, item_id, -amount.to_i)
+  if amt_taken >= 6
+      amt_returned = +mysql_change_inv(stockpile, item_id, +amount.to_i) 
+    return "You can't take that many items at once." end
   mysql_change_inv(user_id, item_id, +amt_taken)
   if amt_taken == 0
     return "There aren't any #{db_field(:item, item_id, :plural)} " +
