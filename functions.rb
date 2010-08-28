@@ -2812,6 +2812,36 @@ def tick_restore_search
   'Search rates restored!'
 end
 
+def tick_delete_rotten_food
+# delete rotten food that is on the ground but not in a built stockpile
+  stockpiles = mysql_select_all('stockpiles')
+# mysql_where({'x'=>x, 'y'=>y, 'item_id'=>item_id})
+#  builtpiles = mysql_select('grid',{'building_id'=>3})
+  stockpiles.each_hash do
+    |stock|
+    if stock['item_id'] == '33'
+	  onground = true
+      builtpiles = mysql_select('grid',{'building_id'=>3})
+	  builtpiles.each_hash do
+        |built|
+        if stock['x'] == built['x'] and stock['y'] == built['y']
+          onground = false
+#          puts "in stockpile/keep"
+        end
+      #next
+      end
+      if onground==true
+        mysql_delete('stockpiles', {'x'=>stock['x'],'y'=>stock['y'], 'item_id'=>'33'})
+#		puts "on ground/deleted"
+#      else puts "not on ground"
+      end
+#    else puts stock['item_id']
+    end
+  #next
+  end
+  "And so the rotten food on the ground became dirt."
+end
+
 def tick_rot_food
   invs = mysql_select_all('inventories')
   invs.each_hash do

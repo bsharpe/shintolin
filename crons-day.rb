@@ -9,5 +9,6 @@ puts tick_restore_search
 puts tick_restore_ip
 puts tick_spawn_animals
 puts tick_terrain_transitions
+puts tick_delete_rotten_food
 puts tick_rot_food
 puts tick_damage_buildings
