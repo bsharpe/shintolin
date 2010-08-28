@@ -152,7 +152,7 @@ def html_forms(user)
         |item| item[:plantable] == true}}
   end
   html += html_action_form('Search', :inline) if actions.include? :search
-  if actions.include? :chop_tree
+  if actions.include? :chop_tree and user.z == 0
     html += html_action_form('Chop Tree', :inline, "#{chop_tree_ap(user_id)}ap")
   end
   if actions.include? :harvest
