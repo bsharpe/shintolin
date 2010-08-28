@@ -209,7 +209,7 @@ class Building
     when (0.67...1)
       if mysql['building_id'] == "5" then 'roaring '
       else 'dilapidated ' end
-   when 1
+   else
      if mysql['building_id'] == "5" then 'raging '
       else '' end
     end
@@ -766,7 +766,8 @@ def attack(attacker, target, item_id)
     can_attack, msg = can_attack_totem?(target)
     unless can_attack then return msg end
   end
-
+  if target.kind_of?(Building) && target.special == :ruins
+     return "You ready yourself to attack, but can't bring yourself to harm the ruins." end
   weapon = db_row(:item, item_id)
   return "You can't attack with that." if weapon[:use] != :weapon
     if target.kind_of?(Building) && weapon[:weapon_class] != :slash
@@ -2342,11 +2343,15 @@ def search(user)
   tile = user.tile
   mysql_change_ap(user, -1)
 
-  if user.z != 0
+  search = db_field(:terrain, tile.terrain, :search)
+
+  if user.z == 0 and tile.terrain == 99 #searching in ruins
+    return 'You look around the area, but find nothing of use.'
+  end
+  if user.z != 0 and tile.terrain != 99
     return 'You look around the building, but find nothing of use.'
   end
 
-  search = db_field(:terrain, tile.terrain, :search)
   if search == nil
     return 'There appears to be nothing to find here.'
   end
@@ -2661,6 +2666,7 @@ def tick_damage_buildings
       if dmg > 0
         building = Building.new(tile['x'],tile['y'])
 	next if building.special == :settlement
+        next if building.special == :ruins #prevents storm damage
 	destroy = deal_damage(dmg, building)
 	msg = "A storm blew across #{region[:name]}, " +
 	  "doing #{dmg} damage to #{building.a}" 

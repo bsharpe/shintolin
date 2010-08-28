@@ -553,6 +553,20 @@ $Data =
       :interior => "You are inside a sparsely-equipped, stone guard stand. " +
       "Sunlight streams through the open doorway"
     },
+    
+    :ruin =>
+    {:id => 18,
+      :name => 'ruined building',
+      :special => :ruins,
+      :size => :large,
+      :floors => 1,
+      :max_hp => 100,
+      :ap_recovery => +0.3,
+      :build_skill => :god_powers,
+      :interior => "You are inside a ruined building within the village. The air is acrid, " +
+      "and the lack of light makes it hard to tell if there may be anything of value amongst " +
+      "the rubble"
+    },
   },
   
   :item =>
@@ -1434,6 +1448,11 @@ $Data =
     :New_9 =>
     {:id => 28,
       :name => 'Terra Nullis Jiu',
+    },
+    
+    :Unknown_Ruins =>
+    {:id => 29,
+      :name => 'Unknown Ruins',
     },
     
   },
@@ -2403,7 +2422,18 @@ $Data =
       :description => 'You are clinging to the side of a cliff, at low elevation.'
     },
     
-    
+    :ruins =>
+    {
+      :id => 99,
+      :class => :open,
+      :ap => 1.5,
+      :altitude => 0,
+      :build_tiny? => true,
+      :image => 'p_ruins.jpg',
+      :search => {:stone => 10, :flint => 15},
+      :description => 'You are standing of the remnants of a strange village. You don\'t' +
+      'recognise its architecture or origins.'
+    },
   },
   
   :weapon_class =>
