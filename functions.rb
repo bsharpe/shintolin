@@ -209,7 +209,7 @@ class Building
     when (0.67...1)
       if mysql['building_id'] == "5" then 'roaring '
       else 'dilapidated ' end
-   when 1
+    else
      if mysql['building_id'] == "5" then 'raging '
       else '' end
     end

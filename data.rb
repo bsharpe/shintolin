@@ -1858,8 +1858,9 @@ $Data =
       :class => :open,
       :altitude => 0,
       :image => 'p_grass.jpg',
-      :search => {:onion => 12, :thyme => 12, :wheat => 5},
-      
+      :search => {:onion => 1, :thyme => 12, :wheat => 5},
+      :dig => {:onion => 30}, 
+      :actions => [:dig],    
       :transition => :pine_forest_1,
       :transition_odds => {:default => 0, :Spring => 10},
       
@@ -1892,8 +1893,9 @@ $Data =
       :class => :open,
       :altitude => 0,
       :image => 'p_grass.jpg',
-      :search => {:onion => 12, :thyme => 12, :wheat => 5},
-      
+      :search => {:onion => 1, :thyme => 12, :wheat => 5},
+      :dig => {:onion => 30},
+      :actions => [:dig],
       :transition => :woodland,
       :transition_odds => {:default => 0, :Spring => 10},
       
