@@ -2433,7 +2433,7 @@ $Data =
       :build_tiny? => true,
       :image => 'p_ruins.jpg',
       :search => {:stone => 10, :flint => 15},
-      :description => 'You are standing of the remnants of a strange village. You don\'t' +
+      :description => 'You are standing on the remnants of a strange village. You don\'t ' +
       'recognise its architecture or origins.'
     },
   },

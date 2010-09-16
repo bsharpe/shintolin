@@ -669,7 +669,7 @@ def add_fuel(user_id)
   unless db_field(:building, tile['building_id'], :actions).include?(:add_fuel)
     return "There's nothing to add fuel to here." end
 
-  if tile['building_hp'].to_i > 30
+  if tile['building_hp'].to_i >= 30
     return "The fire is very large and is too hot to approach."  end
 
   unless user_has_item?(user_id, :stick)
