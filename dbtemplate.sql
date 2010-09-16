@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS `animals` (
   `y` int(11) NOT NULL default '-10',
   `z` tinyint(1) NOT NULL,
   `hp` smallint(4) NOT NULL default '10',
+  `region_id` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=18491 ;
 

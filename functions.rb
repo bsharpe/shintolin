@@ -2871,7 +2871,7 @@ def tick_spawn_animals
   regions = db_table(:region)
   regions.each {
     |name, region|
-    puts name
+    puts name 
     animals = region[:animals_per_100]
     animals = [] if animals == nil
     puts animals
@@ -2879,19 +2879,25 @@ def tick_spawn_animals
       |animal, amt|
       animal_id = db_field(:animal, animal, :id)
       animal_hp = db_field(:animal, animal, :max_hp)
+      count = mysql_select('animals',{'region_id' => region[:id],'type_id' => animal_id})
       habitats = habitats(animal)
       habitat_tiles = mysql_select('grid',
         'region_id'=>region[:id],'terrain'=>habitats)
       # changed 100 to 300 to reduce spawn rate
       spawn_no = ((habitat_tiles.num_rows / 300) * amt * (rand + 0.5))
-      freq = spawn_no / habitat_tiles.num_rows
-      habitat_tiles.each_hash {
-        |tile|
-	if rand < freq
-	  mysql_insert('animals',{'x'=>tile['x'],'y'=>tile['y'],
-	    'type_id'=>animal_id,'hp'=>animal_hp})
-	end
-      }
+      freq = spawn_no / (habitat_tiles.num_rows + 1) # to prevent dividing by zero
+      max_allowed = ((habitat_tiles.num_rows / 300) * amt) * 10 #(factor of DOOM!)
+	# If > total animals of that type allowed for that region then skip spawning that type
+      if (max_allowed>count.num_rows) 
+        habitat_tiles.each_hash {
+          |tile|
+	    if rand < freq
+	    mysql_insert('animals',{'x'=>tile['x'],'y'=>tile['y'],
+	      'type_id'=>animal_id,'hp'=>animal_hp,'region_id'=>region[:id]})
+	    end
+      
+        }
+    end
     }
   }
   'Animals spawned!'
