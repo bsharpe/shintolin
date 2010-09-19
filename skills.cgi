@@ -6,6 +6,7 @@ load 'functions.rb'
 $cgi = CGI.new
 
 UserID = get_validated_id
+$user = User.new(UserID)
 
 def input_action(action)
   case action
@@ -34,8 +35,9 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 <link rel="stylesheet" type="text/css" href="shintolin.css" />
 </head>
 <body>
-<h1>Skills</h1>
-<hr>
+<h1>Skills</h1>'
+print "You have learned #{$user.level} out of a maximum of #{Max_Level} skills.<br>"
+print'<hr>
 <a class="buttonlink" href="game.cgi">Return</a>
 <hr>
 '

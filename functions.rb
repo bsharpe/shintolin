@@ -2068,6 +2068,7 @@ end
 def ocarina(user, target, item_id)
   item = db_row(:item, item_id)
   item_desc = a_an(item[:name])
+  mysql_change_ap(user, -0.2)
   if user == target
     mysql_put_message('visible_all', 
       "$ACTOR played a lively melody on the ocarina", 
@@ -2884,9 +2885,9 @@ def tick_spawn_animals
       habitat_tiles = mysql_select('grid',
         'region_id'=>region[:id],'terrain'=>habitats)
       # changed 100 to 300 to reduce spawn rate
-      spawn_no = ((habitat_tiles.num_rows / 300) * amt * (rand + 0.5))
+      spawn_no = ((habitat_tiles.num_rows / 300.0) * amt * (rand + 0.5))
       freq = spawn_no / (habitat_tiles.num_rows + 1) # to prevent dividing by zero
-      max_allowed = ((habitat_tiles.num_rows / 300) * amt) * 10 #(factor of DOOM!)
+      max_allowed = ((habitat_tiles.num_rows / 300.0) * amt) * 10 #(factor of DOOM!)
 	# If > total animals of that type allowed for that region then skip spawning that type
       if (max_allowed>count.num_rows) 
         habitat_tiles.each_hash {

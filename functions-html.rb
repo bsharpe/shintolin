@@ -442,13 +442,17 @@ def html_skill(skill_name, user_id=0, indent=0, xp=0, form='buy')
   "</b> - <i>#{skill[:desc]}</i>"
 
   if form == 'buy' && can_buy_skill?(user_id, skill[:id])
+html += '<a onclick=\'javascript:return confirm("Learn skill ' + skill[:name] + '?")\' class=txlinkplain>'
     html += html_action_form('Buy', true, "#{xp}xp", 'skills.cgi') { 
       html_hidden('skill', skill[:id]) }
+html +='</a>'
   end
 
-  if form == 'sell' && can_sell_skill?(user_id, skill[:id])
+  if can_sell_skill?(user_id, skill[:id])
+html += '<a onclick=\'javascript:return confirm("Discard skill ' + skill[:name] + '?")\' class=txlinkplain>'
     html += html_action_form('Sell', true, nil, 'skills.cgi') { 
       html_hidden('skill', skill[:id]) }
+html +='</a>'
   end
 
   html += "</div>\n"
