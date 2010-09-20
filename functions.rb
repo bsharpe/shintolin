@@ -293,6 +293,7 @@ class Building
     when (0...0.33) then 0.66
     when (0.33...0.67) then 0.33
     when (0.67..1) then 0
+    else 0
     end
     repair[:repair] = true
     repair[:build_ap] = (build_ap * (multiplier + 0.33)).to_i
@@ -780,7 +781,7 @@ def attack(attacker, target, item_id)
   if target.kind_of? Building then rand_to_i(1.333)
   else item_stat(item_id, :effect, attacker) end
 
-  if rand(100) > accuracy
+  if rand(100) > accuracy || accuracy == 0
     msg = db_field(:weapon_class, weapon[:weapon_class], :miss_msg) + 
       weapon[:name] +
       ', but missed!' 
@@ -2198,6 +2199,9 @@ def repair(user)
     return "You need " +
       describe_items_list(building[:materials], 'long') +
       " to repair the #{building[:name]}." end
+
+  unless  user.tile.building_hp < building[:max_hp]
+    return "The #{building[:name]} does not need any repairs." end
 
   mysql_update('grid',user.tile.mysql_id,
     {'building_hp'=>building[:max_hp]})
