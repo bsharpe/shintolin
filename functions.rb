@@ -555,7 +555,7 @@ class User
     'wander_xp', 'herbal_xp', 'combat_xp', 'craft_xp', 'active'
 
   mysql_int_fields 'mysql_2', 'settlement_id', 'points', 
-    'frags', 'kills', 'deaths', 'revives'
+    'frags', 'kills', 'deaths', 'revives', 'vote'
 
   attr_reader :mysql_id, :mysql_table
 
@@ -740,7 +740,7 @@ def ap_recovery(user_id)
   return 1.5 if tile.building_id == 17
   ap = AP_Recovery.to_f
   building_bonus = db_field(:building, tile.building_id, :ap_recovery)
-  ap += building_bonus if building_bonus != nil && user.z !=0
+  ap += building_bonus if building_bonus != nil && (user.z !=0 || db_field(:building, tile.building_id, :floors) == 0)
 
   tile_bonus = db_field(:terrain, tile.terrain, :ap_recovery)
   ap += tile_bonus if tile_bonus != nil
@@ -1130,7 +1130,7 @@ end
 
 def chat(user, text)
   mysql_put_message('chat',CGI::escapeHTML(text),user)
-  "You shout <i>\"#{text}\"</i> really loudly."
+  "You shout <i>\"#{CGI::escapeHTML(text)}\"</i> really loudly."
  end
 
 def chop_tree(user_id)
@@ -3122,13 +3122,19 @@ def vote(voter, candidate)
   if voter.settlement == nil
     return "You are not currently a member of any settlement." end
 
+  if candidate.mysql_id == 0
+  mysql_update('accounts',voter.mysql_id,
+    {'vote'=>candidate.mysql_id})
+  return "As none of the candidates suit your fancy, you choose to support no one."
+  end
+
   unless (voter.settlement == candidate.settlement)
     return "You cannot support that person." end
 
   settlement = voter.settlement
   mysql_update('accounts',voter.mysql_id,
     {'vote'=>candidate.mysql_id})
-  "You pledge your support for #{candidate.name} as #{settlement.title} " +
+  "You pledge your support for <b>#{candidate.name}</b> as #{settlement.title} " +
     "of #{settlement.name}."
 end
 

@@ -29,7 +29,6 @@ def input_action(action)
     when 'website'
       mysql_update('settlements', CGI::escapeHTML($params['id']), 
         {'website' => CGI::escapeHTML($params['text'])})
-
     else ''
   end
 end
@@ -221,12 +220,19 @@ puts <<ENDTEXT
     </td>
   </tr>
 ENDTEXT
-
+#if $params['option'] == nil then $params['option'] = $user.vote.to_s end
+$user = User.new(user_id)
 if $user != nil && $user.settlement == $settlement
-  candidate_ids = $settlement.inhabitant_ids
-  select_user = html_select(candidate_ids) {|id| 
+  candidate_ids = [0] + $settlement.inhabitant_ids
+  select_user = html_select(candidate_ids,$user.vote.to_s) {|id| 
+    if id != 0
     user = User.new id
-    "#{user.name} (#{user.supporters} supporters)"}
+    "#{user.name} (#{user.supporters} supporters)"
+    else
+    id
+    "- no one -"
+    end
+    }
 
   puts <<ENDTEXT
   <tr>
@@ -239,6 +245,13 @@ if $user != nil && $user.settlement == $settlement
     <input type='hidden' name='action' value='vote' />
     <input type='Submit' value='Pledge Support' />
     </form>
+ENDTEXT
+  supported = User.new($user.vote)
+  if !supported.exists? || supported.active == 0 || supported.settlement_id != $user.settlement_id then puts "Current vote: N/A"
+  else
+    puts "Current vote: #{User.new($user.vote).name}"
+  end
+  puts <<ENDTEXT
   </div>
   </td>
   </tr>
