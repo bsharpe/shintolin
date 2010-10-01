@@ -2,6 +2,7 @@ load '/var/www/shn/data.rb'
 load '/var/www/shn/mysql-connect.rb'
 load '/var/www/shn/functions-html.rb'
 load '/var/www/shn/functions-mysql.rb'
+#load '/var/www/shn/functions-other.rb'
 
 require 'digest/md5'
 require 'parsedate'
@@ -737,7 +738,6 @@ def ap_recovery(user_id)
   user = User.new(user_id)
   return 1 if user.hp == 0
   tile = user.tile
-  return 1.5 if tile.building_id == 17
   ap = AP_Recovery.to_f
   building_bonus = db_field(:building, tile.building_id, :ap_recovery)
   ap += building_bonus if building_bonus != nil && (user.z !=0 || db_field(:building, tile.building_id, :floors) == 0)
@@ -1639,11 +1639,12 @@ def get_validated_id
   if $cgi.include? 'username'
     user_id = mysql_user_id($cgi['username'])
     return false if user_id == nil
-    return false unless validate_user(user_id, $cgi['password'])
+    return false unless validate_user(user_id, encrypt($cgi['password']))
     $cookie = CGI::Cookie.new(
       'name' => 'shintolin', 
       'value' => [user_id.to_s, encrypt($cgi['password'])],
       'expires' => (Time.now + 1800))
+#      add_ip_data(user_id)
   else
     $cookie = $cgi.cookies["shintolin"]
     return false if $cookie == nil
@@ -1939,7 +1940,11 @@ end
 
 
 def month
-  day = Time.now.to_i / (3600 * 24) % 3
+# Ruby calculates time in seconds by GMT. To synch up with cron, we must lie and say whatever time zone we're in is actually GMT, -then- calculate the seconds.
+gmt_time = Time.now.to_a 
+local_time = Time.utc(gmt_time[5],gmt_time[4],gmt_time[3],gmt_time[2],gmt_time[1],gmt_time[0])
+
+  day = local_time.to_i / (3600 * 24) % 3
   prefix = 
   case day
   when 0 then 'Early '
@@ -2335,7 +2340,11 @@ def say(speaker, message, volume, target=nil)
 end
 
 def season
-  three_day_block = Time.now.to_i / (3600 * 24 * 3) % 4
+# Ruby calculates time in seconds by GMT. To synch up with cron, we must lie and say whatever time zone we're in is actually GMT, -then- calculate the seconds.
+gmt_time = Time.now.to_a 
+local_time = Time.utc(gmt_time[5],gmt_time[4],gmt_time[3],gmt_time[2],gmt_time[1],gmt_time[0])
+
+  three_day_block = local_time.to_i / (3600 * 24 * 3) % 4
   case three_day_block
   when 0 then :Winter
   when 1 then :Spring
@@ -2411,14 +2420,15 @@ def search(user)
         hp_msg = 'This area appears to have been picked clean.'
       else
        hp_msg = 'This area appears to have been picked clean.' end
-    when (1..10)
+    when (0..10)
         hp_msg = 'This area appears to have very limited resources.'
-    when (11..20)
+    when (10..20)
         hp_msg = 'This area appears to have limited resources.'
-    when (21..30)
+    when (20..30)
         hp_msg = 'This area appears to have average resources.'
-    when (31..200)
+    when (30..200)
         hp_msg = 'This area appears to have abundant resources.' 
+    else hp_msg = 'You just hit the motherlode.'
     end
   end
 
@@ -2427,7 +2437,6 @@ def search(user)
     msg = search_hidden_items(user)
     msg = 'Searching the area, you find nothing of use.' if msg == nil
     return msg + ' ' + hp_msg end
-
   if found_item.kind_of? String
     return found_item end
 
@@ -2820,8 +2829,6 @@ end
 def tick_delete_rotten_food
 # delete rotten food that is on the ground but not in a built stockpile
   stockpiles = mysql_select_all('stockpiles')
-# mysql_where({'x'=>x, 'y'=>y, 'item_id'=>item_id})
-#  builtpiles = mysql_select('grid',{'building_id'=>3})
   stockpiles.each_hash do
     |stock|
     if stock['item_id'] == '33'
@@ -2831,18 +2838,12 @@ def tick_delete_rotten_food
         |built|
         if stock['x'] == built['x'] and stock['y'] == built['y']
           onground = false
-#          puts "in stockpile/keep"
         end
-      #next
       end
       if onground==true
         mysql_delete('stockpiles', {'x'=>stock['x'],'y'=>stock['y'], 'item_id'=>'33'})
-#		puts "on ground/deleted"
-#      else puts "not on ground"
       end
-#    else puts stock['item_id']
     end
-  #next
   end
   "And so the rotten food on the ground became dirt."
 end
@@ -2921,7 +2922,7 @@ def tick_terrain_transitions
       odds = transition_odds[season] end
     if odds == nil
       odds = transition_odds[:default] end
-    if rand(100) < odds
+    if rand(100) < odds || odds == 100
       terrain_id = db_field(:terrain, new_terrain, :id)
       mysql_update('grid',{'x'=>tile['x'],'y'=>tile['y']},
         {'terrain' => terrain_id})
@@ -3092,10 +3093,7 @@ def validate_user(user_id, password)
   user = User.new(user_id)
   return false unless user.exists?
   db_password = user.password
-  if db_password == password then return true end
-
-  encrypted = encrypt(password)
-  if db_password == encrypted then true
+  if db_password == password then return true 
   else false
   end
 end
