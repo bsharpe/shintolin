@@ -1904,6 +1904,7 @@ end
 def join(user)
   tile = user.tile
   building = tile.building
+  return "You must be at a totem pole to join a settlement." unless building.exists?
   unless building.actions.include? :join
     return 'You must be at a totem pole to join a settlement.' end
   if user.settlement_id == tile.settlement_id
@@ -2421,14 +2422,23 @@ def search(user)
       else
        hp_msg = 'This area appears to have been picked clean.' end
     when (0..10)
-        hp_msg = 'This area appears to have very limited resources.'
+        hp_msg = 'This area appears to have very limited resources,'
     when (10..20)
-        hp_msg = 'This area appears to have limited resources.'
+        hp_msg = 'This area appears to have limited resources,'
     when (20..30)
-        hp_msg = 'This area appears to have average resources.'
+        hp_msg = 'This area appears to have moderate resources,'
     when (30..200)
-        hp_msg = 'This area appears to have abundant resources.' 
-    else hp_msg = 'You just hit the motherlode.'
+        hp_msg = 'This area appears to have abundant resources,' 
+    else hp_msg = 'You just hit the motherlode. This place is rich,'
+    end
+    case tile.hp
+      when 0
+      when 1
+        hp_msg += " and is below average for this time of year."
+      when 2
+        hp_msg += " and is roughly average for this time of year."
+      else
+        hp_msg += " and is above average for this time of year."
     end
   end
 
@@ -2495,7 +2505,7 @@ def settle(user, settlement_name)
   if not $cgi['text'] =~ /^\s?[a-zA-Z0-9 .\-']*\s?$/
     return "Your settlement name must not contain invalid characters." end
   if $cgi['text'] != $cgi['text'].strip
-    return "Your settlement name must not contain invalid characters." end
+    return "Your settlement name must not have spaces at the beginning or end." end
   if mysql_row('settlements',{'name'=>settlement_name}) != nil
     return "There is already a settlement of that name." end
 

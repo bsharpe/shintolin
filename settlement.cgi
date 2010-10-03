@@ -8,9 +8,11 @@ $cgi = CGI.new
 def input_action(action)
   case action
     when 'allow_new_users'
-      # puts $params
+      if not [1,11,23,24,28].include?($settlement.region_id) #God's Glade, Scavenger Isles,
+                                       #Terra Nullis Si, Terra Nullis Wu, Terra Nullis Jiu
       mysql_update('settlements', CGI::escapeHTML($params['id']), 
         {'allow_new_users' => CGI::escapeHTML($params['option'])})
+      end
     when 'description'
       mysql_update('settlements', CGI::escapeHTML($params['id']), 
         {'description' => insert_breaks(CGI::escapeHTML($params['text']))})
@@ -102,7 +104,7 @@ if $user == $leader
   puts <<ENDTEXT
   <td rowspan='3'>
   <div class='beigebox' style='width:25em'>
-  <b>Welcome, Great #{$settlement.title}.</b>
+  <b>Welcome, my #{$settlement.title}.</b>
   <hr>
   <form method='post' action='settlement.cgi'>
     Edit description:
@@ -164,7 +166,7 @@ if $user == $leader
   </form>
 
 ENDTEXT
-
+if not [1,11,23,24,28].include?($settlement.region_id)
 if $settlement.allow_new_users == 0
   puts "New characters are unable to join #{$settlement.name}. " +
     "Open #{$settlement.name} to new players?"
@@ -184,8 +186,10 @@ puts <<ENDTEXT
   </div>
   </td>
 ENDTEXT
+else puts "New characters are unable to join #{$settlement.name}. " +
+       "This location is far too isolated."
 end
-
+end
 puts <<ENDTEXT
 
   </tr>
@@ -220,7 +224,6 @@ puts <<ENDTEXT
     </td>
   </tr>
 ENDTEXT
-#if $params['option'] == nil then $params['option'] = $user.vote.to_s end
 $user = User.new(user_id)
 if $user != nil && $user.settlement == $settlement
   candidate_ids = [0] + $settlement.inhabitant_ids

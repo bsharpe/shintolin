@@ -51,7 +51,7 @@ puts <<ENDTEXT
 </div>
 <br>
 <hr>
-<a class='buttonlink' href='game.php' />Return</a>
+<a class='buttonlink' href='game.cgi' />Return</a>
 
 </body>
 </html>
