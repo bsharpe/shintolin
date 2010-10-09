@@ -108,6 +108,7 @@ puts <<ENDTEXT
 <title>Shintolin - Rankings</title>
 </head>
 <body>
+It is Year #{game_year}, #{month.to_s}
 <hr>
 <a class='buttonlink' href='game.cgi'>Return</a>
 <hr>

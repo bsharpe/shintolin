@@ -1729,9 +1729,10 @@ def harvest(user)
   if (!user_has_item?(user, :hand_axe) && 
       !user_has_item?(user, :stone_axe) &&
       !user_has_item?(user, :stone_sickle))
-    return 'You need an sickle or an axe to harvest crops.' end
+    return 'You need a sickle or an axe to harvest crops.' end
   
   mysql_change_ap(user, -harvest_ap(user))
+  mysql_give_xp(:herbal, 4, user)
   harvest_size = -mysql_bounded_update('grid', 'building_hp',
     {'x'=>user.x, 'y'=>user.y}, -10, 0)
   if mysql_tile(user.x, user.y)['building_hp'] == "0"
@@ -2354,6 +2355,13 @@ local_time = Time.utc(gmt_time[5],gmt_time[4],gmt_time[3],gmt_time[2],gmt_time[1
   end
 end
 
+def game_year
+gmt_time = Time.now.to_a 
+game_time = Time.utc(gmt_time[5],gmt_time[4],gmt_time[3],0,0,0)
+game_time = game_time - Time.utc(2009,3,28,0,0,0)
+game_year = game_time.to_i/(12*60*60*24)
+end
+
 def search(user)
   tile = user.tile
   mysql_change_ap(user, -1)
@@ -2546,23 +2554,29 @@ def sow(user, item_id)
     return "You must have at least ten #{item[:plural]} to plant a field." end
 
   # possibly decrease tile fertility
-  if rand(5) == 1
+  if tile['hp']>"3"
     mysql_bounded_update('grid', 'hp', {'x'=>tile['x'], 'y'=>tile['y']}, -1, 0)
-    if tile['hp'] <= "1" 
-      mysql_update('grid', {'x'=>tile['x'], 'y'=>tile['y']}, {'terrain' => 8})
-      return "This field has been overfarmed; " +
-        "no crops can be grown here until the land recovers."
+  else
+    if rand(5) <= 1
+      mysql_bounded_update('grid', 'hp', {'x'=>tile['x'], 'y'=>tile['y']}, -1, 0)
+      if tile['hp'] <= "1" 
+        mysql_update('grid', {'x'=>tile['x'], 'y'=>tile['y']}, {'terrain' => 8})
+        return "This field has been overfarmed; " +
+          "no crops can be grown here until the land recovers."
+      end
+      message =" The soil seems less fertile than last year."
     end
   end
 
-  mysql_update('grid', {'x'=>tile['x'], 'y'=>tile['y']}, {'terrain'=>91})
+  mysql_update('grid', {'x'=>tile['x'], 'y'=>tile['y']}, {'terrain'=>91, 'building_hp'=>0})
   mysql_change_inv(user, item_id, -10)
   mysql_change_ap(user, -15)
+  mysql_give_xp(:herbal, 5, user)
   mysql_put_message('persistent', 
     "$ACTOR sowed the field with wheat", user)
 
 
-  "You sow the field with #{item[:plural]}."
+  "You sow the field with #{item[:plural]}.#{message}"
 end
 
 def stockpile_has_item?(x, y, item_id)
@@ -2711,14 +2725,14 @@ def tick_grow_fields
   tiles = mysql_select('grid',{'terrain'=>91})
   tiles.each_hash do
     |tile|
-    growth = tile['hp'].to_i * 6
+    growth = (tile['hp'].to_i * 3.5).to_i + 3
     mysql_bounded_update('grid', 'building_hp', 
       {'x'=>tile['x'], 'y'=>tile['y']}, +growth, 200)
   end  
   tiles = mysql_select('grid',{'terrain'=>92})
   tiles.each_hash do
     |tile|
-    growth = tile['hp'].to_i * 6
+    growth = (tile['hp'].to_i * 3.5).to_i + 3
     mysql_bounded_update('grid', 'building_hp', 
       {'x'=>tile['x'], 'y'=>tile['y']}, +growth, 200)
   end  
@@ -2998,7 +3012,7 @@ def use (user, target, item_id)
   when :noobcake
       if target.level > 1
         if user == target
-          "Suddenly the sickly sweet noobcakes done seem quite so " +
+          "Suddenly the sickly sweet noobcakes don't seem quite so " +
 	  "tempting anymore. Try finding a different source of food."
 	else
 	  "You offer a noobcake to #{target.name}. " +
@@ -3153,7 +3167,7 @@ def water(user)
     return "You dont have any water." end
 
   if season == :Spring || season == :Summer
-  growth = tile.hp + 3    
+  growth = ((tile.hp+1)/3).to_i + 4 #5 at 2 or 3 hp, 4 at 1 hp   
   else
     return "You don't need to water at this time of year." 
   end

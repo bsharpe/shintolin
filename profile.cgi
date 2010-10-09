@@ -64,7 +64,7 @@ if $user == profile
   <form method='post' action='profile.cgi'>
     Edit description:
     <br>
-    <textarea rows='5' cols='40' name='text'>#{$user.description}</textarea>
+    <textarea rows='5' cols='40' name='text'>#{$user.description.gsub("<br>", "\r")}</textarea>
     <br><br>
     <input type='hidden' name='action' value='description' />
     <input type='hidden' name='id' value='#{$user.mysql_id}' />   

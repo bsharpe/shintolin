@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `kills` int(10) unsigned NOT NULL default '0',
   `points` int(10) unsigned NOT NULL default '0',
   `lastrevive` date NOT NULL,
-  `description` mediumtext collate utf8_unicode_ci NOT NULL,
+  `description` text collate utf8_unicode_ci NOT NULL,
   `image` varchar(100) collate utf8_unicode_ci NOT NULL default '',
   `deaths` int(11) unsigned NOT NULL default '0',
   `revives` int(11) unsigned NOT NULL default '0',
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `animals` (
   `hp` smallint(4) NOT NULL default '10',
   `region_id` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=18491 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `messages` (
   `time` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`),
   KEY `x` (`x`,`y`,`z`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=300805 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `settlements` (
   `website` varchar(100) NOT NULL,
   `allow_new_users` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=61 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `donated` tinyint(1) default '0',
   PRIMARY KEY  (`id`),
   KEY `username` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2292 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -213,4 +213,4 @@ CREATE TABLE IF NOT EXISTS `writings` (
   `z` tinyint(3) unsigned NOT NULL,
   `message` tinytext collate utf8_unicode_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1601 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
