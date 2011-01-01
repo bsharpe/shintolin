@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 print "Content-type: text/html\r\n\r\n"
 
-load '/var/www/shn/functions.rb'
+load '/var/www/shn/functions-tick.rb'
 puts tick_change_leader
 puts tick_grow_fields
 puts tick_inactive
@@ -12,3 +12,4 @@ puts tick_terrain_transitions
 puts tick_delete_rotten_food
 puts tick_rot_food
 puts tick_damage_buildings
+puts tick_delete_empty_data

@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 require 'cgi'
 require 'cgi/session'
-load 'functions.rb'
+load 'functions.cgi'
 $cgi = CGI.new
 
 def input_action(action)

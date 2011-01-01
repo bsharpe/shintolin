@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 print "Content-type: text/html\r\n\r\n"
 require 'cgi'
-load 'functions.rb'
+load 'functions.cgi'
 $cgi = CGI.new
 $params = $cgi.str_params
 

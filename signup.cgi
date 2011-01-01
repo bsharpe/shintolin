@@ -1,11 +1,11 @@
 #!/usr/bin/ruby
 require 'cgi'
-load 'functions.rb'
+load 'functions.cgi'
 $cgi = CGI.new
 
 $return_page = "index.cgi?settlement=#{$cgi['settlement']}"
 
-if $cgi['username'].length > 24 || $cgi['password)_1'].length > 20
+if $cgi['username'].length > 24 || $cgi['password_1'].length > 20
   puts $cgi.header('Location'=>$return_page + '&msg=too_long')
   exit
 end
@@ -25,6 +25,10 @@ if not $cgi['username'] =~ /^\s?[a-zA-Z0-9 .\-]*\s?$/
   exit
 end
 
+if $cgi['email'].strip.length < 6
+  puts $cgi.header('Location'=>$return_page + '&msg=no_email')
+  exit
+end
 
 if mysql_row('users',{'name'=>$cgi['username']})
   puts $cgi.header('Location'=>$return_page + '&msg=name_taken')

@@ -5,7 +5,7 @@ def mysql_connect(db_name='shintolin')
     # connect to the MySQL server
 
     $mysql = Mysql.real_connect('localhost', 
-                                'root', 
+                                'shinto_user', 
                                 'cashew', 
                                 db_name, 
                                 80)

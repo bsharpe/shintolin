@@ -210,10 +210,10 @@ def html_inventory(user_id, y=nil, infix=' x ', commas=false, inline=false)
   
   encumberance = case weight
     when 0 then 'None'
-    when (1...30) then 'Light'
-    when (30...50) then 'Medium'
-    when (50...60) then 'Heavy'  
-    when (60...Max_Weight) then 'Very Heavy'
+    when (0..30) then 'Light'
+    when (30..50) then 'Medium'
+    when (50..60) then 'Heavy'  
+    when (60..Max_Weight) then 'Very Heavy'
     else 'You are over encumbered and cannot move'
   end 
 

@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 $Data =
   {
   :animal =>
@@ -358,7 +359,7 @@ $Data =
       :build_xp => 10,
       :build_xp_type => :herbal,
       :build_skill => :agriculture,
-      :build_msg => "It's tiring work, but you manage to turn over the soil in the area, leaving several furrows in which to plant crops."
+      :build_msg => "It's tiring work, but you manage to turn over the soil in the area, leaving several furrows in which to plant crops. The newly ploughed soil is rich and fertile."
     },
     
     :dirt_track => 
@@ -2465,7 +2466,7 @@ Image_Folder = 'images/'
 Max_Hunger = 12
 AP_Recovery = 3.0
 Max_AP = 100
-Max_Weight = 71
+Max_Weight = 70
 Max_Items = 1000
 Max_HP = 50
 Max_Level = 17

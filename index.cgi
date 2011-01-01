@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 print "Content-type: text/html\r\n\r\n"
 require 'cgi'
-load 'mysql-connect.rb'
+load 'mysql-connect.cgi'
 load 'functions-mysql.rb'
 mysql_connect
 $cgi = CGI.new
@@ -48,9 +48,8 @@ puts <<ENDTEXT
 <img alt='Cave painting logo' src='images/bw_huts.jpg' style='height:160px;display:inline' />
 </td>
 
-
 <td>
-<i>Now that enough money was donated to buy a new server, Shintolin is no longer taking donations. A big thank you to everyone who gave money, very much appreciated.</i>
+<a href="./screenshot.html"><img src='images/screenthumb.png'><br>[Screenshot]</a>
 </td>
 
 </tr>
@@ -65,11 +64,7 @@ puts <<ENDTEXT
 
 ENDTEXT
 
-query = "SELECT COUNT(*) FROM `users` WHERE `active` = 1"
-result = $mysql.query(query).fetch_hash
-puts "<b>Active Users: #{result['COUNT(*)']}</b>"
 
-puts "<br>"
 
 query = "SELECT COUNT(*) FROM `settlements`"
 result = $mysql.query(query).fetch_hash
@@ -142,7 +137,7 @@ Password: <br>
 <td>
 
 <div class='beigebox' style='width:15em'>\n
-<b>Create New Account:</b>
+<b>Create a Character:</b>
 <hr>
 ENDTEXT
 
@@ -157,6 +152,8 @@ case $cgi['msg']
     puts "\t<b>Passwords do not match</b>\n"
   when 'invalid_name'
 	puts "\t<b>Invalid username</b>\n"
+  when 'no_email'
+    puts "\t<b>Enter a valid email address</b>\n"
 end
 
 if $cgi['msg'] != 'account_made'
@@ -188,6 +185,7 @@ puts <<ENDTEXT
 
 </tr>
 </table>
+<i>Now that enough money was donated to buy a new server, Shintolin is no longer taking donations. A big thank you to everyone who gave money, very much appreciated.</i>
 </div>
 <br>
 

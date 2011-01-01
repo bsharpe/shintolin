@@ -2,7 +2,7 @@
 print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 require 'cgi/session'
-load 'functions.rb'
+load 'functions.cgi'
 $cgi = CGI.new
 
 terrains = db_table(:terrain).values

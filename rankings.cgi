@@ -2,7 +2,7 @@
 print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 require 'cgi/session'
-load 'functions.rb'
+load 'functions.cgi'
 $cgi = CGI.new
 
 user_id = get_validated_id
@@ -104,11 +104,20 @@ end
 puts <<ENDTEXT
 <html>
 <head>
+<link rel="icon" 
+      type="image/png" 
+      href="images/favicon.ico">
 <link rel='stylesheet' type='text/css' href='shintolin.css' />
 <title>Shintolin - Rankings</title>
 </head>
 <body>
-It is Year #{game_year}, #{month.to_s}
+It is Year #{game_year}, #{month.to_s} ----- 
+ENDTEXT
+query = "SELECT COUNT(*) FROM `users` WHERE `active` = 1"
+result = $mysql.query(query).fetch_hash
+puts "Active Users: #{result['COUNT(*)']}"
+puts "<br>"
+puts <<ENDTEXT
 <hr>
 <a class='buttonlink' href='game.cgi'>Return</a>
 <hr>

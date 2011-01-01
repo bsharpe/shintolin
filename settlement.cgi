@@ -2,7 +2,7 @@
 print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 require 'cgi/session'
-load 'functions.rb'
+load 'functions.cgi'
 $cgi = CGI.new
 
 def input_action(action)
@@ -121,7 +121,7 @@ if $user == $leader
   <form method='post' action='settlement.cgi'>
     Edit name:
     <br>
-    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value='#{$settlement.name}'/>
+    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.name}"/>
     <input type='hidden' name='action' value='name' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />   
     <input type='submit' value='Submit' />
@@ -130,7 +130,7 @@ if $user == $leader
   <form method='post' action='settlement.cgi'>
     Update image <i>(Enter image URL):</i>
     <br>
-    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value='#{$settlement.image}'/>
+    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.image}"/>
     <input type='hidden' name='action' value='image' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />   
     <input type='submit' value='Submit' />
@@ -141,7 +141,7 @@ if $user == $leader
   <form method='post' action='settlement.cgi'>
     Edit motto:
     <br>
-    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value='#{$settlement.motto}'/>
+    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.motto}"/>
     <input type='hidden' name='action' value='motto' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />   
     <input type='submit' value='Submit' />
@@ -150,7 +150,7 @@ if $user == $leader
   <form method='post' action='settlement.cgi'>
     Edit Leader Title:
     <br>
-    <input type='text' class='text' name='text' maxlength='20' style='width:300px' value='#{$settlement.title}'/>
+    <input type='text' class='text' name='text' maxlength='20' style='width:300px' value="#{$settlement.title}"/>
     <input type='hidden' name='action' value='title' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />   
     <input type='submit' value='Submit' />
@@ -159,7 +159,7 @@ if $user == $leader
   <form method='post' action='settlement.cgi'>
     Update website <i>(Enter website URL):</i>
     <br>
-    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value='#{$settlement.website}'/>
+    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.website}"/>
     <input type='hidden' name='action' value='website' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />   
     <input type='submit' value='Submit' />
