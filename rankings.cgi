@@ -116,7 +116,6 @@ ENDTEXT
 query = "SELECT COUNT(*) FROM `users` WHERE `active` = 1"
 result = $mysql.query(query).fetch_hash
 puts "Active Users: #{result['COUNT(*)']}"
-puts "<br>"
 puts <<ENDTEXT
 <hr>
 <a class='buttonlink' href='game.cgi'>Return</a>

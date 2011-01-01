@@ -1159,7 +1159,7 @@ def chop_tree(user_id)
     msg += ' The tree cover in this area has been reduced.'
     new_terrain = 
     case tile['terrain']
-    when "21"
+    when "21" then 1
         if tile['hp'] == "0" then 82 else 24 end
     when "22" then 21
     when "23" then 22

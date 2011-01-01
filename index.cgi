@@ -35,7 +35,7 @@ puts <<ENDTEXT
 <table>
 <tr>
 <td>
-<img alt='Cave painting logo' src='images/cave_art.jpg' style='height:160px;display:inline' />
+<img alt='Cave painting logo' src='images/cave_artthumb.png' style='height:160px;display:inline' />
 </td>
 
 <td>
@@ -45,8 +45,9 @@ puts <<ENDTEXT
 </td>
 
 <td>
-<img alt='Cave painting logo' src='images/bw_huts.jpg' style='height:160px;display:inline' />
+<img alt='Cave painting logo' src='images/bw_hutsthumb.png' style='height:160px;display:inline' />
 </td>
+
 
 <td>
 <a href="./screenshot.html"><img src='images/screenthumb.png'><br>[Screenshot]</a>
@@ -63,9 +64,6 @@ puts <<ENDTEXT
 <div class='beigebox' style='width:15em'>
 
 ENDTEXT
-
-
-
 query = "SELECT COUNT(*) FROM `settlements`"
 result = $mysql.query(query).fetch_hash
 puts "<b>Settlements: #{result['COUNT(*)']}</b>"
@@ -191,6 +189,46 @@ puts <<ENDTEXT
 
 <div class='news'>
 <h3>Updates</h3>
+
+<h4>December 5th 2010</h4>
+<ul>
+<li>Players can no longer <b>be given</b> items, nor <b>take</b> items from stockpiles, when they are <b>fully or overencumbered</b>.</li>
+<li>The <b>FAQ</b> has been updated to reflect the fact that <b>players who cheat</b> will be <b>banned</b>.</li>
+</ul>
+
+<h4>14th October 2010</h4>
+<p>Updates by <b>Miko and Buttercup</b>:</p>
+
+<ul>
+<li>New shrine, walls and guardstands </li>
+<li>Mammoths! And new items made from mammoth loot!</li>
+<li>Redid farming</li>
+<li>There is now a maximum to how many animals can spawn</li>
+<li>UI tweaks.</li>
+<li>Can no longer spawn on island settlements.</li>
+<li>Various bugs fixed.</li>
+<li>Other stuff... Everything from <a href="http://shintolin.forumcircle.com/viewtopic.php?t=738&postdays=0&postorder=asc&start=0">this thread</a> that wasn't already implemented got put in.</li>
+</ul>
+
+<h4>13th August 2010</h4>
+<p>Fixed a <b>stockpile bug</b> involving taking extra items.</p>
+
+<h4>15th July 2010</h4>
+<p>Updates by <b>Miko</b>:</p>
+
+<ul>
+<li>Damaging buildings was made easier.</li>
+<li>A bug that allowed dazed players to revive others has been fixed.</li>
+</ul>
+
+<h4>7th March</h4>
+<p>Updates by <b>Buttercup</b>:</p>
+
+<ul>
+<li>Increased harvests and improved watering</li>
+<li>Various bugs fixed</li>
+</ul>
+
 <h4>23rd January</h4>
 <p><b>Damaging buildings</b> was made more difficult.</p>
 
