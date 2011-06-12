@@ -185,8 +185,8 @@ puts <<ENDTEXT
 </table>
 <i>Now that enough money was donated to buy a new server, Shintolin is no longer taking donations. A big thank you to everyone who gave money, very much appreciated.</i>
 </div>
+<font size = '-1' color='e8e8d0'>Server Time: #{Time.now}</font>
 <br>
-
 <div class='news'>
 <h3>Updates</h3>
 

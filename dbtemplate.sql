@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `website` varchar(100) collate utf8_unicode_ci NOT NULL,
   `joined` date NOT NULL,
   `kills` int(10) unsigned NOT NULL default '0',
-  `points` int(10) unsigned NOT NULL default '0',
+  `temp_sett_id` int(10) unsigned NOT NULL default '0',
   `lastrevive` date NOT NULL,
   `description` text collate utf8_unicode_ci NOT NULL,
   `image` varchar(100) collate utf8_unicode_ci NOT NULL default '',
@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `frags` int(10) unsigned NOT NULL default '1',
   `settlement_id` int(32) NOT NULL,
   `vote` int(11) NOT NULL default '0',
+  `when_sett_joined` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -136,7 +137,7 @@ CREATE TABLE IF NOT EXISTS `settlements` (
   `y` smallint(6) NOT NULL,
   `founded` date NOT NULL,
   `type` enum('village','town','city','metropolis') NOT NULL default 'village',
-  `description` mediumtext NOT NULL,
+  `description` text NOT NULL,
   `motto` tinytext NOT NULL,
   `image` varchar(100) NOT NULL default '',
   `title` varchar(32) NOT NULL default 'Leader',

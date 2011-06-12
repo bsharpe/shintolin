@@ -79,9 +79,9 @@ puts <<ENDTEXT
        <b>Chat:</b>
         <div class="chatbox">
         #{html_chat_box(30)}
-        <center>
+        <center><br>
          <a class="buttonlink" href="chat.cgi">Chat page</a>
-        </center>
+        </center><br>
       </div> 
        #{html_action_form('Chat',false,nil,'game.cgi') {
     html_text_box(200)}}

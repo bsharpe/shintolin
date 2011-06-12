@@ -58,7 +58,13 @@ mysql_insert('users',
 id = mysql_row('users',{'name'=>username})['id']
 mysql_insert('accounts',
   {'id'=>id,'email'=>$cgi['email'],'joined'=>:Today,
-   'lastrevive'=>:Today, 'settlement_id'=>settlement_id})
+   'lastrevive'=>:Today, 'settlement_id'=> 0, 
+   'temp_sett_id'=>settlement_id, 'when_sett_joined' => :Now})
+
+if settlement_id != 0
+  mysql_put_message('action',
+  "$ACTOR have arrived at a settlement, however you must survive for a day before you are entitled to its privileges.", id, id)
+end
 
 mysql_change_inv(id, :noobcake, 9)
 puts $cgi.header('Location'=>

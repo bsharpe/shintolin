@@ -141,13 +141,13 @@ def html_forms(user)
   end  
 
   if actions.include? :write
-    html += html_action_form('Write') {
+    html += html_action_form('Write', false, '3 ap') {
       html_text_box(200) + ' on the building'}
      
   end
   
   if actions.include? :sow
-    html += html_action_form('Sow') {
+    html += html_action_form('Sow', false, '15 ap') {
       html_select_item(:plural) {
         |item| item[:plantable] == true}}
   end
@@ -161,16 +161,16 @@ def html_forms(user)
   html += html_action_form('Add Fuel', :inline) if actions.include? :add_fuel
   html += html_action_form('Fill', :inline) if actions.include? :fill
   html += html_action_form('Water', :inline) if actions.include? :water
-  html += html_action_form('Dig', :inline, '2 ap') if actions.include? :dig
+  html += html_action_form('Dig', :inline, '2 ap') if actions.include? :dig and user.z == 0
   if actions.include? :quarry
     html += html_action_form('Quarry', :inline, '4 ap') end
   if actions.include? :join
     if user.settlement_id == tile.settlement_id
-      html += html_action_form('Leave Settlement', :inline)
     else
-      html += html_action_form('Join Settlement', :inline) end
+      html += html_action_form('Join Settlement', :inline, '25 ap') end
   end
   html += msg_no_ap(user_id) if actions.include? :no_ap
+  html += msg_no_ip() if actions.include? :no_ip
   html += html_action_form('Refresh',:inline)
   html
 end
@@ -230,9 +230,9 @@ def html_location_box(user)
   tile = Tile.new(user.x, user.y)
   html = '<div class="locationbox">'
   if tile.settlement
-    html += tile.settlement.link + ', ' end
+    html += tile.settlement.link end
   begin
-    html += db_field(:region, tile.region_id, :name)
+    html += "<br>" + db_field(:region, tile.region_id, :name)
   rescue Exception => e
     html += 'The Wilderness'
   end
@@ -304,17 +304,28 @@ end
 def html_player_data(user_id)
   user = User.new(user_id)
   player = mysql_user(user_id)
-  html = 'You are ' + 
-  html_userlink(user_id,player['name'])  + '.' + 
+  html = '<center>You are ' + 
+  html_userlink(user_id,player['name'])
+  settlement = user.settlement
+  if user.settlement.exists?
+    if user == settlement.leader 
+      html = html + ", #{settlement.title} of "
+    else html = html + ", pledged to "
+    end
+  html = html + "<a href=\"settlement.cgi?id=#{settlement.mysql_id}\" " +
+  "class=\"ally\" " +
+  ">#{settlement.name}</a>"
+  end
+  html = html +  ".<br>" +
   " HP: <b>#{player['hp']}/#{player['maxhp']}</b>" + 
   " AP: <b>#{player['ap'].to_i.ceil}/#{Max_AP}</b>" + 
   " <span style=\"font-size:80%\">(#{ap_recovery(user_id)} AP/hour)</span>" + 
   " Hunger: <b>#{player['hunger']}/#{Max_Hunger}</b>" + 
-  "\n<br>\nLevel: <b>#{user.level}</b>" + 
-  "&nbsp;&nbsp;<b>XP:</b> Wanderer: <b>#{player['wander_xp']}</b>" +
-  " Herbalist: <b>#{player['herbal_xp']}</b>" +
-  " Crafter: <b>#{player['craft_xp']}</b>" +
-  " Warrior: <b>#{player['warrior_xp']}</b>"
+  " Level: <b>#{user.level}</b><br>" +
+  "<b>XP:</b> #{db_field(:skills_renamed,:name,:wanderer).to_s.capitalize}: <b>#{player['wander_xp']}</b>" +
+  " #{db_field(:skills_renamed,:name,:herbalist).to_s.capitalize}: <b>#{player['herbal_xp']}</b>" +
+  " #{db_field(:skills_renamed,:name,:crafter).to_s.capitalize}: <b>#{player['craft_xp']}</b>" +
+  " #{db_field(:skills_renamed,:name,:warrior).to_s.capitalize}: <b>#{player['warrior_xp']}</b></center>"
 end
 
 def html_select(coll, selected=nil)
@@ -474,8 +485,8 @@ def html_skills_list(type, user_id=0)
     user = User.new(user_id)
     level = user.level(type)
     xp_field = xp_field(type)
-    html += "\n<h2>Level #{level} #{type.to_s.capitalize}</h2>" +
-    "\nYou have #{user.mysql[xp_field]} #{type} experience points.<br>\n"
+    html += "\n<h2>Level #{level} #{db_field(:skills_renamed,:name,type).to_s.capitalize}</h2>" +
+    "\nYou have #{user.mysql[xp_field]} #{db_field(:skills_renamed,:name,type)} experience points.<br>\n"
   end
   if user.level < Max_Level then form = 'buy'
   else form = 'sell'

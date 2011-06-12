@@ -346,8 +346,32 @@ class Settlement
 
   def image
     if mysql['image'] != "" then http(mysql['image'])
-    else "images/p_huts.jpg" end
+    else "images/p_huts_small.jpg" end
   end
+
+  def pending_ids
+    query = "SELECT `accounts`.`id` " +
+      "FROM `users` , `accounts` " +
+      "WHERE `users`.`id` = `accounts`.`id` " +
+      "AND `accounts`.`temp_sett_id` = '#{mysql_id}' " +
+      "AND `users`.`active` = '1'"
+    result = $mysql.query(query)
+    pendings = []
+    result.each_hash {|row| pendings << row['id']}
+    pendings
+  end
+
+  def pendings
+    pending_ids.map {|id| User.new(id)}
+  end
+
+  def pending_links
+    pendings.map {|user| user.link}
+  end
+
+#  def pending_names
+#    pendings.map {|user| user.name}
+#  end
 
   def inhabitant_ids
     query = "SELECT `accounts`.`id` " +
@@ -554,7 +578,7 @@ class User
   mysql_int_fields 'mysql', 'x', 'y', 'z', 'hp', 'maxhp', 'hunger',
     'wander_xp', 'herbal_xp', 'combat_xp', 'craft_xp', 'active'
 
-  mysql_int_fields 'mysql_2', 'settlement_id', 'points', 
+  mysql_int_fields 'mysql_2', 'settlement_id', 'temp_sett_id',
     'frags', 'kills', 'deaths', 'revives', 'vote'
 
   attr_reader :mysql_id, :mysql_table
@@ -755,7 +779,7 @@ def attack(attacker, target, item_id)
   if attacker.mysql == nil || target.mysql == nil
     return '' end
   if attacker == target
-	return "You stop yourself before inflicting any self-injury. Realizing that this is a cry for help, you turn to your caveman bretheren for their sympathetic counsel." end
+	return "You stop yourself before inflicting any self-injury. Realizing that this is a cry for help, you turn to your bretheren for their sympathetic counsel." end
   if target.hp == 0
     return "You attack #{target.name}, but they're already knocked out." end
   if attacker.hp == 0
@@ -804,9 +828,8 @@ def attack(attacker, target, item_id)
         msg += ", knocking $TARGET out."
         msg += ' ' + transfer_frags(attacker, target)
         mysql_put_message('visible_all',
-         "$ACTOR dazed $TARGET with #{a_an(db_field(:item, item_id, :name))}",
+         "$ACTOR dazed $TARGET with #{a_an(db_field(:item, item_id, :name))}.",
           attacker, target)
-
     when "Animal"
         target.loot.each do 
 	  |item, amt| mysql_change_inv(attacker, item, +amt) end      
@@ -1009,7 +1032,7 @@ def buy_skill(user_id, skill_id)
 
   user = mysql_user(user_id)
   if user[xp_field].to_i < xp_cost
-    "You do not have sufficient #{skill[:type]} xp to buy that skill."
+    "You do not have sufficient #{db_field(:skills_renamed,:name,skill[:type])} xp to buy that skill."
   else
     mysql_bounded_update('users', xp_field, user_id, -xp_cost, 0)
     mysql_insert('skills',{'user_id'=>user_id, 'skill_id'=>skill_id})
@@ -1054,7 +1077,7 @@ def can_build? (user, building)
   end
 
   if building[:special] == :terrain
-    if tile.terrain != 1 && tile.terrain != 4
+    if tile.terrain != 1 && tile.terrain != 4 && tile.terrain != 24
       return false, "You cannot build #{a_an(building[:name])} here." end
   elsif building[:size] == :large
     if db_field(:terrain, tile.terrain, :build_large?) != true
@@ -1128,6 +1151,7 @@ def can_settle?(tile)
 end
 
 def chat(user, text)
+  if text == '' then return "You can't think of anything to say." end
   mysql_put_message('chat',CGI::escapeHTML(text),user)
   "You shout <i>\"#{CGI::escapeHTML(text)}\"</i> really loudly."
  end
@@ -1159,7 +1183,7 @@ def chop_tree(user_id)
     msg += ' The tree cover in this area has been reduced.'
     new_terrain = 
     case tile['terrain']
-    when "21" then 1
+    when "21"
         if tile['hp'] == "0" then 82 else 24 end
     when "22" then 21
     when "23" then 22
@@ -1279,6 +1303,11 @@ def deal_damage(dmg, target)
     case target.class.name
     when "User"
         mysql_update('users', target.mysql_id, {'hp'=>0})
+        if target.temp_sett_id != 0
+          mysql_update('accounts', target.mysql_id, {'temp_sett_id' =>0})
+          mysql_put_message('action','$ACTOR, dazed before the day ended, have lost your pending settlement residency.',
+          target,target)
+        end
     when "Animal"
         mysql_delete('animals', target.mysql_id)
     when "Building"
@@ -1537,11 +1566,13 @@ def destroy_settlement(settlement)
     'type'=>'persistent','message'=>
     "The settlement of #{settlement.name} was destroyed!"})
   mysql_update('accounts',{'settlement_id'=>settlement.mysql_id},{'settlement_id'=>0})
+  mysql_update('accounts',{'temp_sett_id'=>settlement.mysql_id},{'temp_sett_id'=>0})
   mysql_delete('settlements',settlement.mysql_id)  
 end
 
 def dig(user)
   tile = user.tile
+  return "You would rather not dig a hole in the floor." unless user.z == 0
   return 'You cannot dig here.' unless tile.actions.include?(:dig)
   unless user_has_item?(user, :digging_stick)
     return 'You need a digging stick to dig here.' end
@@ -1587,6 +1618,7 @@ def dir_to_offset(dir)
 end
 
 def drop(user,item_id,amount)
+  if item_id == nil then return "You drop nothing." end
   amt_dropped = -mysql_change_inv(user,item_id,-amount.to_i)
   mysql_change_inv(user.tile, item_id, +amt_dropped)
   "You drop #{describe_items(amt_dropped,item_id,:long)}."
@@ -1636,6 +1668,7 @@ end
 
 def get_validated_id
   if $cgi.include? 'username'
+    return false if $cgi['username'].length == 0
     user_id = mysql_user_id($cgi['username'])
     return false if user_id == nil
     return false unless validate_user(user_id, encrypt($cgi['password']))
@@ -1667,6 +1700,8 @@ def give(giver, receiver, amount, item_id)
 
   if receiver.kind_of?(User) then if weight(receiver) >= Max_Weight
     return "#{receiver.name} already has as much as they can carry." end end
+
+  if item_id == nil then return "You give nothing to #{receiver.name}." end
 
   amt_given = -mysql_change_inv(giver, item_id, -amount.to_i)
 	
@@ -1911,19 +1946,48 @@ def join(user)
     return 'You must be at a totem pole to join a settlement.' end
   if user.settlement_id == tile.settlement_id
     return "You are already a resident of #{tile.settlement.name}." end
-  mysql_update('accounts', user.mysql_id, 
-    {'settlement_id'=>tile.settlement_id})
-  msg = "You pledge allegiance to #{tile.settlement.name}."
+  if user.temp_sett_id == tile.settlement_id
+    return "You are already on your way to becoming a resident of #{tile.settlement.name}." end
+  if user.hp <= 0
+    return "You cannot join a settlement while you are dazed." end
+  if user.settlement_id != 0 or user.temp_sett_id != 0
+    return "You must relinquish your ties to other settlements before you can join." end
+  if tile.settlement.population == 0
+    mysql_update('accounts', user.mysql_id, 
+      {'settlement_id'=>tile.settlement_id})
+    msg = "You pledge allegiance to #{tile.settlement.name}. As its only resident, you declare yourself its leader." 
+    mysql_update('accounts', user.mysql_id, {'vote'=>user.mysql_id})
+    mysql_update('settlements',tile.settlement_id, {'leader_id'=>user.mysql_id})
+  else
+    mysql_update('accounts', user.mysql_id, 
+      {'temp_sett_id'=>tile.settlement_id})
+    msg = "You pledge allegiance to #{tile.settlement.name}. You must survive the day to be entitled to its privileges."
+  end
+  mysql_update('accounts',user.mysql_id,
+    {'when_sett_joined'=>:Now})
+  mysql_change_ap(user.mysql_id, -25)
+  mysql_put_message('persistent',"$ACTOR made a pledge to join this settlement.",user)
   if user.settlement_id != 0
     msg += " You are no longer a resident of #{user.settlement.name}." end
   msg
 end
 
 def leave(user)
-  if user.settlement_id == 0
+  if user.settlement_id == 0 && user.temp_sett_id == 0
     return "You are not currently a member of any settlement." end
+  if user.settlement_id != 0
+    if user.mysql_id == user.settlement.leader_id # Non-residents don't get to be leader :P
+      mysql_update('settlements', user.settlement_id, 
+        {'leader_id'=>0})
+    end
+  end
   mysql_update('accounts', user.mysql_id, 
     {'settlement_id'=>0})
+if user.temp_sett_id != 0
+  mysql_update('accounts', user.mysql_id, 
+    {'temp_sett_id'=>0})
+  return "You give up your attempt to gain settlement residency."
+end
   "You are no longer a resident of #{user.settlement.name}."
 end
 
@@ -1932,7 +1996,7 @@ def logout(user)
   $cookie.expires = Time.now 
 
   # redirect to homepage
-  $header['Location']= 'index.cgi'
+  $header['Location']= './index.cgi'
 end
 
 def minutes_to_hour
@@ -2070,8 +2134,10 @@ def msg_no_ap(user_id)
 end
 
 def msg_no_ip
-  'You have used up your IP hits for the day. Return tomorrow, " +
-  "or donate to lift the IP limit.' 
+  min = Time.now.min; if min < 10 then min = "0" + min.to_s end
+  hour = Time.now.hour; if hour < 10 then hour = "0" + hour.to_s end
+  "You have used up your IP hits for the day. IPs reset around " +
+  "midnight server time. It is currently #{hour}:#{min}." 
 end
 
 def ocarina(user, target, item_id)
@@ -2260,6 +2326,15 @@ def revive (healer_id, target_id, item_id)
       "You can't revive others while you're dazed."
   end
 
+  tile = Tile.new(healer.x, healer.y)
+  if tile.settlement != healer.settlement && tile.settlement != nil
+    return 'You are not a member of ' + tile.settlement.name + ', and cannot perform revives within its boundries.' 
+  end
+
+  if target.hunger == 0
+    return "#{target.name} is starved. They need a little food before herbal remedies will do any good."
+  end
+
   hp_healed = mysql_bounded_update('users', 'hp',
     target.mysql_id, +item_stat(item_id, :effect, healer), target.maxhp)
   xp = (hp_healed.to_f / 2).ceil + 10
@@ -2312,6 +2387,8 @@ def say(speaker, message, volume, target=nil)
   if target.exists? && !same_location?(speaker, target)
     return "#{target.name} is not in the vicinity."
   end
+
+  if message == '' then return "You can't think of anything to say." end
 
   message = CGI::escapeHTML(message)
   mysql_change_ap(speaker, -0.2)
@@ -2622,6 +2699,8 @@ def take(user_id, amount, item_id)
     return 'There is nothing you can take here.'
   end
 
+  if item_id == nil then return "You take nothing." end
+
   if user.hp == 0
 	return "You can't take items while dazed."
   end 
@@ -2752,8 +2831,10 @@ def user_actions(user)
     forms << :use
     forms << :drop
     forms << :speak
-  else
+  elsif user.ap < 1
     forms << :no_ap
+  else
+    forms << :no_ip
   end
   forms
 end
@@ -2840,7 +2921,7 @@ def values_freqs_hash(mysql_resource, field)
 end
 
 def vote(voter, candidate)
-  if voter.settlement == nil
+  if voter.settlement == nil && voter.temp_sett_id == 0
     return "You are not currently a member of any settlement." end
 
   if candidate.mysql_id == 0
@@ -2849,14 +2930,17 @@ def vote(voter, candidate)
   return "As none of the candidates suit your fancy, you choose to support no one."
   end
 
-  unless (voter.settlement == candidate.settlement)
+  if candidate.settlement == nil
+    return "You cannot support that person." end
+
+  unless (voter.settlement == candidate.settlement || voter.temp_sett_id == candidate.settlement.mysql_id)
     return "You cannot support that person." end
 
   settlement = voter.settlement
   mysql_update('accounts',voter.mysql_id,
     {'vote'=>candidate.mysql_id})
-  "You pledge your support for <b>#{candidate.name}</b> as #{settlement.title} " +
-    "of #{settlement.name}."
+  "You pledge your support for <b>#{candidate.name}</b> as #{candidate.settlement.title} " +
+    "of #{candidate.settlement.name}."
 end
 
 def water(user)

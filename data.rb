@@ -1764,7 +1764,17 @@ $Data =
       :prereq => :unarmed3
     }, 
   },
-  
+
+  :skills_renamed => # Change the names "in quotes" to affect what the player sees
+  {
+    :name => 
+    {:wanderer => "wanderer",
+      :warrior   => "warrior",
+      :crafter   => "crafter",
+      :herbalist => "herbalist"
+    },
+  },   
+
   :terrain =>
   {
     :grassland =>

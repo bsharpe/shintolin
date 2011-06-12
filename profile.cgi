@@ -33,6 +33,9 @@ profile = User.new($params['id'])
 puts <<ENDTEXT
 <html>
 <head>
+<link rel="icon" 
+      type="image/png" 
+      href="images/favicon.ico">
 <title>Shintolin - #{name}</title>
 <link rel='stylesheet' type='text/css' href='shintolin.css' />
 </head>
@@ -64,7 +67,7 @@ if $user == profile
   <form method='post' action='profile.cgi'>
     Edit description:
     <br>
-    <textarea rows='5' cols='40' name='text'>#{$user.description.gsub("<br>", "\r")}</textarea>
+    <textarea rows='7' cols='36' name='text'>#{$user.description.gsub("<br>", "\r")}</textarea>
     <br><br>
     <input type='hidden' name='action' value='description' />
     <input type='hidden' name='id' value='#{$user.mysql_id}' />   
@@ -89,25 +92,29 @@ end
 
 puts <<ENDTEXT
   </tr>
-
   <tr>
     <td>
     <div class='beigebox'>
     <table>
 ENDTEXT
-
 puts "<tr><td><b><i>Donated!</i></b></td></tr>" if profile.donated?
+puts "<tr><td><b>"
 
-puts <<ENDTEXT
-      <tr>
-        <td><b>Settlement: </td>
-	<td>#{profile.settlement.link}
-ENDTEXT
-
-if $user == profile && $user.settlement_id != 0
-  puts html_action_form('Leave Settlement', :inline)
+if $user == profile && profile.temp_sett_id != 0
+puts "Settlement (Pending):</td><td>"
+else
+puts "Settlement:</td><td>#{profile.settlement.link}"
 end
 
+if profile.temp_sett_id != 0
+  if $user == profile 
+    pending = mysql_select('settlements',{'id' => $user.temp_sett_id}).fetch_hash
+    puts "<a href=\"settlement.cgi?id=#{$user.temp_sett_id}\" " +
+      "class=\"neutral\" " +
+      ">#{pending['name']}</a>"
+  else puts "(Pending)"
+  end
+end
 puts <<ENDTEXT
 	</td>
       </tr>
@@ -144,7 +151,7 @@ puts <<ENDTEXT
     </td>
 
     <td>
-    <img style='width:300px' src='#{profile.image}' alt='Portrait of #{profile.name}'/>
+    <img style='max-width:300px; max-height:300px' src='#{profile.image}' alt='Portrait of #{profile.name}'/>
     </td>
   </tr>
 </table>

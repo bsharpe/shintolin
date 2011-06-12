@@ -47,6 +47,18 @@ def tick_change_leader
   "Leaders changed!"
 end
 
+def tick_settlement_membership
+  result = mysql_select('accounts',{'settlement_id' => 0},{'temp_sett_id' => 0})
+  result.each_hash do
+    |player|
+    if Time.now - 86400 + 3600 <= Time.str_to_time(player['when_sett_joined']) then next end #23 hours
+    mysql_update('accounts',player['id'],{'settlement_id' => player['temp_sett_id']})
+    mysql_update('accounts',player['id'],{'temp_sett_id' => 0})
+    mysql_put_message('action',"Having made it through the day, $ACTOR are now entitled to the benefits of settlement membership.", player['id'], player['id'])
+  end
+  "Settlement membership updated!"
+end
+
 def tick_damage_buildings
   regions = db_table(:region).values
   regions.each do
@@ -149,6 +161,14 @@ def tick_hunger
       mysql_put_message('action',
        "$ACTOR, weakened by lack of food, lost <b>#{-hp_dmg} hp</b>",
         player['id'], player['id'])
+      if player['hp'].to_i + hp_dmg <= 0 # dazed from hunger
+        temp = mysql_select('accounts',{'id'=>player['id']}).fetch_hash
+        if temp['temp_sett_id'].to_i != 0
+          mysql_update('accounts', player['id'], {'temp_sett_id' =>0})
+          mysql_put_message('action','$ACTOR, dazed by hunger, have lost your pending settlement residency.',
+          player['id'].to_i,player['id'].to_i)
+        end
+      end
     end
     if maxhp_dmg != 0
       mysql_put_message('action',
