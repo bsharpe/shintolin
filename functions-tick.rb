@@ -54,7 +54,7 @@ def tick_settlement_membership
     if Time.now - 86400 + 3600 <= Time.str_to_time(player['when_sett_joined']) then next end #23 hours
     mysql_update('accounts',player['id'],{'settlement_id' => player['temp_sett_id']})
     mysql_update('accounts',player['id'],{'temp_sett_id' => 0})
-    mysql_put_message('action',"Having made it through the day, $ACTOR are now entitled to the benefits of settlement membership.", player['id'], player['id'])
+    mysql_put_message('action',"$ACTOR, having made it through the day, are now entitled to the benefits of settlement membership.", player['id'], player['id'])
   end
   "Settlement membership updated!"
 end

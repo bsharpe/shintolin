@@ -1,11 +1,16 @@
 #!/usr/bin/ruby
-print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 require 'cgi/session'
 load 'functions.cgi'
 $cgi = CGI.new
 
 UserID = get_validated_id
+if UserID != false
+  print "Content-type: text/html\r\n\r\n"
+else
+  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
+  exit
+end
 $user = User.new(UserID)
 
 def input_action(action)

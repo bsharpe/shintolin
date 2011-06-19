@@ -43,7 +43,7 @@ else
   exit
 end
 
-$ip_hits = ip_hit(UserID)
+$ip_hits = ip_hit(UserID,0)
 $params = $cgi.str_params
 
 if $params['target'] != nil 
@@ -74,6 +74,7 @@ if Action_Outcome != ''
   mysql_update('users', $user.mysql_id, {'lastaction'=>:Now})
 end
 
+$ip_hits = ip_hit(UserID)
 puts $cgi.header($header)
 $user = User.new(UserID)
 player = mysql_user(UserID)

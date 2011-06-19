@@ -703,7 +703,7 @@ def add_fuel(user_id)
   mysql_change_inv(user_id, 1, -1)
   mysql_update('grid',{'x'=>tile['x'],'y'=>tile['y']},
     {'building_hp'=>(tile['building_hp'].to_i + 1)})
-  mysql_put_message('action', "$ACTOR threw a stick on the fire", user_id)
+#  mysql_put_message('action', "$ACTOR threw a stick on the fire", user_id) # waste of DB space
   mysql_give_xp(:wander, 1, user_id)
   mysql_change_ap(user_id, -1)
   "You throw a stick on the fire."
@@ -856,7 +856,7 @@ def attack(attacker, target, item_id)
   when "User"
       mysql_put_message('action', msg, attacker.mysql_id, target.mysql_id)
   when "Animal"
-      mysql_put_message('action', msg, attacker.mysql_id)
+#      mysql_put_message('action', msg, attacker.mysql_id) # waste of DB space
   when "Building"
       mysql_put_message('persistent', 
         "$ACTOR attacked #{target.a}", attacker.mysql_id)
@@ -1058,7 +1058,7 @@ def can_attack_totem?(totem)
 end
 
 def can_act? (user)
-  user.ap >= 1 && ($ip_hits == nil || $ip_hits <= 330)
+  user.ap >= 1 && ($ip_hits == nil || $ip_hits <= 3300)
 end
 
 def can_build? (user, building)
@@ -1873,16 +1873,16 @@ def insert_names(str, actor_id, target_id, user_id=0, link=true)
   str
 end
 
-def ip_hit(user_id=0)
+def ip_hit(user_id=0, hit=10)
   return 0 if user_id != 0 && User.new(user_id).donated?
   ip = $cgi.remote_addr
   ip_row = mysql_row('ips',{'ip'=>ip})
   if ip_row == nil
-    mysql_insert('ips',{'ip'=>ip,'hits'=>1,'user_id'=>user_id})
-    $ip_hits = 1
+    mysql_insert('ips',{'ip'=>ip,'hits'=>hit,'user_id'=>user_id})
+    $ip_hits = hit
   else
-    mysql_update('ips',{'ip'=>ip},{'hits'=>(ip_row['hits'].to_i + 1)})
-    $ip_hits = ip_row['hits'].to_i + 1
+    mysql_update('ips',{'ip'=>ip},{'hits'=>(ip_row['hits'].to_i + hit)})
+    $ip_hits = ip_row['hits'].to_i + hit
   end
   $ip_hits
 end
@@ -1994,6 +1994,9 @@ end
 def logout(user)
   # delete cookies
   $cookie.expires = Time.now 
+
+  # undo ip hit cost
+  ip_hit(user.mysql_id, -10)  
 
   # redirect to homepage
   $header['Location']= './index.cgi'
@@ -2110,13 +2113,13 @@ end
 def msg_tired(player)
   if player['ap'].to_f < 1
     "Totally exhausted, you collapse where you stand."
-  elsif $ip_hits > 330
+  elsif $ip_hits > 3300
     "<span class='ipwarning'>" +
-    "You have exceeded your IP limit for the day (330 hits). " +
+    "You have exceeded your IP limit for the day. " +
     "Please wait until tomorrow to play again.</span>"
-  elsif $ip_hits > 315 && $ip_hits < 331
-    "<br><br><span class='ipwarning'>" +
-    "You are nearing your IP limit for the day (330 hits). " +
+  elsif $ip_hits > 3150 && $ip_hits < 3301
+    "<br><span class='ipwarning'>" +
+    "You are nearing your IP limit for the day. " +
     "You might want to finish up what you are doing " +
     "or get somewhere safe.</span>"
   else
@@ -2599,11 +2602,12 @@ def settle(user, settlement_name)
     return "There is already a settlement of that name." end
 
   mysql_change_inv(user, :log, -1)
+  mysql_change_ap(user, -30)
   mysql_update('grid',tile.mysql_id,{'building_id'=>4,'building_hp'=>30}) # 4 -> totem pole
   mysql_insert('settlements',
-    {'name'=>settlement_name,'x'=>tile.x,'y'=>tile.y,'founded'=>:Today})
+    {'name'=>settlement_name,'x'=>tile.x,'y'=>tile.y,'founded'=>:Today,'leader_id'=>user.mysql_id})
   mysql_update('accounts', user.mysql_id, 
-    {'settlement_id'=>tile.settlement_id})
+    {'settlement_id'=>tile.settlement_id, 'vote'=>user.mysql_id, 'when_sett_joined'=> :Now})
   mysql_put_message('persistent', 
     "$ACTOR established the settlement of #{settlement_name}", user)
 

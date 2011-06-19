@@ -1,5 +1,4 @@
 #!/usr/bin/ruby
-print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 load 'functions.cgi'
 $cgi = CGI.new
@@ -14,7 +13,7 @@ end
 
 UserID = get_validated_id
 if UserID != false
-  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  print "Content-type: text/html\r\n\r\n"
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit

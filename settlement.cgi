@@ -173,7 +173,7 @@ if $user == $leader
   <form method='post' action='settlement.cgi'>
     Edit name:
     <br>
-    <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.name}"/>
+    <input type='text' class='text' name='text' maxlength='32' style='width:300px' value="#{$settlement.name}"/>
     <input type='hidden' name='action' value='name' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />   
     <input type='submit' value='Submit' />

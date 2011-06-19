@@ -1,5 +1,4 @@
 #!/usr/bin/ruby
-print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 require 'cgi/session'
 load 'functions.cgi'
@@ -8,10 +7,9 @@ $cgi = CGI.new
 profile = User.new($cgi['id'])
 
 user_id = get_validated_id
-
 if user_id != false
   $user = User.new(user_id)
-  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  print "Content-type: text/html\r\n\r\n"
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit
@@ -22,6 +20,9 @@ can_settle, settle_msg = can_settle?($user)
 puts <<ENDTEXT
 <html>
 <head>
+<link rel="icon" 
+      type="image/png" 
+      href="images/favicon.ico">
 <title>Shintolin - Settle</title>
 <link rel='stylesheet' type='text/css' href='shintolin.css' />
 </head>

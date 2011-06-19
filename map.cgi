@@ -1,12 +1,18 @@
 #!/usr/bin/ruby
-print "Content-type: text/html\r\n\r\n"
 require 'cgi'
 require 'cgi/session'
 load 'functions.cgi'
 $cgi = CGI.new
 
 user_id = get_validated_id
-$user = User.new(user_id) if user_id != false
+if user_id != false
+  $user = User.new(user_id)
+  print "Content-type: text/html\r\n\r\n"
+else
+  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
+  exit
+end
+$user = User.new(user_id)
 
 Map = 
 if has_skill?($user, :tracking)

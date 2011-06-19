@@ -39,7 +39,8 @@ def mysql_change_ap(user, change)
   if change > 0
     mysql_bounded_update('users','ap',user_id,change,Max_AP)
   else
-    mysql_bounded_update('users','ap',user_id,change,-Max_AP)  
+    mysql_bounded_update('users','ap',user_id,change,-Max_AP)
+    ip_hit(user_id, -(change*10)-10)  
   end
 end
 
