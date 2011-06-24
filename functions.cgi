@@ -2115,7 +2115,7 @@ def msg_tired(player)
     "Totally exhausted, you collapse where you stand."
   elsif $ip_hits > 3300
     "<span class='ipwarning'>" +
-    "You have exceeded your IP limit for the day. " +
+    "You have exceeded your IP limit for the day (enough for three characters). " +
     "Please wait until tomorrow to play again.</span>"
   elsif $ip_hits > 3150 && $ip_hits < 3301
     "<br><span class='ipwarning'>" +
