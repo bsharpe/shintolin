@@ -49,6 +49,12 @@ def input_action(action)
       mysql_update('settlements', CGI::escapeHTML($params['id']), 
         {'website' => CGI::escapeHTML($params['text'])})
     when 'evict'
+      if $user.hp <= 0 then return "You are dazed and cannot do that." end
+      tile = Tile.new($user.x,$user.y)
+      if not tile.building.exists?
+        return "You must be at your settlement's totem pole to do that."
+      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include? :join
+        return "You must be at your settlement's totem pole to do that." end
       msg = "You ousted "
       number = 0; total = 0
       list = Array.new
@@ -78,6 +84,42 @@ def input_action(action)
         msg = msg + describe_list(list)
         if total == 0 then msg = msg + "no one" end
         msg = msg + " from your settlement."
+      return msg
+
+    when 'allow_in'
+      if $user.hp <= 0 then return "You are dazed and cannot do that." end
+      tile = Tile.new($user.x,$user.y)
+      if not tile.building.exists?
+        return "You must be at your settlement's totem pole to do that."
+      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include? :join
+        return "You must be at your settlement's totem pole to do that." end
+      msg = "You promoted "
+      number = 0; total = 0
+      list = Array.new
+      pending = Array.new
+      $settlement.pendings.each { # make list of pending settlement members
+        |member|
+          pending[member.mysql_id] = member.name
+      }
+      $params['pending'].to_i.times do
+        number = number + 1
+        option = 'option' + number.to_s
+        if $params[option] == nil then next end
+        id = $params[option].to_i
+        if pending[id] == nil then next end
+        list[total] = "<b>" + pending[id] + "</b>"
+        mysql_update('accounts', id, 
+          {'settlement_id'=>$settlement.mysql_id,'temp_sett_id'=>0})
+        query = "$ACTOR has granted you membership in " +
+        "<a href=\"settlement.cgi?id=#{$settlement.mysql_id}\" " +
+        "class=\"ally\" " +
+        ">#{$settlement.name}</a> early"
+        mysql_put_message('action', query, $user.mysql_id, id)
+        total = total + 1
+      end
+        msg = msg + describe_list(list)
+        if total == 0 then msg = msg + "no one" end
+        msg = msg + " to full settlement membership."
       return msg
     else ''
   end
@@ -138,19 +180,7 @@ puts <<ENDTEXT
     #{$settlement.description}
     </div>
   </td>
-
 ENDTEXT
-
-if $settlement.name.length < 2
-      mysql_update('settlements',($params['id']), 
-        {'name' =>'Unnamed Settlement'})
-   puts "<div class=\"ipwarning\"><h2>Your settlement name must contain at least two characters.</div></h2>"
-end
-  if $settlement.name != $settlement.name.strip or not $settlement.name =~ /^\s?[a-zA-Z0-9 .\-']*\s?$/
-      mysql_update('settlements',($params['id']), 
-        {'name' =>'Unnamed Settlement'})
-  puts "<div class=\"ipwarning\"><h2>Your settlement name contains invalid characters.</div></h2>"
-end
 
 if $user == $leader
   puts <<ENDTEXT
@@ -334,14 +364,34 @@ if $user == $leader
 puts <<ENDTEXT
 <div style="width:65em; background-image: url('images/parchmentbg_dark.jpg'); border:thick solid #c8c8a0">
 ENDTEXT
-  if $user.hp <= 0 then puts "You can't eject settlement members while dazed."
+  if $user.hp <= 0 then puts "You can't eject settlement members, nor promote pending members early, while dazed."
   else tile = Tile.new($user.x,$user.y)
     if not tile.building.exists?
-      puts "You must be at your settlement's totem pole to eject members."
+      puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
     elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include? :join
-      puts "You must be at your settlement's totem pole to eject members."
+      puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
     else 
 puts <<ENDTEXT
+The following players are pending residents and can be granted settlement membership early:
+<form action='settlement.cgi' method='post'>
+<input type='hidden' name='action' value='allow_in'>
+<input type='hidden' name='id' value='#{$settlement.mysql_id}'>
+ENDTEXT
+pending = 0
+$settlement.pendings.each {
+  |member|
+    pending = pending + 1
+    puts "<input type='checkbox' name ='option#{pending}' value ='#{member.mysql_id}'>#{member.name}&nbsp;&nbsp;"
+}
+if pending == 0 then puts "No one is currently pending." end
+puts <<ENDTEXT
+<input type='hidden' name='pending' value='#{pending}'>
+<br><br>
+<input type="submit" value="Expedite membership">
+</form>
+</div><br>
+
+<div style="width:65em; background-image: url('images/parchmentbg_dark.jpg'); border:thick solid #c8c8a0">
 The following players are dazed and their ties to your settlement can be revoked:
 <form action='settlement.cgi' method='post'>
 <input type='hidden' name='action' value='evict'>
@@ -361,7 +411,7 @@ puts <<ENDTEXT
 <br><br>
 <input type="submit" value="Abolish membership">
 </form>
-<br>
+</div><br>
 ENDTEXT
     end
   end
