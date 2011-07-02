@@ -16,7 +16,7 @@ end
 puts $cgi.header($header)
 $user = User.new(UserID)
 
-if not ["Isaac","Woody"].include?($user.name)
+if not ["Admin"].include?($user.name)
 puts <<ENDTEXT
 You cannot edit the map.
 ENDTEXT
@@ -47,20 +47,18 @@ def input_action(action)
   end
 end
 
-def update_tile(x, y, new_terrain)
-  x, y, new_terrain = x.to_i, y.to_i, new_terrain.to_i
+def update_tile(x, y, new_region)
+  x, y, new_region = x.to_i, y.to_i, new_region.to_i
   tile = Tile.new(x, y)
-  if !tile.exists? && new_terrain != 3 && new_terrain != 0
+  if !tile.exists? && new_region != 3
     mysql_insert('grid',{'x'=>x,'y'=>y,
-      'terrain'=>new_terrain,'region_id'=>$params['option']})
+      'terrain'=>$params['option'].to_i,'region_id'=>new_region})
   else
-      if tile.terrain == new_terrain
+      if tile.region_id == new_region
       nil
-    elsif new_terrain == 0
-      mysql_delete('grid',{'x'=>x,'y'=>y})
     else
       mysql_update('grid',{'x'=>x,'y'=>y},
-        {'terrain'=>new_terrain,'region_id'=>$params['option']})
+        {'terrain'=>tile.terrain,'region_id'=>new_region})
     end
   end
 end
@@ -84,42 +82,36 @@ Map = html_map($tile, $size, nil, :show_occupants) do
   "name=\"#{tile.x},#{tile.y}\" " +
   "maxlength=\"3\" " +
   "style=\"width:3em\" " +
-  "value=\"#{tile.terrain}\" /><br>"
+  "value=\"#{tile.region_id}\" /><br>"
 end
 
 Move_Forms =
-  html_action_form('West',:inline,nil,'edit-map.cgi') {Hidden} +
-  html_action_form('North',:inline,nil,'edit-map.cgi') {Hidden} +
-  html_action_form('South',:inline,nil,'edit-map.cgi') {Hidden} +
-  html_action_form('East',:inline,nil,'edit-map.cgi') {Hidden}
+  html_action_form('West',:inline,nil,'edit-region.cgi') {Hidden} +
+  html_action_form('North',:inline,nil,'edit-region.cgi') {Hidden} +
+  html_action_form('South',:inline,nil,'edit-region.cgi') {Hidden} +
+  html_action_form('East',:inline,nil,'edit-region.cgi') {Hidden}
 
-regions = db_table(:region).values
-region_ids = regions.map {|r| r[:id]}
-
-Region_Select =
-  html_select(region_ids, $params['option'].to_i) do
-    |id| db_field(:region, id, :name) end
+# terrains don't have names, so can't sort by names. Instead:
+ Region_Select = "<input type='text' name='option' value='3'>"
 
 puts <<ENDTEXT
 <html>
-<head><title>Shintolin - Edit Map</title>
+<head><title>Shintolin - Edit Regions</title>
 <link rel="stylesheet" type="text/css" href="shintolin.css" />
 </head>
 <body>
-<h1>Edit Map</h1>
+<h1>Edit Regions</h1>
 <a class='buttonlink' href='game.cgi'>Return</a>
 <hr>
 #{Move_Forms}
 <hr>
-<form action="edit-map.cgi" method="post">
+<form action="edit-region.cgi" method="post">
 <input type="Submit" value="Update" />
 <input type="hidden" name="action" value="edit" />
 #{Hidden}
- | #{Region_Select} <i>(Edited tiles will join this region)</i> | <b>(Use the number 0 to delete a tile.)</b>
-<br>
+ | #{Region_Select} <i>(Enter a default terrain type (integer). Does not affect exisiting tiles)</i>
 <hr>
 #{Map}
 </body>
 </html>
 ENDTEXT
-
