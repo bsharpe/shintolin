@@ -909,7 +909,7 @@ def break_attempt(user, items)
   break_odds = item[:break_odds]
   break_odds = 0 if break_odds == nil
 
-  if rand(100) < break_odds
+  if rand()*100 < break_odds
     mysql_change_inv(user, item[:id], -1)
     msg += "Your cherished #{item[:name]} breaks! " +
       "You throw away the useless pieces in disgust."
