@@ -184,7 +184,8 @@ class Building
   data_fields 'floors', 'max_hp', 'ap_recovery', 'build_ap',
      'build_xp', 'build_skill', 'materials', 'build_msg', 'actions',
      'special', 'prereq', 'tools', 'unwritable', 'name', 'interior',
-     'use_skill', 'effect_bonus', 'craft_ap_bonus', 'accuracy_bonus'
+     'use_skill', 'effect_bonus', 'craft_ap_bonus', 'accuracy_bonus',
+     'id'
 
   attr_reader :x, :y, :mysql_id
 
@@ -713,25 +714,35 @@ def all_where(table, column, value)
   db_table(table).values.find_all {|row| row[column] == value}
 end
 
-def altitude_mod(dest_terrain, start_terrain, user_id = nil)
+def altitude_mod(dest_terrain, start_terrain, user_id = nil, targ_sett = nil)
+  if start_terrain == dest_terrain then return 0 end
   start_altitude = db_field(:terrain, start_terrain.to_i, :altitude)
   dest_altitude = db_field(:terrain, dest_terrain.to_i, :altitude)
   altitude = dest_altitude - start_altitude
-  case altitude
+  mod = case altitude
   when (-1..0) then 0
-  when 0.25 then 4
-  when 0.50 then 89
   when 1 
       if user_id != nil && has_skill?(user_id,17) then 1 # 17=mountaineering
       else 2
       end
     else nil # can't climb more than two height differences
   end
+  if mod != nil
+    if dest_terrain.to_i == 44 # goto wall
+      if start_terrain.to_i == 45 || start_terrain.to_i == 47 # from gate/guardhouse
+        mod = mod + 4 
+      else mod = mod + 59 end # anything besides a gate/guardhouse/wall to a wall
+    elsif dest_terrain.to_i == 47 # gatehouse
+      if start_terrain.to_i == 44 # || start_terrain.to_i == 45 # wall /#or guardstand/ to gatehouse
+      elsif targ_sett == nil || (targ_sett == User.new(user_id).settlement) then else mod = mod + 45 end
+    end
+  end
+  return mod
 end
 
-def ap_cost(dest_terrain, start_terrain = nil, user_id = nil)
+def ap_cost(dest_terrain, start_terrain = nil, user_id = nil, targ_sett = nil)
   if start_terrain != nil
-    altitude_mod = altitude_mod(dest_terrain, start_terrain, user_id)
+    altitude_mod = altitude_mod(dest_terrain, start_terrain, user_id, targ_sett)
   else
     altitude_mod = 0
   end
@@ -2050,8 +2061,9 @@ def move(user_id, x, y, z)
       target_x = mover['x'].to_i + x
       target_y = mover['y'].to_i + y
       target_tile = mysql_tile(target_x, target_y)
+      targ_sett = Tile.new(target_x,target_y).settlement
       ap_cost = ap_cost(target_tile['terrain'], 
-        current_tile['terrain'], user_id)
+        current_tile['terrain'], user_id, targ_sett)
       if ap_cost != nil
         mysql_change_ap(user_id, -ap_cost)
 	xp = db_field(:terrain, target_tile['terrain'], :xp)
@@ -2519,8 +2531,10 @@ def search(user)
         hp_msg = 'This area appears to have limited resources,'
     when (20..30)
         hp_msg = 'This area appears to have moderate resources,'
-    when (30..200)
-        hp_msg = 'This area appears to have abundant resources,' 
+    when (30..40)
+        hp_msg = 'This area appears to have abundant resources,'
+    when (40..200)
+        hp_msg = 'This area appears to have very abundant resources,'
     else hp_msg = 'You just hit the motherlode. This place is rich,'
     end
     case tile.hp
@@ -2548,7 +2562,6 @@ def search(user)
   mysql_give_xp(:wander, 1, user)
   'Searching the area, you find ' + 
     db_field(:item, found_item, :desc) + '. ' + hp_msg
-
 end
 
 def search_hidden_items(user)

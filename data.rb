@@ -527,7 +527,7 @@ $Data =
       :settlement_level => :village,
       :build_ap => 50,
       :build_xp => 35,
-      :build_skill => :masonry,
+      :build_skill => :impossible_masonry,
       :tools => [:masonry_tools],
       :materials => {:stone_block => 6},
       :build_msg =>  "You dig trenches for a foundation, then set to work building the walls of the guard stand. It isn't finished yet: you still need to build the roof and ladder."
@@ -546,7 +546,7 @@ $Data =
       :ap_recovery => +0.5,
       :build_ap => 50,
       :build_xp => 35,
-      :build_skill => :construction,
+      :build_skill => :impossible_construction,
       :materials => {:timber => 10},
       :tools => [:stone_carpentry],
       :build_msg => "You build the roof and ladder, and the guard stand is complete.",
@@ -566,6 +566,40 @@ $Data =
       :interior => "You are inside a ruined building within the village. The air is acrid, " +
       "and the lack of light makes it hard to tell if there may be anything of value amongst " +
       "the rubble"
+    },
+
+     :gatehouse1 =>
+    {:id => 191,
+      :name => 'gate house (1/2)',
+      :max_hp => 40,
+      :special => :walls,
+      :terrain_type => :gate_open,
+      :size => :large,
+      :settlement_level => :village,
+      :build_ap => 50,
+      :build_xp => 35,
+      :build_skill => :masonry,
+      :tools => [:masonry_tools],
+      :materials => {:stone_block => 6},
+      :build_msg =>  "You dig trenches for a foundation, then set to work building the stone walls and archway. It isn't finished yet: you still need to build the actual gate."
+    },
+
+     :gatehouse2 =>
+    {:id => 19,
+      :name => 'gate house',
+      :max_hp => 70,
+      :prereq => :gatehouse1,
+      :special => :walls,
+      :terrain_type => :gate,
+      :size => :tiny,
+      :floors => 0,
+      :settlement_level => :village,
+      :build_ap => 50,
+      :build_xp => 35,
+      :build_skill => :construction,
+      :materials => {:timber => 10},
+      :tools => [:stone_carpentry],
+      :build_msg => "You craft the gate and fix it into the stone walls, and the gate house is complete.",
     },
   },
   
@@ -1775,7 +1809,7 @@ $Data =
     },
   },   
 
-  :terrain =>
+  :terrain =>  #:id => 0 is used in edit-map.cgi to delete tiles. Do not use as a terrain type.
   {
     :grassland =>
     {:id => 1,
@@ -1793,7 +1827,6 @@ $Data =
       :Summer => 'You are walking through a verdant grassland, with many dandelions and other flowers. Crickets are chirping in the long grass.',
       :Autumn => 'You are walking through a grassland. The cold weather is beginning to turn the grass brown.',
       :Winter => 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.',
-      
     },
     
     :forest =>
@@ -1897,10 +1930,8 @@ $Data =
       :Summer => 'You are walking through a verdant grassland, with many dandelions and other flowers. Crickets are chirping in the long grass.',
       :Autumn => 'You are walking through a grassland. The cold weather is beginning to turn the grass brown.',
       :Winter => 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.',
-      
     },
-    
-    
+     
     :wilderness =>
     {:id => 3,
       :ap => 2,
@@ -2030,8 +2061,8 @@ $Data =
     :wall =>
     {:id => 44,
       :ap => 1,
-      :ap_recovery => -1.5,
-      :altitude => 0.50,
+      :ap_recovery => -1,
+      :altitude => 0,
       :restore_odds => 0,
       :class => :wall,
       :build_tiny? => true,
@@ -2044,16 +2075,36 @@ $Data =
     
     :wall_low =>
     {:id => 45,
-      :ap => 1,
-      :altitude => 0.25,
+      :ap => 5,
+      :altitude => 0,
       :restore_odds => 0,
       :class => :wall,
       :build_tiny? => true,
       :image => 'p_wall.jpg',
-      :Spring => 'You are standing atop a low stone wall.',
-      :Summer => 'You are standing atop a low stone wall.',
-      :Autumn => 'You are standing atop a low stone wall.',
-      :Winter => 'You are standing atop a low stone wall.',
+      :description => 'You are standing atop a low stone wall.'
+    },
+
+    :gate_open =>
+    {:id => 46,
+      :ap => 1,
+      :altitude => 0,
+      :restore_odds => 0,
+      :class => :wall,
+      :build_tiny? => true,
+      :image => 'p_dirt.jpg',
+      :description => 'The groundwork has been laid, but without a gate anyone can easily pass through.'
+    },
+
+    :gate =>
+    {:id => 47,
+      :ap => 5,
+      :ap_recovery => -1,
+      :altitude => 0,
+      :restore_odds => 0,
+      :class => :wall,
+      :build_tiny? => true,
+      :image => 'p_gate.jpg',
+      :description => 'Well crafted stone and woodwork stands testament to the people of Shintolin\'s efforts to keep themselves protected.'
     },
 
     :stream =>
