@@ -72,7 +72,8 @@ def tick_damage_buildings
       if dmg > 0
         building = Building.new(tile['x'],tile['y'])
 	next if building.special == :settlement
-        next if building.special == :ruins #prevents storm damage
+    next if building.special == :ruins #prevents storm damage
+    if building.id == 17 then dmg = dmg - 3; next if dmg <= 0 end # 17 = walls-reduce dmg odds/amt
 	destroy = deal_damage(dmg, building)
 	msg = "A storm blew across #{region[:name]}, " +
 	  "doing #{dmg} damage to #{building.a}" 
@@ -85,7 +86,7 @@ def tick_damage_buildings
       end
     end
   end
-  puts "Huts blown away!"
+  "Huts blown away!"
 end
 
 def tick_grow_fields
@@ -220,7 +221,7 @@ def tick_restore_search
 	    {'hp'=>1, 'terrain' => 1})
 	else
 	  mysql_bounded_update('grid','hp',
-	    {'x'=>tile['x'],'y'=>tile['y']}, +1, 3)
+	    {'x'=>tile['x'],'y'=>tile['y']}, +1, 4)
       end
     end
   }
@@ -338,6 +339,5 @@ def tick_delete_empty_data
   $mysql.query(query)
   query = "delete from `stockpiles` where `amount` = 0"
   $mysql.query(query)
-
-  'Empty/unneeded DB data dumped!'
+  "Empty/unneeded DB data dumped!"
 end
