@@ -379,7 +379,7 @@ class Settlement
       "FROM `users` , `accounts` " +
       "WHERE `users`.`id` = `accounts`.`id` " +
       "AND `accounts`.`settlement_id` = '#{mysql_id}' " +
-      "AND `users`.`active` = '1'"
+      "AND `users`.`active` = '1' ORDER BY `accounts`.`when_sett_joined`,`accounts`.`id` ASC"
     result = $mysql.query(query)
     inhabitants = []
     result.each_hash {|row| inhabitants << row['id']}
