@@ -23,6 +23,7 @@ puts <<ENDTEXT
 <div class="gamebox buttonsbox">
   <a class="buttonlink" href="skills.cgi">Skills</a>
   <a class="buttonlink" href="map.cgi">Map</a>
+  <a class="buttonlink" href="contacts.cgi">Contacts</a>
   <a class="buttonlink" href="rankings.cgi">Rankings</a>
   <a class="buttonlink" href="http://shintolin.forumcircle.com">Forum</a>
   <a class="buttonlink" href="http://shintolin.wikia.com/wiki/Shintolin">Help/Wiki</a>

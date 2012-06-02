@@ -255,8 +255,8 @@ class Building
   end
 
   def improvements
-    if self.exists? && mysql['building_id'] != "5"
-      return [self.repair] if hp < max_hp
+    if self.exists?
+      return [self.repair] if hp < max_hp && mysql['building_id'] != "5" # 5 = campfire
       key = id_to_key(:building, mysql['building_id'])
     else
       key = nil end
@@ -651,9 +651,24 @@ class User
     case target.class.name
     when "User" 
         return :ally if self == target
-	if self.settlement.exists? && self.settlement == target.settlement
-	  return :ally end
-	:neutral
+    type = mysql_row('enemies',{'user_id'=>mysql_id, 'enemy_id'=>target.mysql_id})
+    if type == nil
+	  if self.settlement.exists? && self.settlement == target.settlement
+	    return :ally end
+    else
+      case type['enemy_type']
+        when '1' then return :ally
+        when '2' then return :enemy
+        when '3' then return :contact3
+        when '4' then return :contact4
+        when '5' then return :contact5
+        when '6' then return :contact6
+        when '7' then return :contact7
+        when '8' then return :contact8
+        else return :contact255
+      end
+    end
+    :neutral
 
     when "Settlement"
         return :ally if self.settlement == target
@@ -680,6 +695,10 @@ class User
   def tile
     Tile.new(self.x, self.y)
   end
+
+  def magic # to prevent clicking on fake pages making you buy skills you don't want, etc.
+    self.lastaction.to_s + self.name.to_s
+  end
 end
 
 def a_an(str)
@@ -688,7 +707,10 @@ def a_an(str)
   end
 end
 
-def add_fuel(user_id)
+def add_fuel(user_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   player = mysql_user(user_id)
   tile = mysql_tile(player['x'],player['y'])
 
@@ -731,10 +753,10 @@ def altitude_mod(dest_terrain, start_terrain, user_id = nil, targ_sett = nil)
     if dest_terrain.to_i == 44 # goto wall
       if start_terrain.to_i == 45 || start_terrain.to_i == 47 # from gate/guardhouse
         mod = mod + 4 
-      else mod = mod + 59 end # anything besides a gate/guardhouse/wall to a wall
+      else mod = mod + 69 end # anything besides a gate/guardhouse/wall to a wall
     elsif dest_terrain.to_i == 47 # gatehouse
       if start_terrain.to_i == 44 # || start_terrain.to_i == 45 # wall /#or guardstand/ to gatehouse
-      elsif targ_sett == nil || (targ_sett == User.new(user_id).settlement) then else mod = mod + 45 end
+      elsif targ_sett == nil || (targ_sett == User.new(user_id).settlement) then else mod = mod + 50 end
     end
   end
   return mod
@@ -784,7 +806,10 @@ def ap_recovery(user_id)
   end
 end
 
-def attack(attacker, target, item_id)
+def attack(attacker, target, item_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   unless user_has_item?(attacker, item_id) || item_id.to_i == 24 # 24 -> fist
     return "You don't have #{a_an(db_field(:item, item_id, :name))}" end
   if attacker.mysql == nil || target.mysql == nil
@@ -928,7 +953,10 @@ def break_attempt(user, items)
   return msg
 end
 
-def build(user, building_id)
+def build(user, building_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   building_id = building_id.to_i
   tile = user.tile
   return repair(user) if tile.building_id == building_id
@@ -1027,7 +1055,10 @@ def buildings_in_radius(tile, radius_squared, building)
   tiles.nitems
 end
 
-def buy_skill(user_id, skill_id)
+def buy_skill(user_id, skill_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   user = User.new(user_id)
   if  user.level >= Max_Level
     return "You have reached the current maximum level; you must unlearn " +
@@ -1103,7 +1134,7 @@ def can_build? (user, building)
 
   if (building[:prereq] != nil and
       tile.building_id != db_field(:building, building[:prereq], :id)) or 
-      (building[:prereq] == nil and
+      (building[:prereq] == nil and building[:id] != 10 and # 10 = dirt track
       tile.building_id != 0)
     return false, "You cannot build #{a_an(building[:name])} here."
   end
@@ -1161,13 +1192,19 @@ def can_settle?(tile)
     "Please choose a name for your new community."
 end
 
-def chat(user, text)
+def chat(user, text, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   if text == '' then return "You can't think of anything to say." end
   mysql_put_message('chat',CGI::escapeHTML(text),user)
-  "You shout <i>\"#{CGI::escapeHTML(text)}\"</i> really loudly."
+  "You shout <i>\"#{CGI::escapeHTML(text)}\"</i> to the whole world."
  end
 
-def chop_tree(user_id)
+def chop_tree(user_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   user = mysql_user(user_id)
   tile = mysql_tile(user['x'],user['y'])
   tile_actions = db_field(:terrain, tile['terrain'], :actions)
@@ -1217,7 +1254,10 @@ def chop_tree_ap(user_id)
   end
 end
 
-def craft(user, item_id)
+def craft(user, item_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   if user.hp == 0
 	return "In your dazed state, you can't remember how to craft."
   end 
@@ -1581,7 +1621,10 @@ def destroy_settlement(settlement)
   mysql_delete('settlements',settlement.mysql_id)  
 end
 
-def dig(user)
+def dig(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   tile = user.tile
   return "You would rather not dig a hole in the floor." unless user.z == 0
   return 'You cannot dig here.' unless tile.actions.include?(:dig)
@@ -1628,7 +1671,10 @@ def dir_to_offset(dir)
   end
 end
 
-def drop(user,item_id,amount)
+def drop(user,item_id,amount, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   if item_id == nil then return "You drop nothing." end
   amt_dropped = -mysql_change_inv(user,item_id,-amount.to_i)
   mysql_change_inv(user.tile, item_id, +amt_dropped)
@@ -1665,7 +1711,10 @@ def feed(feeder_id, target_id, item_id)
   end
 end
 
-def fill(user)
+def fill(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   tile = user.tile
   return 'You cannot fill a pot here.' unless tile.actions.include?(:fill)
   unless user_has_item?(user, :pot)
@@ -1696,7 +1745,10 @@ def get_validated_id
   return user_id
 end
 
-def give(giver, receiver, amount, item_id)
+def give(giver, receiver, amount, item_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
 
   unless receiver.exists? then return '' end
 
@@ -1762,7 +1814,10 @@ def has_skill? (user, skill_id)
   end
 end
 
-def harvest(user)
+def harvest(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   if season != :Autumn
     return 'You must wait until Autumn before the crops can be harvested.' end
 
@@ -1949,7 +2004,10 @@ def item_stat(item_id, stat, user)
   end  
 end
 
-def join(user)
+def join(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   tile = user.tile
   building = tile.building
   return "You must be at a totem pole to join a settlement." unless building.exists?
@@ -1983,7 +2041,10 @@ def join(user)
   msg
 end
 
-def leave(user)
+def leave(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   if user.settlement_id == 0 && user.temp_sett_id == 0
     return "You are not currently a member of any settlement." end
   if user.settlement_id != 0
@@ -2002,7 +2063,10 @@ end
   "You are no longer a resident of #{user.settlement.name}."
 end
 
-def logout(user)
+def logout(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   # delete cookies
   $cookie.expires = Time.now 
 
@@ -2035,7 +2099,10 @@ local_time = Time.utc(gmt_time[5],gmt_time[4],gmt_time[3],gmt_time[2],gmt_time[1
   prefix + season.to_s
 end
 
-def move(user_id, x, y, z)
+def move(user_id, x, y, z, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   x, y, z = x.to_i, y.to_i, z.to_i
   if (not [-1,0,1].include? x) or
     (not [-1,0,1].include? y) or
@@ -2213,7 +2280,10 @@ def offset_to_dir(x_offset, y_offset, z_offset=0, length=:short)
   end
 end
 
-def quarry(user)
+def quarry(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   return 'You cannot quarry here.' unless user.tile.actions.include?(:quarry)
   unless has_skill?(user,:quarrying)
     return 'You do not have the required skills to quarry.' end
@@ -2389,7 +2459,10 @@ def same_location?(a, b)
   return a.x == b.x && a.y == b.y && a.z == b.z
 end
 
-def say(speaker, message, volume, target=nil)
+def say(speaker, message, volume, magic, target=nil)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   # check for '/me'
   if message.slice(0,3) == '/me'
     message = message.gsub(/\/me/,'$ACTOR')
@@ -2458,7 +2531,10 @@ game_time = game_time - Time.utc(2009,3,28,0,0,0)
 game_year = game_time.to_i/(12*60*60*24)
 end
 
-def search(user)
+def search(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   tile = user.tile
   mysql_change_ap(user, -1)
 
@@ -2582,7 +2658,10 @@ def search_hidden_items(user)
     ' which someone has abandoned.'
 end
 
-def sell_skill(user_id, skill_id)
+def sell_skill(user_id, skill_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   unless can_sell_skill?(user_id, skill_id)
     return "You cannot sell #{db_field(:skill, skill_id, :name)} " + 
     "until you have sold all the skills that come after it."
@@ -2594,7 +2673,10 @@ def sell_skill(user_id, skill_id)
   "#{db_field(:skill, skill_id, :name)}."
 end
 
-def settle(user, settlement_name)
+def settle(user, settlement_name, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   tile = user.tile
   can_settle, settle_msg = can_settle?(tile)
   unless can_settle
@@ -2633,7 +2715,10 @@ def skill_cost(level)
 end
 
 
-def sow(user, item_id)
+def sow(user, item_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   if season != :Spring
     return 'Crops can only be planted in Spring.' end
 
@@ -2709,7 +2794,10 @@ def sum_coll(coll)
   end
 end
 
-def take(user_id, amount, item_id)
+def take(user_id, amount, item_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   user = User.new(user_id)
   stockpile = user.tile.building
   unless stockpile.item_storage?
@@ -2782,7 +2870,10 @@ def upcase_first(str)
   str
 end
 
-def use (user, target, item_id)
+def use (user, target, item_id, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   unless target.exists?  then target = user end
 
   unless same_location?(user, target) 
@@ -2938,6 +3029,8 @@ def values_freqs_hash(mysql_resource, field)
 end
 
 def vote(voter, candidate)
+  if $params['magic'] != $user.magic
+    return "Error. Try again." end
   if voter.settlement == nil && voter.temp_sett_id == 0
     return "You are not currently a member of any settlement." end
 
@@ -2960,7 +3053,10 @@ def vote(voter, candidate)
     "of #{candidate.settlement.name}."
 end
 
-def water(user)
+def water(user, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   tile = user.tile
   return 'You cannot water here.' unless tile.actions.include?(:water)
   unless user_has_item?(user, :water_pot)
@@ -2994,7 +3090,10 @@ def weight(user)
   weight
 end
 
-def write(user, msg)
+def write(user, msg, magic)
+  if magic != $user.magic
+    return "Error. Try again."
+  end
   building = Building.new(user.x, user.y)
   unless building.exists?
     return 'There is no building to write on in the vicinity.' end

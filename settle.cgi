@@ -43,6 +43,7 @@ if can_settle
   <form method='post' action='game.cgi'>
     <input type='text' style='font-size:110%;margin-left:20px' class='text' maxLength='32' name='text' />
     <input type='hidden' name='action' value='settle' />
+    <input type="hidden" value="#{$user.magic}" name = "magic">
     <input type='submit' style='font-size:110%' value='Settle!' />
   </form>
 ENDTEXT

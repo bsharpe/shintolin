@@ -15,8 +15,8 @@ $user = User.new(UserID)
 
 def input_action(action)
   case action
-    when 'buy' then buy_skill(UserID, $params['skill'])
-    when 'sell' then sell_skill(UserID, $params['skill'])
+    when 'buy' then buy_skill(UserID, $params['skill'], $params['magic'])
+    when 'sell' then sell_skill(UserID, $params['skill'], $params['magic'])
     else ""
   end
 end

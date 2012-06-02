@@ -149,4 +149,3 @@ def load_accounts
       {'deaths'=>row['deaths'], 'vote'=>row['vote'], 'kills'=>row['kills'], 'lastrevive'=>row['lastrevive'], 'joined'=>row['joined'], 'frags'=>row['frags'], 'points'=>row['points'], 'id'=>row['ID'], 'website'=>'', 'settlement_id'=>settlement_id, 'description'=>desc, 'image'=>row['image'], 'revives'=>row['revives'], 'email'=>row['email']})
   }
 end
-# {"deaths"=>"4", "vote"=>"0", "kills"=>"7", "lastrevive"=>"2009-04-03", "joined"=>"2009-03-16", "username"=>"Isaac", "frags"=>"2", "points"=>"0", "ID"=>"1", "description"=>"In a grey cloak and floppy, broad-brimmed hat, he looks otherwise unremarkable except for a patch over his left eye.\r\n\r\nHello!", "settlement"=>"", "image"=>"http://www.thewhitewillow.com/gallery/odinimages/odin.jpg", "password"=>"92dd97fc0bad4205c6c3aaee79690f7e", "revives"=>"10", "email"=>"", "active"=>"1"}

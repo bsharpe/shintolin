@@ -5,7 +5,8 @@ def html_action_form(action, inline=false, ap=nil, post='game.cgi')
   action
   html += ": #{ap}" if ap != nil
   html += "\" />\n" +
-  html_hidden('action', action.downcase)
+  html_hidden('action', action.downcase) +
+  html_hidden('magic', $user.magic)
   html += yield if block_given?
   html += "\n</form>\n"
   html
@@ -296,6 +297,7 @@ def html_move_button(dir, ap=0)
     html_hidden('x', x) + "\t\t\t" +
     html_hidden('y', y) + "\t\t\t" +
     html_hidden('z', z) + 
+    html_hidden('magic', $user.magic) +
     "</form>" 
   end
   html
@@ -528,7 +530,7 @@ def html_tile(x, y, z=0, user=nil, button=false, occupants=true)
   if button != false
     button = tile_dir(user, tile)
     if button != nil
-      ap_cost = ap_cost(tile.terrain, source_terrain, user.mysql_id)
+      ap_cost = ap_cost(tile.terrain, source_terrain, user.mysql_id, tile.settlement)
       html += html_move_button(button, ap_cost)
     end
   end

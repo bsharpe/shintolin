@@ -527,9 +527,9 @@ $Data =
       :settlement_level => :village,
       :build_ap => 50,
       :build_xp => 35,
-      :build_skill => :impossible_masonry,
+      :build_skill => :masonry,
       :tools => [:masonry_tools],
-      :materials => {:stone_block => 6},
+      :materials => {:stone_block => 5},
       :build_msg =>  "You dig trenches for a foundation, then set to work building the walls of the guard stand. It isn't finished yet: you still need to build the roof and ladder."
     },
 
@@ -546,8 +546,8 @@ $Data =
       :ap_recovery => +0.5,
       :build_ap => 50,
       :build_xp => 35,
-      :build_skill => :impossible_construction,
-      :materials => {:timber => 10},
+      :build_skill => :construction,
+      :materials => {:timber => 8},
       :tools => [:stone_carpentry],
       :build_msg => "You build the roof and ladder, and the guard stand is complete.",
       :interior => "You are inside a sparsely-equipped, stone guard stand. " +
@@ -597,7 +597,7 @@ $Data =
       :build_ap => 50,
       :build_xp => 35,
       :build_skill => :construction,
-      :materials => {:timber => 10},
+      :materials => {:timber => 12},
       :tools => [:stone_carpentry],
       :build_msg => "You craft the gate and fix it into the stone walls, and the gate house is complete.",
     },

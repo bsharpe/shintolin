@@ -6,7 +6,7 @@ $params = $cgi.str_params
 
 def input_action(action)
   case action
-    when 'chat' then chat($user, $params['text'])
+    when 'chat' then chat($user, $params['text'], $params['magic'])
   end
 end
 
