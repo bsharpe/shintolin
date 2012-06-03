@@ -215,3 +215,18 @@ CREATE TABLE IF NOT EXISTS `writings` (
   `message` tinytext collate utf8_unicode_ci NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `enemies` (actually a contact list)
+--
+
+CREATE TABLE IF NOT EXISTS `enemies` (
+  `user_id` int(11) unsigned NOT NULL,
+  `enemy_id` int(11) unsigned NOT NULL,
+  `enemy_type` tinyint(5) unsigned NOT NULL,
+  `created` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `updated` timestamp NOT NULL,
+  KEY `user_id` (`enemy_id`,`enemy_type`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
