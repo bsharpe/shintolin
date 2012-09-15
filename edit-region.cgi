@@ -16,7 +16,7 @@ end
 puts $cgi.header($header)
 $user = User.new(UserID)
 
-if not ["Admin"].include?($user.name)
+if not [].include?($user.name) # use character names like ["Admin", "Buttercup"]
 puts <<ENDTEXT
 You cannot edit the map.
 ENDTEXT
@@ -34,6 +34,10 @@ def input_action(action)
       $x = $x - ($size - 1)
     when "east"
       $x = $x + ($size - 1)
+
+    when "location"
+      $y = $cgi['y'].to_i
+      $x = $cgi['x'].to_i
 
     when "edit"
       coords_re = /(-?[0-9]+),(-?[0-9]+)/
@@ -89,10 +93,13 @@ Move_Forms =
   html_action_form('West',:inline,nil,'edit-region.cgi') {Hidden} +
   html_action_form('North',:inline,nil,'edit-region.cgi') {Hidden} +
   html_action_form('South',:inline,nil,'edit-region.cgi') {Hidden} +
-  html_action_form('East',:inline,nil,'edit-region.cgi') {Hidden}
+  html_action_form('East',:inline,nil,'edit-region.cgi') {Hidden} + " | " +
+  html_action_form('Goto Coordinates',:inline,nil,'edit-region.cgi') {
+  "X:<input type='text' class='text' name='x' maxlength='6' style='width:100px' value='#{$x}'> Y:<input type='text' class='text' name='y' maxlength='6' style='width:100px' value='#{$y}'>
+Don't use values beyond -32768 to 32767 (the database uses smallint for x and y)"}
 
 # terrains don't have names, so can't sort by names. Instead:
- Region_Select = "<input type='text' name='option' value='3'>"
+ Region_Select = "<input type='text' name='option' value='3'>" #3 is the default of wilderness/nothing
 
 puts <<ENDTEXT
 <html>
@@ -110,8 +117,10 @@ puts <<ENDTEXT
 <input type="hidden" name="action" value="edit" />
 #{Hidden}
  | #{Region_Select} <i>(Enter a default terrain type (integer). Does not affect exisiting tiles)</i>
+ | See terrain.cgi for list of regions/terrains.
 <hr>
 #{Map}
 </body>
 </html>
 ENDTEXT
+

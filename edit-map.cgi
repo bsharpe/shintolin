@@ -16,7 +16,7 @@ end
 puts $cgi.header($header)
 $user = User.new(UserID)
 
-if not ["Isaac","Woody"].include?($user.name)
+if not [].include?($user.name) # use character names like ["Admin", "Buttercup"]
 puts <<ENDTEXT
 You cannot edit the map.
 ENDTEXT
@@ -34,6 +34,10 @@ def input_action(action)
       $x = $x - ($size - 1)
     when "east"
       $x = $x + ($size - 1)
+
+    when "location"
+      $y = $cgi['y'].to_i
+      $x = $cgi['x'].to_i
 
     when "edit"
       coords_re = /(-?[0-9]+),(-?[0-9]+)/
@@ -91,7 +95,10 @@ Move_Forms =
   html_action_form('West',:inline,nil,'edit-map.cgi') {Hidden} +
   html_action_form('North',:inline,nil,'edit-map.cgi') {Hidden} +
   html_action_form('South',:inline,nil,'edit-map.cgi') {Hidden} +
-  html_action_form('East',:inline,nil,'edit-map.cgi') {Hidden}
+  html_action_form('East',:inline,nil,'edit-map.cgi') {Hidden} + " | " +
+  html_action_form('Goto Coordinates',:inline,nil,'edit-map.cgi') {
+  "X:<input type='text' class='text' name='x' maxlength='6' style='width:100px' value='#{$x}'> Y:<input type='text' class='text' name='y' maxlength='6' style='width:100px' value='#{$y}'>
+Don't use values beyond -32768 to 32767 (the database uses smallint for x and y)"}
 
 regions = db_table(:region).values
 region_ids = regions.map {|r| r[:id]}
@@ -116,6 +123,7 @@ puts <<ENDTEXT
 <input type="hidden" name="action" value="edit" />
 #{Hidden}
  | #{Region_Select} <i>(Edited tiles will join this region)</i> | <b>(Use the number 0 to delete a tile.)</b>
+ | See terrain.cgi for list of regions/terrains.
 <br>
 <hr>
 #{Map}
