@@ -755,7 +755,7 @@ def altitude_mod(dest_terrain, start_terrain, user_id = nil, targ_sett = nil)
         mod = mod + 4 
       else mod = mod + 69 end # anything besides a gate/guardhouse/wall to a wall
     elsif dest_terrain.to_i == 47 # gatehouse
-      if start_terrain.to_i == 44 # || start_terrain.to_i == 45 # wall /#or guardstand/ to gatehouse
+      if start_terrain.to_i == 44 || start_terrain.to_i == 45 # || start_terrain.to_i == 45 # wall /#or guardstand/ to gatehouse
       elsif targ_sett == nil || (targ_sett == User.new(user_id).settlement) then else mod = mod + 50 end
     end
   end
@@ -2463,6 +2463,11 @@ def say(speaker, message, volume, magic, target=nil)
   if magic != $user.magic
     return "Error. Try again."
   end
+
+  if volume != "Talk" && volume != "Shout" && volume != "Whisper"
+  return "Error. Try again."
+  end
+
   # check for '/me'
   if message.slice(0,3) == '/me'
     message = message.gsub(/\/me/,'$ACTOR')
