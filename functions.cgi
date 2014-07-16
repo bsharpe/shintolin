@@ -1197,6 +1197,7 @@ def chat(user, text, magic)
     return "Error. Try again."
   end
   if text == '' then return "You can't think of anything to say." end
+  if text.length > 255 then return "Message too long." end
   mysql_put_message('chat',CGI::escapeHTML(text),user)
   "You shout <i>\"#{CGI::escapeHTML(text)}\"</i> to the whole world."
  end
@@ -1676,6 +1677,7 @@ def drop(user,item_id,amount, magic)
     return "Error. Try again."
   end
   if item_id == nil then return "You drop nothing." end
+  if amount.to_i < 1 || amount.to_i > 15 then return "That's an invalid quantity to drop." end
   amt_dropped = -mysql_change_inv(user,item_id,-amount.to_i)
   mysql_change_inv(user.tile, item_id, +amt_dropped)
   "You drop #{describe_items(amt_dropped,item_id,:long)}."
@@ -1765,6 +1767,8 @@ def give(giver, receiver, amount, item_id, magic)
     return "#{receiver.name} already has as much as they can carry." end end
 
   if item_id == nil then return "You give nothing to #{receiver.name}." end
+
+  if amount.to_i < 1 || amount.to_i > 15 then return "That's an invalid quantity to give." end
 
   amt_given = -mysql_change_inv(giver, item_id, -amount.to_i)
 	
@@ -2468,6 +2472,8 @@ def say(speaker, message, volume, magic, target=nil)
   return "Error. Try again."
   end
 
+  if message.length > 255 then return "Message too long." end
+
   # check for '/me'
   if message.slice(0,3) == '/me'
     message = message.gsub(/\/me/,'$ACTOR')
@@ -2824,10 +2830,9 @@ def take(user_id, amount, item_id, magic)
       "and cannot take items from their stockpile."
   end
 
+  if amount.to_i < 1 || amount.to_i > 5 then return "That's an invalid quantity to take." end
+
   amt_taken = -mysql_change_inv(stockpile, item_id, -amount.to_i)
-  if amt_taken >= 6
-      amt_returned = +mysql_change_inv(stockpile, item_id, +amount.to_i) 
-    return "You can't take that many items at once." end
   mysql_change_inv(user_id, item_id, +amt_taken)
   if amt_taken == 0
     return "There aren't any #{db_field(:item, item_id, :plural)} " +
