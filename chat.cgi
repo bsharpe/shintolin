@@ -25,8 +25,8 @@ input_action $params['action']
 puts <<ENDTEXT
 <html>
 <head profile="http://www.w3.org/2005/10/profile">
-<link rel="icon" 
-      type="image/png" 
+<link rel="icon"
+      type="image/png"
       href="images/favicon.ico">
 <link rel=\"stylesheet\" type=\"text/css\" href=\"shintolin.css\"/>
 <title>Chat</title>

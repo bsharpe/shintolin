@@ -12,10 +12,10 @@ def input_action(action)
   end
   case action
     when 'description'
-      mysql_update('accounts', $user.mysql_id, 
+      mysql_update('accounts', $user.mysql_id,
         {'description' => insert_breaks(CGI::escapeHTML($params['text']))})
     when 'image'
-      mysql_update('accounts', $user.mysql_id, 
+      mysql_update('accounts', $user.mysql_id,
         {'image' => CGI::escapeHTML($params['text'])})
     else ''
   end
@@ -37,7 +37,7 @@ def change_contact(e_id,type) # modified from function in contacts.cgi
     if enemy == nil
       if num_enemies >= 50 then return "Contact list is full. Delete some contacts if you wish to add more."; end
       mysql_insert('enemies',{'user_id'=>$user.mysql_id, 'enemy_id'=>e_id, 'enemy_type'=>type}); return "Contact added. Now using #{num_enemies+1}/50 contacts."
-    else 
+    else
       if (enemy['enemy_type'].to_i == type) or (enemy['enemy_type'].to_i >=9 && type == 9) then return 'No change.'; end
       mysql_update('enemies',{'user_id'=>$user.mysql_id, 'enemy_id'=>e_id}, {'enemy_type'=>type, 'updated'=>:Now}); return "Contact updated."
     end
@@ -63,8 +63,8 @@ profile = User.new($params['id'])
 puts <<ENDTEXT
 <html>
 <head>
-<link rel="icon" 
-      type="image/png" 
+<link rel="icon"
+      type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - #{name}</title>
 <link rel='stylesheet' type='text/css' href='shintolin.css' />
@@ -100,7 +100,7 @@ if $user == profile
     <br><br>
     <input type='hidden' name='action' value='description' />
     <input type='hidden' name='id' value='#{$user.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic"> 
+    <input type="hidden" value="#{$user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -161,7 +161,7 @@ puts "Settlement:</td><td>#{profile.settlement.link}"
 end
 
 if profile.temp_sett_id != 0
-  if $user == profile 
+  if $user == profile
     pending = mysql_select('settlements',{'id' => $user.temp_sett_id}).fetch_hash
     puts "<a href=\"settlement.cgi?id=#{$user.temp_sett_id}\" " +
       "class=\"neutral\" " +

@@ -2,8 +2,8 @@ puts <<ENDTEXT
 <html>
 
 <head profile="http://www.w3.org/2005/10/profile">
-<link rel="icon" 
-      type="image/png" 
+<link rel="icon"
+      type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - Explore. Settle. Trade. Conquer.</title>
 <link rel="stylesheet" type="text/css" href="shintolin.css" />
@@ -71,9 +71,7 @@ puts <<ENDTEXT
     <td>
 ENDTEXT
 
-if Messages != ''
-  puts "<div class=\"gamebox msgbox\">#{Messages}</div>"
-end
+puts "<div class=\"gamebox msgbox\">#{Messages}</div>" if Messages != ''
 
 puts <<ENDTEXT
       <div class="gamebox">
@@ -83,9 +81,10 @@ puts <<ENDTEXT
         <center><br>
          <a class="buttonlink" href="chat.cgi">Chat page</a>
         </center><br>
-      </div> 
-       #{html_action_form('Chat',false,nil,'game.cgi') {
-    html_text_box(200)}}
+      </div>
+       #{html_action_form('Chat', false, nil, 'game.cgi') do
+           html_text_box(200)
+         end}
      </div>
     </td>
   </tr>
