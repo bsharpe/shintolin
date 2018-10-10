@@ -15,7 +15,7 @@
   <span class="ruby-identifier">user</span> = <span class="ruby-constant">User</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">user_id</span>)
   <span class="ruby-identifier">messages</span> = <span class="ruby-identifier">mysql_get_messages</span>(<span class="ruby-identifier">x</span>, <span class="ruby-identifier">y</span>, <span class="ruby-identifier">z</span>, <span class="ruby-identifier">user</span>)
   <span class="ruby-identifier">html</span> = <span class="ruby-value str">''</span>
-  <span class="ruby-identifier">messages</span>.<span class="ruby-identifier">each_hash</span> <span class="ruby-keyword kw">do</span>
+  <span class="ruby-identifier">messages</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span>
     <span class="ruby-operator">|</span><span class="ruby-identifier">row</span><span class="ruby-operator">|</span> 
       <span class="ruby-identifier">html</span> <span class="ruby-operator">+=</span> <span class="ruby-node">&quot;\n\t&lt;div class='#{row['type']}'&gt;&quot;</span> <span class="ruby-operator">+</span>
       <span class="ruby-node">&quot;#{describe_message(row, user_id)}&lt;/div&gt;&quot;</span>

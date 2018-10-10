@@ -13,7 +13,7 @@
   <pre><span class="ruby-comment cmt"># File functions.rb, line 2975</span>
 <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">tick_move_animals</span>
   <span class="ruby-identifier">animals</span> = <span class="ruby-identifier">mysql_select_all</span>(<span class="ruby-value str">'animals'</span>)
-  <span class="ruby-identifier">animals</span>.<span class="ruby-identifier">each_hash</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">animal</span><span class="ruby-operator">|</span> <span class="ruby-identifier">move_animal</span>(<span class="ruby-identifier">animal</span>)}
+  <span class="ruby-identifier">animals</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">animal</span><span class="ruby-operator">|</span> <span class="ruby-identifier">move_animal</span>(<span class="ruby-identifier">animal</span>)}
   <span class="ruby-value str">'Animals moved!'</span>
 <span class="ruby-keyword kw">end</span></pre>
 </body>

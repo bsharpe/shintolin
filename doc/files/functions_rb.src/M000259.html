@@ -20,7 +20,7 @@
         <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:Now</span>
           <span class="ruby-node">&quot; `#{column}` = NOW()&quot;</span> 
         <span class="ruby-keyword kw">else</span>
-          <span class="ruby-node">&quot; `#{column}` = '#{Mysql.quote(value.to_s)}'&quot;</span> 
+          <span class="ruby-node">&quot; `#{column}` = '#{$mysql.escape(value.to_s)}'&quot;</span> 
       <span class="ruby-keyword kw">end</span>
   }
   <span class="ruby-identifier">query</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">updates_array</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">','</span>)

@@ -13,7 +13,7 @@
   <pre><span class="ruby-comment cmt"># File functions.rb, line 2889</span>
 <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">tick_campfires</span>
   <span class="ruby-identifier">campfire_tiles</span> = <span class="ruby-identifier">mysql_select</span>(<span class="ruby-value str">'grid'</span>,{<span class="ruby-value str">'building_id'</span>=<span class="ruby-operator">&gt;</span><span class="ruby-value">5</span>})
-  <span class="ruby-identifier">campfire_tiles</span>.<span class="ruby-identifier">each_hash</span> {
+  <span class="ruby-identifier">campfire_tiles</span>.<span class="ruby-identifier">each</span> {
     <span class="ruby-operator">|</span><span class="ruby-identifier">tile</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">rand</span>(<span class="ruby-value">2</span>) <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;hp #{tile['building_hp']}&quot;</span>

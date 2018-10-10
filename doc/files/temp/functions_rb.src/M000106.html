@@ -25,12 +25,12 @@
     <span class="ruby-identifier">where_array</span> = <span class="ruby-identifier">clause</span>.<span class="ruby-identifier">map</span> {
       <span class="ruby-operator">|</span><span class="ruby-identifier">column</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
       <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">value</span>.<span class="ruby-identifier">kind_of?</span> <span class="ruby-constant">Enumerable</span>
-        <span class="ruby-node">&quot; `#{column}` = '#{Mysql.quote(value.to_s)}'&quot;</span>
+        <span class="ruby-node">&quot; `#{column}` = '#{$mysql.escape(value.to_s)}'&quot;</span>
       <span class="ruby-keyword kw">else</span>
       <span class="ruby-comment cmt"># if hash-&gt;value is &quot;x =&gt; [1,2,3]&quot;, query should be</span>
       <span class="ruby-comment cmt"># WHERE ('x' = 1 OR 'x' = 2 OR 'x' = 3)</span>
         <span class="ruby-identifier">or_array</span> =
-        <span class="ruby-identifier">value</span>.<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span><span class="ruby-node">&quot;`#{column}` = '#{Mysql.quote(v.to_s)}'&quot;</span>}
+        <span class="ruby-identifier">value</span>.<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">v</span><span class="ruby-operator">|</span><span class="ruby-node">&quot;`#{column}` = '#{$mysql.escape(v.to_s)}'&quot;</span>}
         <span class="ruby-identifier">or_clause</span> = <span class="ruby-node">&quot; (#{or_array.join(' OR ')})&quot;</span>
       <span class="ruby-keyword kw">end</span>
     }
@@ -40,7 +40,7 @@
       <span class="ruby-identifier">where_clause</span> <span class="ruby-operator">+=</span> <span class="ruby-value str">' AND NOT ('</span>
       <span class="ruby-identifier">not_array</span> = <span class="ruby-identifier">not_clause</span>.<span class="ruby-identifier">map</span> {
       <span class="ruby-operator">|</span><span class="ruby-identifier">column</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
-       <span class="ruby-node">&quot;`#{column}` = '#{Mysql.quote(value.to_s)}'&quot;</span>
+       <span class="ruby-node">&quot;`#{column}` = '#{$mysql.escape(value.to_s)}'&quot;</span>
     }
     <span class="ruby-identifier">where_clause</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">not_array</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">' AND '</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">')'</span>
     <span class="ruby-keyword kw">end</span>

@@ -14,7 +14,7 @@
 <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load_inventories</span>
   <span class="ruby-identifier">items</span> = <span class="ruby-identifier">db_table</span>(<span class="ruby-identifier">:item</span>).<span class="ruby-identifier">values</span>
   <span class="ruby-identifier">old_invs</span> = <span class="ruby-identifier">$old_db</span>.<span class="ruby-identifier">query</span>(<span class="ruby-value str">'SELECT * FROM inventories'</span>)
-  <span class="ruby-identifier">old_invs</span>.<span class="ruby-identifier">each_hash</span>{
+  <span class="ruby-identifier">old_invs</span>.<span class="ruby-identifier">each</span>{
     <span class="ruby-operator">|</span><span class="ruby-identifier">inv</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;ID: #{inv['ID']}&quot;</span> 
     <span class="ruby-identifier">items</span>.<span class="ruby-identifier">each</span> {

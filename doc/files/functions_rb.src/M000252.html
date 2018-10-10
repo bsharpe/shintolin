@@ -24,7 +24,7 @@
         <span class="ruby-keyword kw">when</span> <span class="ruby-identifier">:Today</span>
           <span class="ruby-value str">&quot;UTC_DATE()&quot;</span> 
         <span class="ruby-keyword kw">else</span>
-          <span class="ruby-node">&quot;'#{Mysql.quote(value.to_s)}'&quot;</span> 
+          <span class="ruby-node">&quot;'#{$mysql.escape(value.to_s)}'&quot;</span> 
       <span class="ruby-keyword kw">end</span>
   }
 

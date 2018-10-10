@@ -15,7 +15,7 @@
   <span class="ruby-identifier">buildings</span> = <span class="ruby-identifier">db_table</span>(<span class="ruby-identifier">:building</span>).<span class="ruby-identifier">values</span>
   <span class="ruby-identifier">regions</span> = <span class="ruby-identifier">db_table</span>(<span class="ruby-identifier">:region</span>).<span class="ruby-identifier">values</span>
   <span class="ruby-identifier">old_map</span> = <span class="ruby-identifier">$old_db</span>.<span class="ruby-identifier">query</span>(<span class="ruby-value str">&quot;SELECT * FROM grid&quot;</span>)
-  <span class="ruby-identifier">old_map</span>.<span class="ruby-identifier">each_hash</span>{
+  <span class="ruby-identifier">old_map</span>.<span class="ruby-identifier">each</span>{
     <span class="ruby-operator">|</span><span class="ruby-identifier">tile</span><span class="ruby-operator">|</span>
     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">tile</span>[<span class="ruby-value str">'building'</span>] <span class="ruby-operator">!=</span> <span class="ruby-keyword kw">nil</span>
       <span class="ruby-identifier">bid</span> = <span class="ruby-identifier">row_where</span>(<span class="ruby-identifier">:building</span>, <span class="ruby-identifier">:name</span>, <span class="ruby-identifier">tile</span>[<span class="ruby-value str">'building'</span>])[<span class="ruby-identifier">:id</span>]
@@ -25,7 +25,7 @@
     <span class="ruby-keyword kw">end</span>
     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">tile</span>[<span class="ruby-value str">'region'</span>] <span class="ruby-operator">!=</span> <span class="ruby-keyword kw">nil</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">tile</span>[<span class="ruby-value str">'region'</span>] <span class="ruby-operator">!=</span> <span class="ruby-value str">''</span>
       <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;Region: #{tile['region']},&quot;</span> 
-      <span class="ruby-identifier">rid</span> = <span class="ruby-identifier">row_where</span>(<span class="ruby-identifier">:region</span>, <span class="ruby-identifier">:name</span>, <span class="ruby-identifier">tile</span>[<span class="ruby-value str">'region'</span>].<span class="ruby-identifier">cap_words</span>)[<span class="ruby-identifier">:id</span>]
+      <span class="ruby-identifier">rid</span> = <span class="ruby-identifier">row_where</span>(<span class="ruby-identifier">:region</span>, <span class="ruby-identifier">:name</span>, <span class="ruby-identifier">tile</span>[<span class="ruby-value str">'region'</span>].<span class="ruby-identifier">capitalize</span>)[<span class="ruby-identifier">:id</span>]
       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot; id: #{rid}&quot;</span>
     <span class="ruby-keyword kw">else</span>
       <span class="ruby-identifier">rid</span> = <span class="ruby-value">0</span>

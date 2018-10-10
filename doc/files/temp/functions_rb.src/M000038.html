@@ -18,7 +18,7 @@
 
   <span class="ruby-identifier">show_hp</span> = <span class="ruby-keyword kw">true</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">has_skill?</span>(<span class="ruby-identifier">omit</span>, <span class="ruby-identifier">:triage</span>)
   <span class="ruby-identifier">occupant_links</span> = []
-  <span class="ruby-identifier">occupants</span>.<span class="ruby-identifier">each_hash</span> <span class="ruby-keyword kw">do</span>
+  <span class="ruby-identifier">occupants</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span>
     <span class="ruby-operator">|</span><span class="ruby-identifier">occupant</span><span class="ruby-operator">|</span> 
     <span class="ruby-identifier">occupant_links</span> <span class="ruby-operator">&lt;&lt;</span> 
       <span class="ruby-identifier">html_userlink</span>(<span class="ruby-identifier">occupant</span>[<span class="ruby-value str">'id'</span>],<span class="ruby-identifier">occupant</span>[<span class="ruby-value str">'name'</span>], <span class="ruby-identifier">:details</span>, <span class="ruby-identifier">show_hp</span>)

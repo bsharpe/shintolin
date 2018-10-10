@@ -14,7 +14,7 @@
 <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load_accounts</span>
 
   <span class="ruby-identifier">accounts</span> = <span class="ruby-identifier">$old_db</span>.<span class="ruby-identifier">query</span>(<span class="ruby-value str">'SELECT * FROM `accounts`'</span>)
-  <span class="ruby-identifier">accounts</span>.<span class="ruby-identifier">each_hash</span> {
+  <span class="ruby-identifier">accounts</span>.<span class="ruby-identifier">each</span> {
     <span class="ruby-operator">|</span><span class="ruby-identifier">row</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">settlement_id</span> = <span class="ruby-value">0</span>
     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">row</span>[<span class="ruby-value str">'settlement'</span>] <span class="ruby-operator">!=</span> <span class="ruby-value str">''</span>

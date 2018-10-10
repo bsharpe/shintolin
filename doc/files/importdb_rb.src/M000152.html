@@ -14,7 +14,7 @@
 <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load_stockpiles</span>
   <span class="ruby-identifier">items</span> = <span class="ruby-identifier">db_table</span>(<span class="ruby-identifier">:item</span>).<span class="ruby-identifier">values</span>
   <span class="ruby-identifier">old_stocks</span> = <span class="ruby-identifier">$old_db</span>.<span class="ruby-identifier">query</span>(<span class="ruby-value str">'SELECT * FROM stockpiles'</span>)
-  <span class="ruby-identifier">old_stocks</span>.<span class="ruby-identifier">each_hash</span>{
+  <span class="ruby-identifier">old_stocks</span>.<span class="ruby-identifier">each</span>{
     <span class="ruby-operator">|</span><span class="ruby-identifier">stock</span><span class="ruby-operator">|</span>
     <span class="ruby-identifier">print</span> <span class="ruby-node">&quot;X, Y: #{stock['X']}, #{stock['Y']}&quot;</span> 
     <span class="ruby-identifier">items</span>.<span class="ruby-identifier">each</span> {
