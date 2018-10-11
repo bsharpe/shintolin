@@ -5,6 +5,7 @@ $LOAD_PATH << '../lib'
 require 'header.rb'
 
 print $cgi.header
+puts ENV['GAME_ENV']
 
 def settlement_box
   settlements = mysql_select('settlements',{'allow_new_users'=>1})

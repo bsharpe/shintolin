@@ -1,0 +1,9 @@
+development:
+  host: localhost
+  database: shishito_dev
+  username: root
+
+production:
+  host: localhost
+  database: shishito_prod
+  username: root

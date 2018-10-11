@@ -1,12 +1,18 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    awesome_print (1.8.0)
+    colorize (0.8.1)
+    dotenv (2.5.0)
     mysql2 (0.5.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
+  colorize
+  dotenv
   mysql2
 
 RUBY VERSION

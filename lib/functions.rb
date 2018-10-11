@@ -2094,7 +2094,7 @@ def move(user_id, x, y, z, magic)
       ap_cost = ap_cost(target_tile["terrain"],
                         current_tile["terrain"], user_id, targ_sett)
       if ap_cost != nil
-        mysql_change_ap(user_id, -ap_cost)
+        mysql_change_ap(user_id, -ap_cost) unless user.is_admin?
         xp = db_field(:terrain, target_tile["terrain"], :xp)
         if xp != nil
           xp = rand_to_i(xp)
