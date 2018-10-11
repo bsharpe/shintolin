@@ -8,6 +8,7 @@ require 'functions'
 require 'digest/md5'
 require 'cgi'
 require 'cgi/session'
+require 'time'
 
 $cgi = CGI.new
 $mysql = mysql_connect

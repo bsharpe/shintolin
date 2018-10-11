@@ -109,8 +109,8 @@ class Float
 end
 
 class Time
-  def Time.str_to_time(str)
-    Time.parse(str).local
+  def self.str_to_time(str)
+    Time.parse(str.to_s).localtime
   end
 
   def ago
