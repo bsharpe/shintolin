@@ -1,10 +1,9 @@
 #!/usr/bin/env ruby
-#print "Content-type: text/html\r\n\r\n"
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
 
-$cgi = CGI.new
 UserID = get_validated_id
 if UserID != false
   $header = {'cookie' => [$cookie], 'type' => 'text/html'}
@@ -16,42 +15,40 @@ end
 puts $cgi.header($header)
 $user = User.new(UserID)
 
-if not ["Isaac","Woody","Admin","Buttercup","Miko"].include?($user.name)
-puts <<ENDTEXT
-You are not allowed to print out a map.
-ENDTEXT
-exit
+if !$user.is_admin?
+  puts "You are not allowed to print out a map."
+  exit
 end
 
-if $cgi['minY'] == "" || $cgi['minX'] == "" || $cgi['maxY'] == "" || $cgi['maxX'] == ""
+if $params['minY'] == "" || $params['minX'] == "" || $params['maxY'] == "" || $params['maxX'] == ""
 puts "No map area selected"
 exit
 end
 
-puts "Y: ("+$cgi['minY']+" , "+$cgi['maxY']+")<br>X: ("+$cgi['minX']+" , "+$cgi['maxX']+")"
-q= (($cgi['size'].to_i+$cgi['border'].to_i)*($cgi['maxX'].to_i-$cgi['minX'].to_i)+$cgi['size'].to_i+$cgi['border'].to_i*2)
+puts "Y: ("+$params['minY']+" , "+$params['maxY']+")<br>X: ("+$params['minX']+" , "+$params['maxX']+")"
+q= (($params['size'].to_i+$params['border'].to_i)*($params['maxX'].to_i-$params['minX'].to_i)+$params['size'].to_i+$params['border'].to_i*2)
 
 puts <<ENDTEXT
 <style type="text/css">
 <!--
-td.border 
+td.border
 {
-border-width: #{$cgi['border']}px;
-border-color: #{$cgi['bcolor']};
+border-width: #{$params['border']}px;
+border-color: #{$params['bcolor']};
 border-style: solid;
 }
 -->
 </style>
-<table cellpadding= 0 cellspacing= 0 style="border-collapse: collapse" align="left" border= #{$cgi['border']} bordercolor= #{$cgi['bcolor']} width=
+<table cellpadding= 0 cellspacing= 0 style="border-collapse: collapse" align="left" border= #{$params['border']} bordercolor= #{$params['bcolor']} width=
 ENDTEXT
 puts q
 puts "height="
-puts (($cgi['size'].to_i+$cgi['border'].to_i)*($cgi['maxY'].to_i-$cgi['minY'].to_i)+$cgi['size'].to_i+$cgi['border'].to_i*2)
+puts (($params['size'].to_i+$params['border'].to_i)*($params['maxY'].to_i-$params['minY'].to_i)+$params['size'].to_i+$params['border'].to_i*2)
 puts ">"
 
-for y in ($cgi['minY'].to_i..$cgi['maxY'].to_i)
+for y in ($params['minY'].to_i..$params['maxY'].to_i)
 puts "<tr>"
-for x in ($cgi['minX'].to_i..$cgi['maxX'].to_i)
+for x in ($params['minX'].to_i..$params['maxX'].to_i)
 puts <<ENDTEXT
 <td class="border" bgcolor="
 ENDTEXT
@@ -61,7 +58,7 @@ ENDTEXT
 	elsif tile['terrain'] == "1"
 puts '63a251 '
 
-else 
+else
   case tile['terrain']
 	when "1","4","24"
 	puts '63a251'
@@ -125,7 +122,7 @@ else
 	when "152"
 	puts '475767'
 
-	else 
+	else
 	puts 'ffffff'
   end
 end

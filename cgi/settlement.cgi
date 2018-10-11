@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
-print "Content-type: text/html\r\n\r\n"
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
-$cgi = CGI.new
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
+
+print $cgi.header
 
 def input_action(action)
   if action != nil && ($params['magic'] != $user.magic)
@@ -14,23 +15,23 @@ def input_action(action)
       if $params['option'] != '1' and $params['option'] != '0' then return "<br>" end # 1 = yes, 0 = no
       if not [1,11,23,24,28].include?($settlement.region_id) #God's Glade, Scavenger Isles,
                                        #Terra Nullis Si, Terra Nullis Wu, Terra Nullis Jiu
-      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+      mysql_update('settlements', CGI::escapeHTML($params['id']),
         {'allow_new_users' => CGI::escapeHTML($params['option'])})
       else return "This settlement is far too isolated to allow new characters to join." end
     when 'description'
-      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+      mysql_update('settlements', CGI::escapeHTML($params['id']),
         {'description' => insert_breaks(CGI::escapeHTML($params['text']))})
     when 'image'
-      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+      mysql_update('settlements', CGI::escapeHTML($params['id']),
         {'image' => CGI::escapeHTML($params['text'])})
     when 'motto'
-      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+      mysql_update('settlements', CGI::escapeHTML($params['id']),
         {'motto' => CGI::escapeHTML($params['text'])})
     when 'name'
       if $params['text'].length < 2
         return "The settlement name must contain at least 2 characters."
       end
-      if $params['text'] != $params['text'].strip 
+      if $params['text'] != $params['text'].strip
         return "The settlement name must not have spaces at the beginning or end."
       end
       if not $params['text'] =~ /^\s?[a-zA-Z0-9 .\-']*\s?$/
@@ -43,13 +44,13 @@ def input_action(action)
           return "There is already a settlement with that name."
         end
       end
-      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+      mysql_update('settlements', CGI::escapeHTML($params['id']),
         {'name' => CGI::escapeHTML($params['text'])})
     when 'title'
-      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+      mysql_update('settlements', CGI::escapeHTML($params['id']),
         {'title' => CGI::escapeHTML($params['text'])})
     when 'website'
-      mysql_update('settlements', CGI::escapeHTML($params['id']), 
+      mysql_update('settlements', CGI::escapeHTML($params['id']),
         {'website' => CGI::escapeHTML($params['text'])})
     when 'evict'
       if $user.hp <= 0 then return "You are dazed and cannot do that." end
@@ -75,7 +76,7 @@ def input_action(action)
         id = $params[option].to_i
         if dazed[id] == nil then next end
         list[total] = "<b>" + dazed[id] + "</b>"
-        mysql_update('accounts', id, 
+        mysql_update('accounts', id,
           {'settlement_id'=>0})
         query = "$ACTOR ousted you from " +
         "<a href=\"settlement.cgi?id=#{$settlement.mysql_id}\" " +
@@ -111,7 +112,7 @@ def input_action(action)
         id = $params[option].to_i
         if pending[id] == nil then next end
         list[total] = "<b>" + pending[id] + "</b>"
-        mysql_update('accounts', id, 
+        mysql_update('accounts', id,
           {'settlement_id'=>$settlement.mysql_id,'temp_sett_id'=>0})
         query = "$ACTOR has granted you membership in " +
         "<a href=\"settlement.cgi?id=#{$settlement.mysql_id}\" " +
@@ -129,7 +130,7 @@ def input_action(action)
 "<br>"
 end
 
-$params = $cgi.str_params
+
 $settlement = Settlement.new($params['id'])
 user_id = get_validated_id
 $user = User.new(user_id) if user_id != false
@@ -137,7 +138,7 @@ $user = User.new(user_id) if user_id != false
 if $settlement.exists?
   $leader = $settlement.leader
   $msg = input_action($params['action']) if $leader == $user
-  if ($user.exists? && $params['action'] == 'vote' && 
+  if ($user.exists? && $params['action'] == 'vote' &&
       ($user.settlement == $settlement || $user.temp_sett_id == $settlement.mysql_id) )
     $msg = vote($user, User.new($params['option'])) end
   # bug-fix: have to update settlement reference as input_action may have
@@ -151,8 +152,8 @@ end
 puts <<ENDTEXT
 <html>
 <head>
-<link rel="icon" 
-      type="image/png" 
+<link rel="icon"
+      type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - #{name}</title>
 <link rel='stylesheet' type='text/css' href='shintolin.css' />
@@ -210,7 +211,7 @@ if $user == $leader
     <input type='text' class='text' name='text' maxlength='32' style='width:300px' value="#{$settlement.name}"/>
     <input type='hidden' name='action' value='name' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic"> 
+    <input type="hidden" value="#{$user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -271,7 +272,7 @@ puts <<ENDTEXT
     Yes: <input type='radio' name='option' value='1'>
     No: <input type='radio' name='option' value='0'>
     &nbsp;&nbsp;
-    <input type='hidden' name='id' value='#{$settlement.mysql_id}' />   
+    <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
     <input type='hidden' name='action' value='allow_new_users' />
     <input type="hidden" value="#{$user.magic}" name = "magic">
     <input type='submit' value='Submit' />
@@ -320,7 +321,7 @@ ENDTEXT
 $user = User.new(user_id) if user_id != false
 if $user != nil && ($user.settlement == $settlement || $user.temp_sett_id == $settlement.mysql_id)
   candidate_ids = [0] + $settlement.inhabitant_ids
-  select_user = html_select(candidate_ids,$user.vote.to_s) {|id| 
+  select_user = html_select(candidate_ids,$user.vote.to_s) {|id|
     if id != 0
     user = User.new id
     "#{user.name} (#{user.supporters} supporters)"
@@ -364,7 +365,7 @@ ENDTEXT
   puts '<a onclick=\'javascript:return confirm("Leave ' + $settlement.name + '?")\' class=txlinkplain>'
   puts html_action_form('Leave Settlement', :inline)
 puts <<ENDTEXT
-</a> 
+</a>
 </td></div>
   </tr>
 ENDTEXT
@@ -381,7 +382,7 @@ ENDTEXT
       puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
     elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include? :join
       puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
-    else 
+    else
 puts <<ENDTEXT
 The following players are pending residents and can be granted settlement membership early:
 <form action='settlement.cgi' method='post'>

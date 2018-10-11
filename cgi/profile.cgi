@@ -47,7 +47,7 @@ def change_contact(e_id, type) # modified from function in contacts.cgi
   end
 end
 
-$params = $cgi.str_params
+
 profile = User.new($params['id'])
 user_id = get_validated_id
 $user = User.new(user_id) if user_id != false

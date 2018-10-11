@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
-$cgi = CGI.new
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
+
 
 UserID = get_validated_id
 if UserID != false
@@ -21,7 +22,6 @@ def input_action(action)
   end
 end
 
-$params = $cgi.str_params
 Action_Outcome = input_action($params['action'])
 Wanderer_Skills = html_skills_list(:wanderer,UserID)
 Herbalist_Skills = html_skills_list(:herbalist,UserID)
@@ -33,8 +33,8 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head profile="http://www.w3.org/2005/10/profile">
-<link rel="icon" 
-      type="image/png" 
+<link rel="icon"
+      type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - Skills</title>
 <link rel="stylesheet" type="text/css" href="shintolin.css" />

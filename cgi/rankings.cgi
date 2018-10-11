@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
-print "Content-type: text/html\r\n\r\n"
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
-$cgi = CGI.new
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
+
+print $cgi.header
 
 user_id = get_validated_id
 $user = User.new(user_id) if user_id
@@ -13,7 +14,7 @@ rank = 'frags' if rank == nil
 
 case rank
   when "deaths" then type, metric = "players", "deaths"
-  when "frags" 
+  when "frags"
     type, metric = "players", "frags"
     blurb = "Frags measure not just the number of foes killed, " +
       "but the quality of one's opponents. New players begin with " +
@@ -23,12 +24,12 @@ case rank
   when "kills" then type, metric = "players", "kills"
   when "points" then type, metric = "players", "points"
   when "revives" then type, metric = "players", "revives"
-  when "survival" 
+  when "survival"
     type, metric, order = "players", "lastrevive", "ASC"
     column = "Last Revived"
     display = Proc.new {|date| Time.str_to_time(date).ago}
     clause = "`hp` != '0' "
-  when "oldies" 
+  when "oldies"
     type, metric, order = "players", "joined", "ASC"
     display = Proc.new {|date| Time.str_to_time(date).ago}
   when "younguns"
@@ -111,7 +112,7 @@ puts <<ENDTEXT
 <title>Shintolin - Rankings</title>
 </head>
 <body>
-It is Year #{game_year}, #{month.to_s} ----- 
+It is Year #{game_year}, #{month.to_s} -----
 ENDTEXT
 query = "SELECT COUNT(*) FROM `users` WHERE `active` = 1"
 result = $mysql.query(query).first
@@ -121,7 +122,7 @@ puts <<ENDTEXT
 <a class='buttonlink' href='game.cgi'>Return</a>
 <hr>
 <form method='get' action='rankings.cgi'>
-<b>Rank by:</b> 
+<b>Rank by:</b>
 <select width='300px' name='metric'>
 <option value='frags'>Frags</option>
 <option value='deaths'>Deaths</option>
@@ -134,7 +135,7 @@ puts <<ENDTEXT
 <option value='oldtowns'>Oldest Settlements</option>
 <option value='newtowns'>Newest Settlements</option>
 <option value='bigtowns'>Most Populous Settlements</option>
-</select> 
+</select>
 <input type='submit' value='View' />
 </form>
 <i>#{blurb}</i>

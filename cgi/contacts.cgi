@@ -71,7 +71,6 @@ else
   exit
 end
 
-$params = $cgi.str_params
 
 puts $cgi.header($header)
 $user = User.new(UserID)

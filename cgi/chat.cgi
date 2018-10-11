@@ -19,7 +19,7 @@ else
 end
 
 $user = User.new(UserID)
-$params = $cgi
+
 input_action $params['action']
 
 puts <<ENDTEXT

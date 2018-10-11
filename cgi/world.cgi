@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
-print "Content-type: text/html\r\n\r\n"
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
-$cgi = CGI.new
+#!/usr/bin/env ruby
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
+
+print $cgi.header
 
 size = 10
 xs = (-5..5).map {|x| x * size}

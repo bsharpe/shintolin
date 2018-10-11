@@ -47,7 +47,7 @@ else
 end
 
 $ip_hits = ip_hit(UserID, 0)
-$params = $cgi
+
 if !$params['target'].nil?
   target_id, target_type = $params['target'].split(':')
   $target =
