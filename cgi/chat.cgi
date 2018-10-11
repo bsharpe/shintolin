@@ -28,7 +28,7 @@ puts <<ENDTEXT
 <link rel="icon"
       type="image/png"
       href="images/favicon.ico">
-<link rel=\"stylesheet\" type=\"text/css\" href=\"shintolin.css\"/>
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/html/shintolin.css\"/>
 <title>Chat</title>
 
 <body>
