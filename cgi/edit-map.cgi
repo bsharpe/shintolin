@@ -65,7 +65,7 @@ end
 $x = $params['x'].to_i || 0
 $y = $params['y'].to_i || 0
 $size = $params['size'].to_i
-$size = 19 if $size == 0
+$size = 7 if $size == 0
 input_action($params['action'])
 $tile = Tile.new($x, $y)
 
