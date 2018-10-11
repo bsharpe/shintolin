@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
-print "Content-type: text/html\r\n\r\n"
-load 'functions.cgi'
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
+
+print $cgi.header
 
 def check_animals()
   regions = db_table(:region)

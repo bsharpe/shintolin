@@ -5,6 +5,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
+print $cgi.header
+
   query = "select min(x) from grid"
   minX = $mysql.query(query)
 

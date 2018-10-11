@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
-require 'cgi'
-load 'functions.cgi'
-$cgi = CGI.new
-$params = $cgi.str_params
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
 
 def input_action(action)
   case action
@@ -10,16 +10,16 @@ def input_action(action)
   end
 end
 
-
 UserID = get_validated_id
 if UserID != false
-  print "Content-type: text/html\r\n\r\n"
+  print $cgi.header
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit
 end
 
 $user = User.new(UserID)
+$params = $cgi
 input_action $params['action']
 
 puts <<ENDTEXT
