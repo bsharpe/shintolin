@@ -240,10 +240,10 @@ def mysql_put_message(type, message, speaker = nil, target = nil)
 end
 
 def mysql_select(table, where_clause, not_clause = nil)
-  query = "SELECT * FROM `#{table}`" +
-          mysql_where(where_clause, not_clause)
+  query = "SELECT * FROM `#{table}`" + mysql_where(where_clause, not_clause)
   $mysql.query(query)
 end
+alias mysql_query mysql_select
 
 def mysql_select_all(table)
   query = "SELECT * FROM `#{table}`"
@@ -297,16 +297,16 @@ end
 def mysql_where(clause, not_clause = nil)
   # if passed an integer, returns 'WHERE id = clause
   # if passed a hash map, returns 'WHERE key1 = value1, key2 = value2..."
-  clause = clause.to_i if clause.is_a? String
-  if clause.is_a? Integer
+  clause = clause.to_i if clause.is_a?(String)
+  if clause.is_a?(Integer)
     # assume where_clause is an id value
     where_clause = ' WHERE ' \
                    "`id` =  '#{clause}'"
 
-  elsif clause.is_a? Hash
+  elsif clause.is_a?(Hash)
     where_clause = ' WHERE'
     where_array = clause.map do |column, value|
-      if !value.is_a? Enumerable
+      if !value.is_a?(Enumerable)
         " `#{column}` = #{mysql_value(value)}"
       else
         # if hash->value is "x => [1,2,3]", query should be

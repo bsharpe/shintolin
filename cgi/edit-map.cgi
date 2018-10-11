@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
-$cgi = CGI.new
-$params = $cgi.str_params
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
 
 UserID = get_validated_id
 if UserID != false
@@ -16,13 +15,10 @@ end
 puts $cgi.header($header)
 $user = User.new(UserID)
 
-if not [].include?($user.name) # use character names like ["Admin", "Buttercup"]
-puts <<ENDTEXT
-You cannot edit the map.
-ENDTEXT
-exit
+if !$user.is_admin?
+  puts "You cannot edit the map."
+  exit
 end
-
 
 def input_action(action)
   case action
@@ -42,7 +38,7 @@ def input_action(action)
     when "edit"
       coords_re = /(-?[0-9]+),(-?[0-9]+)/
       $params.each do
-        |name, value| 
+        |name, value|
 	coords = coords_re.match(name)
 	next if !coords
 	x, y = coords[1], coords[2]
@@ -77,7 +73,7 @@ input_action($params['action'])
 $tile = Tile.new($x, $y)
 
 Hidden =
-  html_hidden('x',$x) + html_hidden('y',$y) + 
+  html_hidden('x',$x) + html_hidden('y',$y) +
   html_hidden('size',$size)
 
 Map = html_map($tile, $size, nil, :show_occupants) do

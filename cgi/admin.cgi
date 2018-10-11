@@ -7,7 +7,11 @@ require 'header.rb'
 
 print $cgi.header
 
-admins = [3] #[1, 5, 40, 2739]
-admins.each {|admin| mysql_update('users',admin,{'ap'=>999})}
-puts 'Added AP to admins!'
+puts "<ul>"
+mysql_query('users', {is_admin: 1}).each do |row|
+  mysql_update('users', row['id'] , {'ap' => 999})
+  puts "<li>#{row['name']}"
+end
+puts "</ul>"
+puts '<b>Added AP to admins!</b>'
 

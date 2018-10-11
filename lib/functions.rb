@@ -547,7 +547,7 @@ class User
   mysql_float_fields "mysql", "ap"
 
   mysql_int_fields "mysql", "x", "y", "z", "hp", "maxhp", "hunger",
-    "wander_xp", "herbal_xp", "combat_xp", "craft_xp", "active"
+    "wander_xp", "herbal_xp", "combat_xp", "craft_xp", "active", "is_admin"
 
   mysql_int_fields "mysql_2", "settlement_id", "temp_sett_id",
     "frags", "kills", "deaths", "revives", "vote"
@@ -568,6 +568,10 @@ class User
 
   def donated?
     mysql["donated"] == "1"
+  end
+
+  def is_admin?
+    mysql['is_admin'].to_i == 1
   end
 
   def exists?
