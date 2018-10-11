@@ -412,7 +412,7 @@ def html_option_building(building)
   return '' unless building.exists?
 
   html = "<option "
-  html += 'selected="yes" ' if $target.is_a? Building
+  html += 'selected="yes" ' if $target.is_a?(Building)
   html += "value=\"#{building.x},#{building.y}:building\">" \
           "#{building.name}</option>"
 end
@@ -431,7 +431,7 @@ def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
   # <b style='color:#777777'>Butchering</b> -
   # <i>obtain more meat when killing animals </i><br>
 
-  skill_name = id_to_key(:skill, skill_name) if skill_name.is_a? Integer
+  skill_name = id_to_key(:skill, skill_name) if skill_name.is_a?(Integer)
   skill = db_row(:skill, skill_name)
   style = if has_skill?(user_id, skill[:id]) then 'bought'
           else 'unbought'

@@ -25,7 +25,7 @@ ys.each do
     terrains = values_freqs_hash(tiles, 'terrain')
     most_common = terrains.index(terrains.values.max)
     image = db_field(:terrain, most_common, :image)
-    image = image[:default] if image.kind_of? Hash
+    image = image[:default] if image.is_a?(Hash)
     image = db_field(:terrain, :wilderness, :image) if image == nil
 
     $map += "\n<td class=\"map\" " +

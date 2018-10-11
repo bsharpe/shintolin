@@ -1,15 +1,15 @@
 #!/usr/bin/env ruby
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
-$cgi = CGI.new
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
 
 profile = User.new($cgi['id'])
 
 user_id = get_validated_id
 if user_id != false
   $user = User.new(user_id)
-  print "Content-type: text/html\r\n\r\n"
+  puts $cgi.header
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit
@@ -20,8 +20,8 @@ can_settle, settle_msg = can_settle?($user)
 puts <<ENDTEXT
 <html>
 <head>
-<link rel="icon" 
-      type="image/png" 
+<link rel="icon"
+      type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - Settle</title>
 <link rel='stylesheet' type='text/css' href='shintolin.css' />

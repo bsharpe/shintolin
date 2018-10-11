@@ -484,7 +484,7 @@ class Tile
 
   def image
     image = db_field(:terrain, terrain, :image)
-    if image.kind_of? Hash
+    if image.is_a?(Hash)
       if image[season] != nil
         image = image[season]
       else
@@ -743,7 +743,7 @@ def ap_cost(dest_terrain, start_terrain = nil, user_id = nil, targ_sett = nil)
   return nil if altitude_mod == nil
 
   ap_data = db_field(:terrain, dest_terrain.to_i, :ap)
-  if ap_data.kind_of? Numeric
+  if ap_data.is_a?(Numeric)
     ap_data + altitude_mod
   elsif user_id == nil
     # ap cost depends on skill, but we have no user_id, so return default cost
@@ -916,7 +916,7 @@ def break_attempt(user, items)
 
   if items == nil then return "" end
 
-  if items.kind_of? Array
+  if items.is_a?(Array)
     items.each { |item| msg += " " + break_attempt(user, item) }
     return msg
   end
@@ -1010,7 +1010,7 @@ def build_list(user)
 end
 
 def buildings_in_radius(tile, radius_squared, building)
-  if building.kind_of? Array
+  if building.is_a?(Array)
     total = 0
     building.each { |b| total += buildings_in_radius(tile, radius_squared, b) }
     return total
@@ -1019,20 +1019,19 @@ def buildings_in_radius(tile, radius_squared, building)
   center_x, center_y = tile.x, tile.y
   radius = Math.sqrt(radius_squared).to_i
   tiles = []
-  (-radius..radius).each do
-    |x| (-radius..radius).each do
-    |y|
-    # ensure location is in circle using pythag
-    if ((x * x) + (y * y)) <= radius_squared
-      tiles << Tile.new(center_x + x, center_y + y)
+  (-radius..radius).each do |x|
+    (-radius..radius).each do |y|
+      # ensure location is in circle using pythag
+      if ((x * x) + (y * y)) <= radius_squared
+        tiles << Tile.new(center_x + x, center_y + y)
+      end
     end
-  end   end
+  end
 
   building_id = db_field(:building, building, :id)
-  tiles = tiles.find_all do
-    |tile| tile.building_id == building_id   end
+  tiles = tiles.select {|tile| tile.building_id == building_id }
 
-  tiles.nitems
+  tiles.size
 end
 
 def buy_skill(user_id, skill_id, magic)
@@ -1088,7 +1087,7 @@ def can_build?(user, building)
     return false, "In your dazed state, you can't remember how to build."
   end
 
-  if building.kind_of? Symbol
+  if building.is_a?(Symbol)
     building = db_row(:building, building)
   end
 
@@ -1309,9 +1308,9 @@ def db_table(table)
 end
 
 def db_row(table, row)
-  if row.kind_of? Integer
+  if row.is_a?(Integer)
     row_where(table, :id, row)
-  elsif row.kind_of? String
+  elsif row.is_a?(String)
     # if row is a string, assume it's of the form "5" and convert to int
     row_where(table, :id, row.to_i)
   else
@@ -1416,7 +1415,7 @@ def describe_items(amount, item, length = :short, infix = " ")
 end
 
 def describe_items_list(items, length = :short, infix = " ")
-  if items.kind_of? Hash
+  if items.is_a?(Hash)
     item_descs = items.map do
       |item, amt| describe_items(amt, item, length, infix)     end
   else
@@ -1742,7 +1741,7 @@ def give(giver, receiver, amount, item_id, magic)
   items_desc = describe_items(amt_given, item_id, :long)
 
   mysql_change_inv(receiver, item_id, amt_given)
-  if receiver.kind_of? Building
+  if receiver.is_a?(Building)
     mysql_put_message("persistent",
                       "$ACTOR dropped #{items_desc} in the stockpile", giver.mysql_id)
   else
@@ -1777,7 +1776,7 @@ def has_skill?(user, skill_id)
   if skill_id == 0 || skill_id == nil || skill_id == :default
     return true
   end
-  if skill_id.kind_of? Symbol
+  if skill_id.is_a?(Symbol)
     skill_id = db_field(:skill, skill_id, :id)
   end
   row = mysql_row("skills", {"user_id" => user_id, "skill_id" => skill_id})
@@ -1952,9 +1951,9 @@ end
 def item_stat(item_id, stat, user)
   multiplier = item_building_bonus item_id, stat, user
   data = db_field(:item, item_id, stat)
-  return (data * multiplier).floor if data.kind_of? Integer
+  return (data * multiplier).floor if data.is_a?(Integer)
 
-  if data.kind_of? Hash
+  if data.is_a?(Hash)
     # data should be a hash of {skill => value}, find max/min value
     user_skills = data.delete_if { |skill, value| !has_skill?(user, skill) }
     if stat == :ap_cost
@@ -2608,7 +2607,7 @@ def search(user, magic)
     msg = "Searching the area, you find nothing of use." if msg == nil
     return msg + " " + hp_msg
   end
-  if found_item.kind_of? String
+  if found_item.is_a?(String)
     return found_item
   end
 
@@ -2941,13 +2940,13 @@ def user_has_item?(user, item_id)
     return true
   end
 
-  if item_id.kind_of? Array
+  if item_id.is_a?(Array)
     item_id.each do
       |item| unless user_has_item?(user, item) then return false end     end
     return true
   end
 
-  if item_id.kind_of? Hash
+  if item_id.is_a?(Hash)
     item_id.each do
       |item, amt|
       if user_item_amount(user, item) < amt then return false end
@@ -2968,7 +2967,7 @@ def user_item_amount(user, item_id)
       user.mysql_id
     end
 
-  if item_id.kind_of? Symbol
+  if item_id.is_a?(Symbol)
     item_id = db_field(:item, item_id, :id)
   end
 

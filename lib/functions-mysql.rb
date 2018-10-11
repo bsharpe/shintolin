@@ -68,7 +68,7 @@ def mysql_change_inv(inv, item_id, amt)
     row_id = inv.mysql_id
   end
 
-  item_id = db_field(:item, item_id, :id) if item_id.is_a? Symbol
+  item_id = db_field(:item, item_id, :id) if item_id.is_a?(Symbol)
 
   row_id['item_id'] = item_id
   current_amount = mysql_row(table, row_id)
@@ -93,7 +93,7 @@ def mysql_change_inv(inv, item_id, amt)
 end
 
 def mysql_change_stockpile(x, y, item_id, change)
-  item_id = db_field(:item, item_id, :id) if item_id.is_a? Symbol
+  item_id = db_field(:item, item_id, :id) if item_id.is_a?(Symbol)
   current_amount = mysql_row('stockpiles', 'x' => x, 'y' => y, 'item_id' => item_id)
   if !current_amount.nil?
     current_amount = current_amount['amount'].to_i
@@ -174,7 +174,7 @@ def mysql_give_xp(type, xp, user)
              when :herbal then 'herbal_xp'
              when :warrior then 'warrior_xp'
   end
-  xp = rand_to_i(xp) if xp.is_a? Float
+  xp = rand_to_i(xp) if xp.is_a?(Float)
   xp = xp.abs || 0
   mysql_bounded_update('users', xp_field, user_id, +xp, 1000)
 end

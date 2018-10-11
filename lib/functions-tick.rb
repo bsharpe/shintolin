@@ -307,7 +307,7 @@ def tick_terrain_transitions
     next if new_terrain.nil?
 
     transition_odds = db_field(:terrain, tile['terrain'], :transition_odds)
-    odds = if transition_odds.is_a? Integer
+    odds = if transition_odds.is_a?(Integer)
              transition_odds
            else
              transition_odds[season] end
