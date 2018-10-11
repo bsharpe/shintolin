@@ -7,7 +7,7 @@ require 'header.rb'
 
 def input_action(action)
   return 'Error. Try again.' if action.nil? || $params['magic'] != $user.magic
-  case action
+  result = case action
   when 'add fuel' then add_fuel(UserID, $params['magic'])
   when 'attack' then attack($user, $target, $params['item'], $params['magic'])
   when 'build' then build($user, $params['building'], $params['magic'])
@@ -35,6 +35,8 @@ def input_action(action)
   when 'write' then write($user, $params['text'], $params['magic'])
   else ''
   end
+  mysql_update('users', $user.mysql_id, 'lastaction' => :Now) if result != ''
+  result
 end
 
 UserID = get_validated_id
@@ -66,13 +68,11 @@ mysql_update('users', UserID, 'active' => 1)
 
 puts $cgi.header($header)
 
-Action_Outcome = if can_act?($user) || $params['action'] == 'log out' || $params['action'] == 'chat'
-                   input_action($params['action'])
-                 else
-                   ''
-                 end
-
-# mysql_update('users', $user.mysql_id, 'lastaction' => :Now) if Action_Outcome != ''
+if can_act?($user) || $params['action'] == 'log out' || $params['action'] == 'chat'
+  Action_Outcome = input_action($params['action'])
+else
+  Action_Outcome = ''
+end
 
 $ip_hits = ip_hit(UserID)
 
