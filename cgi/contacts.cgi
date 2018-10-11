@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
-require 'cgi'
-require 'cgi/session'
-load 'functions.cgi'
-$cgi = CGI.new
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
 
 def input_action(action)
   if action != nil && ($params['magic'] != $user.magic)
@@ -54,7 +54,7 @@ def change_contacts(x) # x = charlist array
         if num_enemies >= 50 then return "Contact list is full. Delete some contacts if you wish to add more."; end
         num_enemies = num_enemies + 1
         mysql_insert('enemies',{'user_id'=>UserID, 'enemy_id'=>x[i*2-2].to_i, 'enemy_type'=>x[i*2-1].to_i})
-      else 
+      else
         if (enemy['enemy_type'] == x[i*2-1]) or (enemy['enemy_type'].to_i >=9 && x[i*2-1].to_i == 9) then next; end
         mysql_update('enemies',{'user_id'=>UserID, 'enemy_id'=>x[i*2-2].to_i}, {'enemy_type'=>x[i*2-1].to_i, 'updated'=>:Now})
       end
@@ -76,18 +76,18 @@ puts $cgi.header($header)
 $user = User.new(UserID)
 
 Action_Outcome = input_action($params['action'])
-puts Action_Outcome
 puts <<ENDTEXT
 <html>
 <head>
-<link rel="icon" 
-      type="image/png" 
+<link rel="icon"
+      type="image/png"
       href="images/favicon.ico">
 <title>Contact list for #{$user.name}</title>
-<link rel='stylesheet' type='text/css' href='shintolin.css' />
+<link rel='stylesheet' type='text/css' href='html/shintolin.css' />
 </head>
 <body>
 <br><br>
+<h1>Contacts</h1>
 <a class='buttonlink' href='game.cgi'>Return</a>
 <br><br>
 ENDTEXT
@@ -155,7 +155,7 @@ Example:<br>
 <br><br>
 ENDTEXT
 
-puts "<br><br>Export of your contact list:<br> 
+puts "<br><br>Export of your contact list:<br>
 <textarea rows='7' cols='40' readonly='readonly'>#{enemy_html}</textarea>"
 puts "</td></table>"
 puts "</body></html>"

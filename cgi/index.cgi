@@ -5,7 +5,6 @@ $LOAD_PATH << '../lib'
 require 'header.rb'
 
 print $cgi.header
-puts ENV['GAME_ENV']
 
 def settlement_box
   settlements = mysql_select('settlements',{'allow_new_users'=>1})
@@ -103,9 +102,7 @@ Password: <br>
 </div>
 
 <div class='beigebox' style='width:15em;margin-top:4px'>\n
-<a class=\"buttonlink\" href=\"http://shintolin.forumcircle.com\">Forum</a>
-<a class=\"buttonlink\" href=\"http://shintolin.wikia.com/wiki/Shintolin\">Help/Wiki</a>
-<a class=\"buttonlink\" href=\"faq.html\">FAQ</a>
+<a class=\"buttonlink\" href=\"/html/faq.html\">FAQ</a>
 <p>
 <a class=\"buttonlink\" href=\"rankings.cgi\">Rankings</a>
 <a class=\"buttonlink\" href=\"isaac.html\">Creator</a>

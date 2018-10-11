@@ -25,7 +25,7 @@ puts <<~ENDTEXT
     <a class="buttonlink" href="map.cgi">Map</a>
     <a class="buttonlink" href="contacts.cgi">Contacts</a>
     <a class="buttonlink" href="rankings.cgi">Rankings</a>
-    <a class="buttonlink" href="faq.html">FAQ</a>
+    <a class="buttonlink" href="/html/faq.html">FAQ</a>
     #{Logout_Button}
 
   </div>
