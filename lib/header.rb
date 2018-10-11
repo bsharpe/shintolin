@@ -12,3 +12,6 @@ require 'time'
 
 $cgi = CGI.new
 $mysql = mysql_connect
+
+$params = $cgi
+
