@@ -364,15 +364,15 @@ class Settlement
   end
 
   def inhabitants
-    inhabitant_ids.map { |id| User.new(id) }
+    @inhabitants ||= inhabitant_ids.map { |id| User.new(id) }
   end
 
   def inhabitant_links
-    inhabitants.map { |user| user.link }
+    inhabitants.map(&:link)
   end
 
   def inhabitant_names
-    inhabitants.map { |user| user.name }
+    inhabitants.map(&:name)
   end
 
   def initialize(id)
@@ -380,18 +380,15 @@ class Settlement
   end
 
   def leader
-    @leader = User.new(leader_id) if @leader == nil
-    @leader
+    @leader ||= User.new(leader_id)
   end
 
   def leader_link
-    @leader = User.new(leader_id) if @leader == nil
-    if @leader.exists? then @leader.link     else "None" end
+    @leader_link ||= leader ? leader.link : "None"
   end
 
   def leader_name
-    @leader = User.new(leader_id) if @leader == nil
-    if @leader.exists? then @leader.name     else "None" end
+    @leader_name ||= leader ? leader.name : "None"
   end
 
   def link
@@ -1003,10 +1000,9 @@ end
 
 def build_list(user)
   buildings = user.tile.building.improvements
-  buildings.delete_if { |building|
-    building[:build_skill] != nil &&
-      !has_skill?(user, building[:build_skill])
-  }
+  buildings.delete_if do |building|
+    building[:build_skill] != nil && !has_skill?(user, building[:build_skill])
+  end
 end
 
 def buildings_in_radius(tile, radius_squared, building)
@@ -1151,9 +1147,9 @@ def can_sell_skill?(user_id, skill_id)
   unless has_skill?(user_id, skill_id) then return false end
   skill = id_to_key(:skill, skill_id)
   post_reqs = all_where(:skill, :prereq, skill)
-  post_reqs.each { |skill|
+  post_reqs.each do |skill|
     return false if has_skill?(user_id, skill[:id])
-  }
+  end
   true
 end
 
@@ -1298,9 +1294,9 @@ end
 
 def craft_list(user_id)
   items = all_where(:item, :craftable, true)
-  items.delete_if { |item|
+  items.delete_if do |item|
     item[:craft_skill] != nil && !has_skill?(user_id, item[:craft_skill])
-  }
+  end
 end
 
 def db_table(table)
@@ -1390,12 +1386,12 @@ def describe_craft(item_row)
 
   tools, materials = [], []
   if item_row[:tools] != nil
-    tools = item_row[:tools].map do
-      |tool| describe_items(1, tool, "long")     end
+    tools = item_row[:tools].map do |tool|
+      describe_items(1, tool, "long")
+    end
   end
   if item_row[:materials] != nil
-    materials = item_row[:materials].map do
-      |item, amt| describe_items(amt, item, :short, " x ")     end
+    materials = item_row[:materials].map{ |item, amt| describe_items(amt, item, :short, " x ") }
   end
   "#{name} (#{ap_cost}ap, #{(tools + materials).join(", ")})"
 end
@@ -1416,11 +1412,9 @@ end
 
 def describe_items_list(items, length = :short, infix = " ")
   if items.is_a?(Hash)
-    item_descs = items.map do
-      |item, amt| describe_items(amt, item, length, infix)     end
+    item_descs = items.map { |item, amt| describe_items(amt, item, length, infix) }
   else
-    item_descs = items.map do
-      |item| describe_items(1, item, length, infix)     end
+    item_descs = items.map{ |item| describe_items(1, item, length, infix) }
   end
   describe_list(item_descs)
 end
@@ -1547,10 +1541,8 @@ def describe_occupants(x, y, z, omit = 0)
 
   show_hp = true if has_skill?(omit, :triage)
   occupant_links = []
-  occupants.each do
-    |occupant|
-    occupant_links <<
-      html_userlink(occupant["id"], occupant["name"], :details, show_hp)
+  occupants.each do |occupant|
+    occupant_links << html_userlink(occupant["id"], occupant["name"], :details, show_hp)
   end
   if occupants.count == 1 then desc = "Standing here is "   else desc = "Standing here are " end
   desc += describe_list(occupant_links) + "."
@@ -1755,11 +1747,10 @@ end
 
 def habitats(animal)
   habitat_types = db_field(:animal, animal, :habitats)
-  habitats = habitat_types.collect {
-    |type|
+  habitats = habitat_types.collect do |type|
     matches = all_where(:terrain, :class, type)
     matches.collect { |match| match[:id] } if matches
-  }
+  end
   habitats.flatten!
 end
 
@@ -2465,14 +2456,13 @@ def say(speaker, message, volume, magic, target = nil)
   if volume == "shout"
     mysql_change_ap(speaker, -2)
     dirs = ["NW", "N", "NE", "E", "SE", "S", "SW", "W"]
-    dirs.each {
-      |dir|
+    dirs.each do |dir|
       x, y, z = dir_to_offset(dir)
       mysql_insert("messages",
                    {"speaker_id" => speaker.mysql_id, "message" => message, "type" => "distant",
                     "x" => (speaker.x + x), "y" => (speaker.y + y),
                     "z" => (speaker.z + z)})
-    }
+    end
   end
 
   # work out display
@@ -2625,8 +2615,7 @@ def search_hidden_items(user)
   return nil if tile.building.exists? && tile.building.item_storage?
   item_rows = mysql_select("stockpiles", tile.mysql_id, {"amount" => 0})
   item_amts = {}
-  item_rows.each do
-    |row|
+  item_rows.each do |row|
     item_amts[row["item_id"].to_i] = row["amount"].to_i
   end
   found_item = random_select(item_amts, 100)
@@ -2941,8 +2930,9 @@ def user_has_item?(user, item_id)
   end
 
   if item_id.is_a?(Array)
-    item_id.each do
-      |item| unless user_has_item?(user, item) then return false end     end
+    item_id.each do |item|
+      unless user_has_item?(user, item) then return false end
+    end
     return true
   end
 
@@ -2998,8 +2988,7 @@ end
 def values_freqs_hash(mysql_resource, field)
   hash = Hash.new
   hash.default = 0
-  mysql_resource.each do
-    |row|
+  mysql_resource.each do |row|
     value = row[field]
     hash[value] += 1
   end

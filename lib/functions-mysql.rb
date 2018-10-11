@@ -311,8 +311,7 @@ def mysql_where(clause, not_clause = nil)
       else
         # if hash->value is "x => [1,2,3]", query should be
         # WHERE ('x' = 1 OR 'x' = 2 OR 'x' = 3)
-        or_array =
-          value.map { |v| "`#{column}` = #{mysql_value(v)}" }
+        or_array = value.map { |v| "`#{column}` = #{mysql_value(v)}" }
         or_clause = " (#{or_array.join(' OR ')})"
       end
     end

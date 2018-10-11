@@ -17,8 +17,10 @@ def load_inventories
   items = db_table(:item).values
   old_invs = $old_db.query('SELECT * FROM inventories')
   old_invs.each do |inv|
+
     print "ID: #{inv['ID']}"
     items.each do |item|
+
       amount = inv[item[:plural]]
       next unless amount.to_i != 0
 
@@ -35,8 +37,10 @@ def load_stockpiles
   items = db_table(:item).values
   old_stocks = $old_db.query('SELECT * FROM stockpiles')
   old_stocks.each do |stock|
+
     print "X, Y: #{stock['X']}, #{stock['Y']}"
     items.each do |item|
+
       amount = stock[item[:plural]]
       next unless amount.to_i != 0
 
@@ -54,6 +58,7 @@ def load_grid
   regions = db_table(:region).values
   old_map = $old_db.query('SELECT * FROM grid')
   old_map.each do |tile|
+
     bid = if !tile['building'].nil?
             row_where(:building, :name, tile['building'])[:id]
           # print "Building: #{tile['building']}, id: #{bid}"
@@ -79,8 +84,10 @@ def load_skills
   skills = db_table(:skill).values
   old_skills = $old_db.query('SELECT * FROM skills')
   old_skills.each do |row|
+
     puts "Player ID: #{row['ID']}"
     skills.each  do |skill|
+
       name = skill[:name]
       puts "\t#{name}: #{row[name]}"
       mysql_insert('skills', 'user_id' => row['ID'], 'skill_id' => skill[:id]) if row[name] == '1'
@@ -91,6 +98,7 @@ end
 def load_messages
   old_msgs = $old_db.query('SELECT * FROM messages')
   old_msgs.each do |row|
+
     # puts "Speaker: #{row['speaker']} Target: #{row['target']}"
     s = mysql_row('users', 'name' => row['speaker'])
     s_id = 0
@@ -105,6 +113,7 @@ end
 def load_animals
   old_animals = $old_db.query('SELECT * FROM animals')
   old_animals.each do |row|
+
     type_id = row_where(:animal, :name, row['type'])[:id]
     puts "Animal: #{row['type']} ID: #{type_id}"
     mysql_insert('animals', 'id' => row['ID'], 'x' => row['X'], 'y' => row['Y'], 'hp' => row['hp'], 'type_id' => type_id)
@@ -114,6 +123,7 @@ end
 def load_towns
   towns = $old_db.query('SELECT * FROM `settlements`')
   towns.each do |row|
+
     desc = insert_breaks(row['description'])
     leader_id = mysql_row('users',
                           'name' => row['leader'])['id']
@@ -125,6 +135,7 @@ end
 def load_accounts
   accounts = $old_db.query('SELECT * FROM `accounts`')
   accounts.each do |row|
+
     settlement_id = 0
     if row['settlement'] != ''
       settlement = mysql_row('settlements',

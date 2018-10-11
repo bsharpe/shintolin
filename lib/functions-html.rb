@@ -21,7 +21,6 @@ def html_chat_box(chats = 30)
   chats = ''
   db_chats.each do |chat|
     next if chat['speaker_id'] == '0'
-
     chats << "<div>#{describe_message(chat)}</div>"
   end
   chats
@@ -36,7 +35,6 @@ def html_chat_large(chats = 150)
   chats = ''
   db_chats.each do |chat|
     next if chat['speaker_id'] == '0'
-
     chats << "<div>#{describe_message(chat)}</div>"
   end
   html_action_form('Chat', false, nil, 'chat.cgi') do
@@ -52,7 +50,7 @@ def html_drop_item(user)
   user_id = user.mysql_id
   actions = user_actions(user)
   html = ''
-  if actions.include? :drop
+  if actions.include?(:drop)
     html += html_action_form('Drop') do
       html_select_num(15) +
         html_select_item(:plural) do |item|
@@ -329,10 +327,7 @@ end
 def html_select(coll, selected = nil)
   html = "<select name=\"option\">"
   coll.each do |x|
-    disp = if block_given?
-             yield(x)
-           else
-             x end
+    disp = block_given? ? yield(x) : x
     html += "<option value=\"#{x}\""
     html += ' selected="yes"' if selected == x
     html += ">#{disp}</option>"
@@ -480,9 +475,7 @@ def html_skills_list(type, user_id = 0)
     html += "<h2>Level #{level} #{db_field(:skills_renamed, :name, type).to_s.capitalize}</h2>" \
             "You have #{user.mysql[xp_field]} #{db_field(:skills_renamed, :name, type)} experience points.<br>"
   end
-  form = if user.level < Max_Level then 'buy'
-         else 'sell'
-         end
+  form = (user.level < Max_Level) ? 'buy' : 'sell'
 
   skills.each do |skill|
     html += html_skill(skill[:id], user_id, 0, skill_cost(level), form)

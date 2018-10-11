@@ -60,8 +60,8 @@ if type == "players"
     "<td><b>Rank</b></td>" +
     "<td><b>Name</b></td>" +
     "<td><b>#{column}</b></td></tr>\n"
-  result.each do
-    |row|
+  result.each do |row|
+
     user = User.new(row['id'])
     disp =
     if display != nil then display.call(row[metric])

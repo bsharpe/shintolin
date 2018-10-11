@@ -76,8 +76,8 @@ Hidden =
   html_hidden('x',$x) + html_hidden('y',$y) +
   html_hidden('size',$size)
 
-Map = html_map($tile, $size, nil, :show_occupants) do
-  |tile|
+Map = html_map($tile, $size, nil, :show_occupants) do |tile|
+
   "<div class=\"small\">#{tile.region_name}</div>" +
   "<input type=\"text\" " +
   "class=\"text\" " +
@@ -100,8 +100,8 @@ regions = db_table(:region).values
 region_ids = regions.map {|r| r[:id]}
 
 Region_Select =
-  html_select(region_ids, $params['option'].to_i) do
-    |id| db_field(:region, id, :name) end
+  html_select(region_ids, $params['option'].to_i) do |id|
+ db_field(:region, id, :name) end
 
 puts <<ENDTEXT
 <html>

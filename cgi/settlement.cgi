@@ -63,12 +63,10 @@ def input_action(action)
       number = 0; total = 0
       list = Array.new
       dazed = Array.new
-      $settlement.inhabitants.each { # make list of dazed settlement members
-        |member|
-        if member.hp <= 0
-          dazed[member.mysql_id] = member.name
-        end
-      }
+      # make list of dazed settlement members
+      $settlement.inhabitants.each do |member|
+        dazed[member.mysql_id] = member.name if member.hp <= 0
+      end
       $params['dazed'].to_i.times do
         number = number + 1
         option = 'option' + number.to_s
@@ -101,10 +99,10 @@ def input_action(action)
       number = 0; total = 0
       list = Array.new
       pending = Array.new
-      $settlement.pendings.each { # make list of pending settlement members
-        |member|
-          pending[member.mysql_id] = member.name
-      }
+      # make list of pending settlement members
+      $settlement.pendings.each do |member|
+        pending[member.mysql_id] = member.name
+      end
       $params['pending'].to_i.times do
         number = number + 1
         option = 'option' + number.to_s
@@ -321,15 +319,15 @@ ENDTEXT
 $user = User.new(user_id) if user_id != false
 if $user != nil && ($user.settlement == $settlement || $user.temp_sett_id == $settlement.mysql_id)
   candidate_ids = [0] + $settlement.inhabitant_ids
-  select_user = html_select(candidate_ids,$user.vote.to_s) {|id|
+  select_user = html_select(candidate_ids,$user.vote.to_s) do |id|
     if id != 0
-    user = User.new id
-    "#{user.name} (#{user.supporters} supporters)"
+      user = User.new id
+      "#{user.name} (#{user.supporters} supporters)"
     else
-    id
-    "- no one -"
+      id
+      "- no one -"
     end
-    }
+  end
 
   puts <<ENDTEXT
   <tr>
@@ -391,11 +389,10 @@ The following players are pending residents and can be granted settlement member
 <input type="hidden" value="#{$user.magic}" name = "magic">
 ENDTEXT
 pending = 0
-$settlement.pendings.each {
-  |member|
-    pending = pending + 1
-    puts "<input type='checkbox' name ='option#{pending}' value ='#{member.mysql_id}'>#{member.name}&nbsp;&nbsp;"
-}
+$settlement.pendings.each do |member|
+  pending = pending + 1
+  puts "<input type='checkbox' name ='option#{pending}' value ='#{member.mysql_id}'>#{member.name}&nbsp;&nbsp;"
+end
 if pending == 0 then puts "No one is currently pending." end
 puts <<ENDTEXT
 <input type='hidden' name='pending' value='#{pending}'>
@@ -412,13 +409,12 @@ The following players are dazed and their ties to your settlement can be revoked
 <input type="hidden" value="#{$user.magic}" name = "magic">
 ENDTEXT
 dazed = 0
-$settlement.inhabitants.each {
-  |member|
+$settlement.inhabitants.each do |member|
   if member.hp <= 0
     dazed = dazed + 1
     puts "<input type='checkbox' name ='option#{dazed}' value ='#{member.mysql_id}'>#{member.name}&nbsp;&nbsp;"
   end
-}
+end
 if dazed == 0 then puts "No one is currently dazed." end
 puts <<ENDTEXT
 <input type='hidden' name='dazed' value='#{dazed}'>

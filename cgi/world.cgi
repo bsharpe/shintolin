@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-#!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
 $LOAD_PATH << '../lib'
@@ -13,12 +12,10 @@ ys = (-5..5).map {|y| y * size}
 
 $map = '<table>'
 
-ys.each do
-  |y|
+ys.each do |y|
   y_range = ((y-(size / 2))...(y+(size/2)))
   $map += "\n<tr>\n"
-  xs.each do
-    |x|
+  xs.each do |x|
     x_range = ((x-(size / 2))...(x+(size/2)))
 
     tiles = mysql_select('grid',{'x'=>x_range,'y'=>y_range})

@@ -1,12 +1,10 @@
-#!/usr/bin/env ruby
-load '/var/www/shn/functions.cgi'
-
 def tick_campfires
+  puts '<li>Campfires burned!</li><ul>'
   campfire_tiles = mysql_select('grid', 'building_id' => 5)
   campfire_tiles.each do |tile|
     next unless rand(2) == 0
 
-    puts "hp #{tile['building_hp']}"
+    puts "<li>hp #{tile['building_hp']}"
     if tile['building_hp'].to_i <= 1
       mysql_update('grid', { 'x' => tile['x'], 'y' => tile['y'] },
                    'building_id' => 0, 'building_hp' => 0)
@@ -24,7 +22,7 @@ def tick_campfires
       end
     end
   end
-  'Campfires burned!'
+  puts "</ul>"
 end
 
 def tick_change_leader
@@ -57,24 +55,29 @@ def tick_settlement_membership
 end
 
 def tick_damage_buildings
+  puts "<li>Applying Storm Damage</li><ul>"
   regions = db_table(:region).values
   regions.each do |region|
     next if rand > 0.1
 
-    puts region[:name]
+    puts "<li>#{region[:name]}</li>"
     tiles = mysql_select('grid', { 'region_id' => region[:id] }, 'building_id' => 0)
     tiles.each do |tile|
       dmg = rand(-5..9)
-      next unless dmg > 0
+      next if dmg.negative?
 
       building = Building.new(tile['x'], tile['y'])
       next if building.special == :settlement
       next if building.special == :ruins # prevents storm damage
 
-      if building.id == 17 then dmg -= 3; next if dmg <= 0 end # 17 = walls-reduce dmg odds/amt
+      # 17 = walls-reduce dmg odds/amt
+      if building.id == 17 then
+        dmg -= 3
+        next if dmg <= 0
+      end
+
       destroy = deal_damage(dmg, building)
-      msg = "A storm blew across #{region[:name]}, " \
-            "doing #{dmg} damage to #{building.a}"
+      msg = "A storm blew across #{region[:name]}, doing #{dmg} damage to #{building.a}"
       mysql_insert('messages',
                    'x' => building.x,
                    'y' => building.y,
@@ -83,7 +86,7 @@ def tick_damage_buildings
                    'message' => msg)
     end
   end
-  'Huts blown away!'
+  puts "</ul>"
 end
 
 def tick_grow_fields
@@ -176,8 +179,7 @@ def tick_hunger
 end
 
 def tick_inactive
-  query = 'UPDATE `users` SET `active` = 0 ' \
-          'WHERE lastaction < (NOW() - INTERVAL 5 DAY)'
+  query = 'UPDATE `users` SET `active` = 0 WHERE lastaction < (NOW() - INTERVAL 5 DAY)'
   $mysql.query(query)
   'Inactive players!'
 end
@@ -269,9 +271,11 @@ def tick_rot_food
 end
 
 def tick_spawn_animals
+  puts "<li>Spawing Animals</li>"
+  puts "<ul>"
   regions = db_table(:region)
   regions.each do |name, region|
-    puts name
+    puts "<li>#{name}"
     animals = region[:animals_per_100]
     animals = [] if animals.nil?
     puts animals
@@ -297,7 +301,7 @@ def tick_spawn_animals
       end
     end
   end
-  'Animals spawned!'
+  puts "</ul>"
 end
 
 def tick_terrain_transitions
@@ -323,9 +327,7 @@ end
 
 def tick_delete_empty_data
   # Kill empty data to save space. Things like having 0 of an item are useless to keep around.
-  query = 'delete from `inventories` where `amount` = 0'
-  $mysql.query(query)
-  query = 'delete from `stockpiles` where `amount` = 0'
-  $mysql.query(query)
+  $mysql.query('delete from `inventories` where `amount` = 0')
+  $mysql.query('delete from `stockpiles` where `amount` = 0')
   'Empty/unneeded DB data dumped!'
 end

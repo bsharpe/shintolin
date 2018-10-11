@@ -10,8 +10,8 @@ def settlement_box
   settlements = mysql_select('settlements',{'allow_new_users'=>1})
   html = "\n\t<select name=\"settlement\" style=\"width:10em\">"
   html += "\n\t\t<option value=\"0\">None</option>"
-  settlements.each do
-    |row|
+  settlements.each do |row|
+
     html += "\n\t\t<option value=\"#{row['id']}\""
     html += 'selected="yes" ' if $cgi['settlement'] == row['id']
     html += ">#{row['name']}, #{row['motto']}</option>"

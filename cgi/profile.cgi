@@ -140,6 +140,7 @@ elsif user_id != false
   ENDTEXT
   print '<select style="background-color:#c3b080; color:#203008;" name="enemy">'
   colors.each do |color|
+
     print '<option style="background-color:' + color[0] + ';" value="' + color[1] + '"'
     print ' selected ="yes"' if (color[1] == result['enemy_type']) || ((color[1] == '9') && (result['enemy_type'].to_i >= 9))
     puts '>' + color[2] + '</option>'
