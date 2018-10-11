@@ -177,18 +177,19 @@ class Building
     mysql["building_hp"].to_i
   end
 
+
   def description(z = 0)
     return "" unless self.exists?
 
     dmg = case (hp.to_f / max_hp)
           when (0...0.33)
-            if mysql["building_id"] == "5" then "dying "             else "ruined " end
+            if mysql["building_id"] == "5" then "dying "  else "ruined " end
           when (0.33...0.67)
-            if mysql["building_id"] == "5" then ""             else "damaged " end
+            if mysql["building_id"] == "5" then "" else "damaged " end
           when (0.67...1)
-            if mysql["building_id"] == "5" then "roaring "             else "dilapidated " end
+            if mysql["building_id"] == "5" then "roaring " else "dilapidated " end
           else
-            if mysql["building_id"] == "5" then "raging "             else "" end
+            if mysql["building_id"] == "5" then "raging "else "" end
           end
 
     if z == 0
@@ -220,10 +221,11 @@ class Building
   end
 
   def data
-    if @data == nil
-      @data = db_row(:building, mysql["building_id"])
-    end
-    @data
+    @data ||= db_row(:building, mysql["building_id"])
+  end
+
+  def description(z)
+    data ? data[:description] : ''
   end
 
   def exists?
@@ -259,15 +261,17 @@ class Building
   end
 
   def name
-    "the " + data[:name]
+    "the #{data[:name]}"
   end
 
   def prereq_id
-    if prereq != nil then db_field(:building, prereq, :id)     else 0 end
+    (prereq != nil) ? db_field(:building, prereq, :id) : 0
   end
 
   def repair
     repair = data.clone
+    return repair if max_hp.zero?
+
     multiplier =
       case (hp.to_f / max_hp)
       when (0...0.33) then 0.66
@@ -279,8 +283,7 @@ class Building
     repair[:build_ap] = (build_ap * (multiplier + 0.33)).to_i
     repair[:build_xp] = (build_xp * multiplier).to_i
     repair[:materials] = {}
-    data[:materials].each do
-      |item, amt|
+    data[:materials].each do |item, amt|
       repair[:materials][item] = (amt.to_f * multiplier).to_i
     end
     repair
