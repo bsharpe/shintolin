@@ -1331,6 +1331,7 @@ def deal_damage(dmg, target)
     kill = false
   else
     case target.class.name
+
     when "User"
       mysql_update("users", target.mysql_id, {"hp" => 0})
       if target.temp_sett_id != 0
@@ -1338,11 +1339,14 @@ def deal_damage(dmg, target)
         mysql_put_message("action", "$ACTOR, dazed before the day ended, have lost your pending settlement residency.",
                           target, target)
       end
+
     when "Animal"
       mysql_delete("animals", target.mysql_id)
+
     when "Building"
       destroy_building(target)
     end
+
     kill = true
   end
   kill
@@ -1643,7 +1647,7 @@ def drop(user, item_id, amount, magic)
 end
 
 def encrypt(str)
-  Digest::MD5.hexdigest(str)
+  BCrypt::Password.create(str)
 end
 
 def feed(feeder_id, target_id, item_id)
@@ -1687,21 +1691,26 @@ def fill(user, magic)
 end
 
 def get_validated_id
-  if $cgi.include? "username"
+  if $cgi.has_key?("username")
     return false if $cgi["username"].length == 0
+
     user_id = mysql_user_id($cgi["username"])
     return false if user_id == nil
-    return false unless validate_user(user_id, encrypt($cgi["password"]))
+    return false unless validate_user(user_id, $cgi["password"])
+
+    user = User.new(user_id)
     $cookie = CGI::Cookie.new(
       "name" => "shintolin",
-      "value" => [user_id.to_s, encrypt($cgi["password"])],
+      "value" => [user_id.to_s, user.password],
       "expires" => (Time.now + 1800),
     )
   else
     $cookie = $cgi.cookies["shintolin"]
     return false if $cookie == nil
+
     user_id = $cookie[0]
-    return false unless validate_user(user_id, $cookie[1])
+    user = User.new(user_id)
+    return false unless $cookie[1] == user.password
   end
   return user_id
 end
@@ -2977,8 +2986,8 @@ end
 def validate_user(user_id, password)
   user = User.new(user_id)
   return false unless user.exists?
-  db_password = user.password
-  if db_password == password then return true   else false end
+
+  BCrypt::Password.new(user.password) == password
 end
 
 def valid_location?(x, y, z)

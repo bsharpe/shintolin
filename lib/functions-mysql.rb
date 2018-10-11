@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 def mysql_bounded_update(table, field, where_clause, change, bound = nil)
-  if bound.nil?
-    bound = if change > 0 then 1_000_000 # an arbitrarily large number
-            else 0 end
-  end
-  bound = bound.to_i
-  current_amt = mysql_row(table, where_clause)[field].to_f
   return 0 if change == 0
 
-  if change > 0
+  bound ||= (change > 0) ? 9_999_999 : 0
+  bound = bound.to_i
+  current_amt = mysql_row(table, where_clause)[field].to_f
+
+  if change.positive?
     # if change is positive, treat bound as an upper bound
     if (current_amt + change) < bound
       mysql_update(table, where_clause, field => (current_amt + change))
@@ -38,12 +36,18 @@ def mysql_change_ap(user, change)
       user.mysql_id
     end
 
-  if change > 0
+  # don't charge the admins any Action Point costs
+  return if $user.is_admin?
+
+  if change.positive?
     mysql_bounded_update('users', 'ap', user_id, change, Max_AP)
   else
     mysql_bounded_update('users', 'ap', user_id, change, -Max_AP)
-    if $user.ap + change < -10 then ip_hit(user_id, $user.ap * 10 + 90)
-    else ip_hit(user_id, -(change * 10) - 10) end
+    if ($user.ap + change) < -10 then
+      ip_hit(user_id, $user.ap * 10 + 90)
+    else
+      ip_hit(user_id, -(change * 10) - 10)
+    end
   end
 end
 
@@ -55,8 +59,8 @@ def mysql_change_inv(inv, item_id, amt)
   # OOP refactoring needed!
   table = 'inventories'
   case inv.class.name
-  when 'Fixnum' then row_id = { 'user_id' => inv }
-  when 'String' then row_id = { 'user_id' => inv }
+  when 'Fixnum','String'
+    row_id = { 'user_id' => inv }
   when 'User'
     table = 'inventories'
     row_id = { 'user_id' => inv.mysql_id }
@@ -121,15 +125,9 @@ def mysql_change_stockpile(x, y, item_id, change)
 end
 
 def mysql_delete(table, where_clause = nil)
-  if where_clause.nil?
-    return "ERROR: You're trying to delete everything. That's probably stupid."
-  end
+  raise ArgumentError.new("Can't delete everything (where_clause is nil)") unless where_clause
 
-  query = "DELETE FROM `#{table}`" +
-          mysql_where(where_clause)
-  if $mysql_debug then puts query
-  else $mysql.query(query)
-  end
+  $mysql.query("DELETE FROM `#{table}` #{mysql_where(where_clause)}")
 end
 
 def mysql_get_messages(x, y, z, user)
@@ -157,7 +155,7 @@ def mysql_get_messages(x, y, z, user)
           "AND (`time` + INTERVAL 24 HOUR) > '#{user.lastaction}')" \
           ' ORDER BY `time`'
 
-  messages = $mysql.query(query)
+  $mysql.query(query)
 end
 
 def mysql_give_xp(type, xp, user)
@@ -267,9 +265,7 @@ def mysql_update(table, where_clause, column_values_hash, not_clause = nil)
   end
   query += updates_array.join(',')
   query += mysql_where(where_clause, not_clause)
-  if $mysql_debug then puts query
-  else $mysql.query(query)
-  end
+  $mysql.query(query)
 end
 
 def mysql_user(id)

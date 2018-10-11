@@ -50,7 +50,7 @@ puts <<ENDTEXT
 
 
 <td>
-<a href="./screenshot.html"><img src='images/screenthumb.png'><br>[Screenshot]</a>
+<a href="/html/screenshot.html"><img src='images/screenthumb.png'><br>[Screenshot]</a>
 </td>
 
 </tr>
@@ -80,16 +80,6 @@ puts <<ENDTEXT
 
 <div class='beigebox' style='width:15em;margin-top:4px'>\n
 <b>Sign in:</b><hr/>
-ENDTEXT
-
-case $cgi['msg']
-  when "bad_pw"
-    puts "\t<b>Incorrect username or password</b>\n"
-  when "account_made"
-    puts "\t<b>Player #{$cgi['username']} created! You may now log in:</b>\n"
-end
-
-puts <<ENDTEXT
 <form method='POST' action='game.cgi'>
 Username: <br>
 <input type='text' class='text' name='username' maxLength='24'><br>
@@ -98,6 +88,16 @@ Password: <br>
 <hr>
 <input type='submit' style='margin-left:auto;margin-right:0px' value='Login'>
 </form>
+ENDTEXT
+
+case $cgi['msg']
+when "bad_pw"
+  puts "\t<b style=\"color: red\">Incorrect username or password</b>\n"
+when "account_made"
+  puts "\t<b style=\"color: gold\">Player #{$cgi['username']} created! You may now log in:</b>\n"
+end
+
+puts <<ENDTEXT
 
 </div>
 
@@ -181,12 +181,15 @@ puts <<ENDTEXT
 
 </tr>
 </table>
-<i>Now that enough money was donated to buy a new server, Shintolin is no longer taking donations. A big thank you to everyone who gave money, very much appreciated.</i>
 </div>
-<font size = '-1' color='e8e8d0'>Server Time: #{Time.now}</font>
 <br>
 <div class='news'>
 <h3>Updates</h3>
+
+<h4>October 11th, 2018</h4>
+<ul>
+<li> Shintolin is working again
+</ul>
 
 <h4>December 5th 2010</h4>
 <ul>
