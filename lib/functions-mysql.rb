@@ -256,12 +256,7 @@ def mysql_row(table, where_clause, not_clause = nil)
 end
 
 def mysql_tile(x, y)
-  tile = mysql_row('grid', 'x' => x, 'y' => y)
-  if tile.nil?
-    tile = { 'x' => x, 'y' => y, 'terrain' => '3', 'region_id' => '3', 'building_id' => '0',
-             'hp' => 3, 'building_hp' => 0 }
-  end
-  tile
+  mysql_row('grid', 'x' => x, 'y' => y) || { 'x' => x, 'y' => y, 'terrain' => '3', 'region_id' => '3', 'building_id' => '0', 'hp' => 3, 'building_hp' => 0 }
 end
 
 def mysql_update(table, where_clause, column_values_hash, not_clause = nil)

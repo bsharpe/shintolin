@@ -169,6 +169,16 @@ class Building
 
   attr_reader :x, :y, :mysql_id
 
+  def initialize(x = nil, y = nil, tile: nil)
+    if tile.nil?
+      @x, @y = x.to_i, y.to_i
+    else
+      @x, @y = tile.x, tile.y
+      @tile = tile
+    end
+    @mysql_id = {"x" => x, "y" => y}
+  end
+
   def a
     a_an(data[:name])
   end
@@ -176,7 +186,6 @@ class Building
   def hp
     mysql["building_hp"].to_i
   end
-
 
   def description(z = 0)
     return "" unless self.exists?
@@ -210,11 +219,9 @@ class Building
     writing = writing(z)
     if writing
       if z == 0
-        desc += " Written on #{name} are the words " +
-                "<i>\"#{writing}\"</i>"
+        desc += " Written on #{name} are the words <i>\"#{writing}\"</i>"
       else
-        desc += " Written on the wall are the words " +
-                "<i>\"#{writing}\"</i>"
+        desc += " Written on the wall are the words <i>\"#{writing}\"</i>"
       end
     end
     desc
@@ -229,7 +236,7 @@ class Building
   end
 
   def exists?
-    mysql["building_id"] != "0"
+    mysql["building_id"].to_i > 0
   end
 
   def item_storage?
@@ -247,13 +254,8 @@ class Building
     all_where(:building, :prereq, key)
   end
 
-  def initialize(x, y)
-    @x, @y = x.to_i, y.to_i
-    @mysql_id = {"x" => x, "y" => y}
-  end
-
   def mysql
-    @mysql ||= mysql_tile(@x, @y)
+    @mysql ||= tile.mysql
   end
 
   def mysql_table
@@ -290,7 +292,7 @@ class Building
   end
 
   def tile
-    Tile.new(x, y)
+    @tile ||= Tile.new(x, y)
   end
 
   def writing(z)
@@ -437,7 +439,7 @@ class Tile
 
   data_fields "actions"
 
-  mysql_int_fields "mysql", "terrain", "building_id", "region_id", "hp", "building_hp"
+  mysql_int_fields "mysql", "terrain", "building_id", "region_id", "hp", "building_hp", "id"
 
   attr_reader :x, :y, :mysql_id
 
@@ -454,13 +456,11 @@ class Tile
   end
 
   def building
-    Building.new(x, y)
+    Building.new(tile: self)
   end
 
   def data
-    if @data == nil then @data = db_row(:terrain, mysql["terrain"]) end
-    if @data == nil then @data = db_row(:terrain, :wilderness) end
-    @data
+    @data ||= db_row(:terrain, mysql["terrain"]) || db_row(:terrain, :wilderness)
   end
 
   def description(z = 0)

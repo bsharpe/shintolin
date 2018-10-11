@@ -67,14 +67,14 @@ def html_forms(user)
   players = []
   animals = []
   building = []
-  player_rows = mysql_select('users',
-                             { 'x' => user.x, 'y' => user.y, 'z' => user.z, 'active' => 1 }, 'id' => user.mysql_id)
+  player_rows = mysql_select('users', { 'x' => user.x, 'y' => user.y, 'z' => user.z, 'active' => 1 }, 'id' => user.mysql_id)
   player_rows.each { |row| players << User.new(row['id']) }
   if user.z == 0
     animal_rows = mysql_select('animals', 'x' => user.x, 'y' => user.y)
     animal_rows.each { |row| animals << Animal.new(row['id']) }
   end
-  building << tile.building if tile.building.exists?
+  building << tile.building if tile.building_id.to_i > 0
+
   has_players = !players.empty?
   has_targets = (has_players || !animals.empty? || !building.empty?)
 
@@ -86,8 +86,7 @@ def html_forms(user)
       html_select_target(animals + players + building) +
         ' with ' +
         html_select_item(:weapon, user_id) do |item|
-          (item[:use] == :weapon && user_has_item?(user_id, item[:id])) ||
-            item[:id] == 24 # 24 -> fist
+          (item[:use] == :weapon && user_has_item?(user_id, item[:id])) || item[:id] == 24 # 24 -> fist
         end
     end
   end
@@ -184,13 +183,7 @@ def html_forms(user)
 end
 
 def html_hidden(name, value)
-  # <input type="hidden" name="x" value="-1">
-  html = "<input type=\"hidden\" name=\"" +
-         name.to_s +
-         '" value="' +
-         value.to_s +
-         "\" />"
-  html
+  "<input type=\"hidden\" name=\"#{name}\" value=\"#{value}\" />"
 end
 
 def html_inventory(user_id, y = nil, infix = ' x ', commas = false, inline = false)
@@ -381,13 +374,14 @@ def html_select_target(targets, default = 'No-one', &block)
   html = "<select name=\"target\" style=\"width:10em\">"
   html += "<option value=\"0:user\">#{default}</option>"
 
+
   targets.each do |target|
     html += case target.class.name
             when 'Building'
               html_option_building(target)
             when 'Animal'
               html_option_animal(target)
-            else
+            when 'User'
               html_option_user(target, &block)
             end
   end
@@ -408,14 +402,11 @@ def html_option_building(building)
 
   html = "<option "
   html += 'selected="yes" ' if $target.is_a?(Building)
-  html += "value=\"#{building.x},#{building.y}:building\">" \
-          "#{building.name}</option>"
+  html += "value=\"#{building.x},#{building.y}:building\">#{building.name}</option>"
 end
 
 def html_option_user(user)
-  display =
-    if block_given? then yield(user)
-    else user.name end
+  display = block_given? ? yield(user) : user.name
 
   html = "<option "
   html += 'selected="yes" ' if !$target.nil? && $target.mysql_id == user.mysql_id
@@ -428,9 +419,7 @@ def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
 
   skill_name = id_to_key(:skill, skill_name) if skill_name.is_a?(Integer)
   skill = db_row(:skill, skill_name)
-  style = if has_skill?(user_id, skill[:id]) then 'bought'
-          else 'unbought'
-          end
+  style = has_skill?(user_id, skill[:id]) ? 'bought' : 'unbought'
 
   html = '<div style="padding:8px">'
   indent.times { html += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp' }
