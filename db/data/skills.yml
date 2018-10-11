@@ -1,0 +1,230 @@
+---
+:agriculture:
+  :id: 1
+  :name: agriculture
+  :type: :herbalist
+  :desc: dig fields, plant and tend crops
+  :prereq:
+:artisanship:
+  :id: 2
+  :name: artisanship
+  :type: :crafter
+  :desc: convert longhouses into workshops
+  :prereq: :carpentry
+:axe1:
+  :id: 3
+  :name: basic axe
+  :type: :warrior
+  :desc: axes do +1 damage
+  :prereq:
+:axe2:
+  :id: 4
+  :name: skilled axe
+  :type: :warrior
+  :desc: axes hit with +10% accuracy
+  :prereq: :axe1
+:axe3:
+  :id: 5
+  :name: advanced axe
+  :type: :warrior
+  :desc: axes do an additonal +1 damage
+  :prereq: :axe2
+:axe4:
+  :id: 6
+  :name: elite axe
+  :type: :warrior
+  :desc: axes hit with an additional +10% accuracy
+  :prereq: :axe3
+:baking:
+  :id: 35
+  :name: baking
+  :type: :herbalist
+  :desc: bake bread
+  :prereq:
+:butchering:
+  :id: 7
+  :name: butchering
+  :type: :wanderer
+  :desc: obtain more meat from slain animals
+  :prereq: :foraging
+:carpentry:
+  :id: 8
+  :name: carpentry
+  :type: :crafter
+  :desc: craft timber, sickles, and carpentry tools; crafting costs less AP when in
+    a workshop
+  :prereq: :hafting
+:construction:
+  :id: 9
+  :name: construction
+  :type: :crafter
+  :desc: build huts and longhouses
+  :prereq:
+:divine_inspiration:
+  :id: 28
+  :name: divine inspiration
+  :type: :crafter
+  :desc: build shrines and other religious buildings
+  :prereq: :artisanship
+:foraging:
+  :id: 10
+  :name: foraging
+  :type: :wanderer
+  :desc: see the availability of resources when searching
+  :prereq:
+:forest_walk:
+  :id: 11
+  :name: forest walk
+  :type: :wanderer
+  :desc: reduces the AP cost to move through forest squares
+  :prereq:
+:hafting:
+  :id: 13
+  :name: hafting
+  :type: :crafter
+  :desc: create stone axes and stone spears
+  :prereq:
+:herb_lore:
+  :id: 12
+  :name: herb lore
+  :type: :herbalist
+  :desc: thyme leaves provide better healing
+  :prereq:
+:hospitaller:
+  :id: 14
+  :name: hospitaller
+  :type: :herbalist
+  :desc: estalish new hospitals in longhouse buildings
+  :prereq: :medicine
+:lumberjack:
+  :id: 15
+  :name: lumberjack
+  :type: :wanderer
+  :desc: halves the AP cost to chop down trees
+  :prereq:
+:masonry:
+  :id: 32
+  :name: masonry
+  :type: :crafter
+  :desc: convert workshops into stonemasonries; build stone buildings
+  :prereq: :stone_working
+:medicine:
+  :id: 16
+  :name: medicine
+  :type: :herbalist
+  :desc: heal more effectively and craft healing items for less AP when inside a hospital
+  :prereq: :herb_lore
+:milling:
+  :id: 34
+  :name: milling
+  :type: :crafter
+  :desc: grind wheat into flour
+  :prereq:
+:mountaineering:
+  :id: 17
+  :name: mountaineering
+  :type: :wanderer
+  :desc: scale cliffs, and reduced AP cost to move through hill and mountain squares
+  :prereq: :forest_walk
+:pottery:
+  :id: 33
+  :name: pottery
+  :type: :crafter
+  :desc: craft clay pots
+  :prereq: :stone_working
+:quarrying:
+  :id: 30
+  :name: quarrying
+  :type: :crafter
+  :desc: quarry stones from cliffs
+  :prereq:
+:settling:
+  :id: 27
+  :name: settling
+  :type: :wanderer
+  :desc: can establish new settlements
+  :prereq:
+:spear1:
+  :id: 18
+  :name: basic spear
+  :type: :warrior
+  :desc: spears do +1 damage
+  :prereq:
+:spear2:
+  :id: 19
+  :name: skilled spear
+  :type: :warrior
+  :desc: spears hit with +10% accuracy
+  :prereq: :spear1
+:spear3:
+  :id: 20
+  :name: advanced spear
+  :type: :warrior
+  :desc: spears do an additional +1 damage
+  :prereq: :spear2
+:spear4:
+  :id: 21
+  :name: elite spear
+  :type: :warrior
+  :desc: spears hit with an additional +10% accuracy
+  :prereq: :spear3
+:stone_working:
+  :id: 31
+  :name: stone working
+  :type: :crafter
+  :desc: craft stone blocks, millstones, and masonry tools
+  :prereq: :quarrying
+:swimming:
+  :id: 22
+  :name: swimming
+  :type: :wanderer
+  :desc: reduces the AP cost to move through water squares, and can enter deep water
+  :prereq: :forest_walk
+:tea_making:
+  :id: 23
+  :name: tea making
+  :type: :herbalist
+  :desc: create revitalising herbal teas
+  :prereq:
+:tracking:
+  :id: 29
+  :name: tracking
+  :type: :wanderer
+  :desc: animals and people are visible on the map screen
+  :prereq: :foraging
+:trailblazing:
+  :id: 24
+  :name: trailblazing
+  :type: :crafter
+  :desc: build dirt tracks and make signposts
+  :prereq: :construction
+:triage:
+  :id: 25
+  :name: triage
+  :type: :herbalist
+  :desc: see the health level of injured people
+  :prereq: :herb_lore
+:unarmed1:
+  :id: 36
+  :name: basic Shin-Jitsu
+  :type: :warrior
+  :desc: fists hit with +10% accuracy
+  :prereq:
+:unarmed2:
+  :id: 37
+  :name: skilled Shin-Jitsu
+  :type: :warrior
+  :desc: fists do +1 damage
+  :prereq: :unarmed1
+:unarmed3:
+  :id: 38
+  :name: advanced Shin-Jitsu
+  :type: :warrior
+  :desc: fists hit with an additional 10% accuracy
+  :prereq: :unarmed2
+:unarmed4:
+  :id: 39
+  :name: elite Shin-Jitsu
+  :type: :warrior
+  :desc: fists do an additional +1 damage
+  :prereq: :unarmed3

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 def mysql_bounded_update(table, field, where_clause, change, bound = nil)
   if bound.nil?
@@ -195,9 +196,8 @@ def mysql_insert(table, column_values_hash)
   end
 
   query += values.join(',') + ')'
-  if $mysql_debug then puts query
-  else $mysql.query(query)
-  end
+  puts query if $mysql_debug
+  $mysql.query(query)
 end
 
 def mysql_max_id(table)
@@ -251,14 +251,8 @@ def mysql_select_all(table)
 end
 
 def mysql_row(table, where_clause, not_clause = nil)
-  query = "SELECT * FROM `#{table}`" +
-          mysql_where(where_clause, not_clause)
-  result = $mysql.query(query)
-  case result.num_rows
-  when 0 then nil
-  when 1 then result.first
-  else # puts 'Warning: More than one row returned.'
-  end
+  query = "SELECT * FROM `#{table}` #{mysql_where(where_clause, not_clause)}"
+  $mysql.query(query).first
 end
 
 def mysql_tile(x, y)

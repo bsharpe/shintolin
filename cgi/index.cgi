@@ -1,16 +1,10 @@
 #!/usr/bin/env ruby
-
 require 'bundler/setup'
 Bundler.require
 $LOAD_PATH << '../lib'
+require 'header.rb'
 
-require 'mysql-connect'
-require 'functions-mysql'
-
-print "Content-type: text/html\r\n\r\n"
-
-$mysql = mysql_connect
-$cgi = CGI.new
+print $cgi.header
 
 def settlement_box
   settlements = mysql_select('settlements',{'allow_new_users'=>1})
@@ -34,7 +28,7 @@ puts <<ENDTEXT
       type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - Home</title>
-<link rel=\"stylesheet\" type=\"text/css\" href=\"shintolin.css\"/>
+<link rel=\"stylesheet\" type=\"text/css\" href=\"/html/shintolin.css\"/>
 </head>
 <body>
 <div class='bigbox' style='height:600px'>

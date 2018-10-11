@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
-require 'cgi'
-load 'functions.cgi'
-$cgi = CGI.new
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
 
 $return_page = "index.cgi?settlement=#{$cgi['settlement']}"
 
@@ -46,20 +47,26 @@ settlement = Settlement.new($cgi['settlement'])
 unless settlement.exists? && settlement.allow_new_users == 1
   settlement_id = 0
   x, y = rand(40) - 20, rand(40) - 20
-else 
+else
   settlement_id = settlement.mysql_id
   x = settlement.x + rand(5) - 2
   y = settlement.y + rand(5) - 2
 end
 
-mysql_insert('users',
-  {'name'=>username,'password'=>password,'x'=>x,'y'=>y})
+mysql_insert('users', {'name'=>username,'password'=>password,'x'=>x,'y'=>y})
 
 id = mysql_row('users',{'name'=>username})['id']
-mysql_insert('accounts',
-  {'id'=>id,'email'=>$cgi['email'],'joined'=>:Today,
-   'lastrevive'=>:Today, 'settlement_id'=> 0, 
-   'temp_sett_id'=>settlement_id, 'when_sett_joined' => :Now})
+mysql_insert('accounts', {
+  'id'=>id,
+  'email'=>$cgi['email'],
+  'joined'=>:Today,
+  'lastrevive'=>:Today,
+  'settlement_id'=> 0,
+  'website' => '',
+  'temp_sett_id'=>settlement_id,
+  'when_sett_joined' => :Now,
+  'description' => "an adventurer"
+})
 
 if settlement_id != 0
   mysql_put_message('action',
@@ -67,5 +74,4 @@ if settlement_id != 0
 end
 
 mysql_change_inv(id, :noobcake, 9)
-puts $cgi.header('Location'=>
-  $return_page + "&username=#{username}&msg=account_made")
+puts $cgi.header('Location'=> $return_page + "&username=#{username}&msg=account_made")

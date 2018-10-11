@@ -1,0 +1,11 @@
+---
+Image_Folder: 'images/'.freeze
+Max_Hunger: 12
+AP_Recovery: 3.0
+Max_AP: 100
+Max_Weight: 70
+Max_Items: 1000
+Max_HP: 50
+Max_Level: 17
+Search_Dmg_Chance: 0.15 # percentage chance of reducing a tile's hp when an item is found)
+Food_Rot_Chance: 0.04

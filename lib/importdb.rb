@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 load 'mysql.rb'
 load 'functions.rb'
 $mysql_debug = true

@@ -1366,7 +1366,7 @@ $Data =
      name: 'masonry',
      type: :crafter,
      desc: 'convert workshops into stonemasonries; build stone buildings',
-     prereq: :stone_working},
+     prereq: :stone_working },
 
     medicine:     { id: 16,
      name: 'medicine',
@@ -1513,7 +1513,8 @@ $Data =
      Spring: 'You are walking through a verdant grassland. Some small flowers are starting to grow here.',
      Summer: 'You are walking through a verdant grassland, with many dandelions and other flowers. Crickets are chirping in the long grass.',
      Autumn: 'You are walking through a grassland. The cold weather is beginning to turn the grass brown.',
-     Winter: 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.'},
+     Winter: 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.'
+   },
 
     forest:     { id: 2,
      ap: { forest_walk: 1, default: 2 },
@@ -1530,7 +1531,8 @@ $Data =
      Spring: 'You are in a forest. Shafts of sunlight shine through the trees.',
      Summer: 'You are in a forest. The leafy tree cover overhead provides some shade from the hot sun.',
      Autumn: 'You are in a forest, walking through a thick carpet of orange and brown leaves.',
-     Winter: 'You are in a forest. The bare branches of the trees are stark against the winter sky.'},
+     Winter: 'You are in a forest. The bare branches of the trees are stark against the winter sky.'
+   },
 
     pine_forest_1:     { id: 21,
      ap: 1,
@@ -1549,7 +1551,8 @@ $Data =
      Autumn: 'A number of tall pine trees tower above you here, ' \
                  'and pine cones crunch underfoot.',
      Winter: 'A number of tall pine trees tower above you here, ' \
-                 'with snow hanging off the branches of the trees.'},
+                 'with snow hanging off the branches of the trees.'
+    },
 
     pine_forest_2:     { id: 22,
      ap: { forest_walk: 1, default: 2 },
@@ -1612,7 +1615,10 @@ $Data =
      ap: 2,
      altitude: 0,
      image: 'p_wilderness.jpg',
-     search: { 'You can\'t expect to find anything in the wilderness!' => 90, 'You find nothingness - whiteness - endlessness - stretching beyond the human imagination... <i>desolation of the soul...</i> OH MY GOD!' => 10 },
+     search: {
+       'You can\'t expect to find anything in the wilderness!' => 90,
+       'You find nothingness - whiteness - endlessness - stretching beyond the human imagination... <i>desolation of the soul...</i> OH MY GOD!' => 10
+     },
      Spring: 'You are wandering through a seemingly endless wilderness.',
      Summer: 'You are wandering through a seemingly endless wilderness. The hot sun beats down upon you.',
      Autumn: 'You are wandering through a seemingly endless wilderness.',
@@ -1635,8 +1641,7 @@ $Data =
      Spring: 'You are walking through a verdant grassland. Some small flowers are starting to grow here.',
      Summer: 'You are walking through a verdant grassland, with many dandelions and other flowers. Crickets are chirping in the long grass.',
      Autumn: 'You are walking through a grassland. The cold weather is beginning to turn the grass brown.',
-     Winter: 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.'}
-,
+     Winter: 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.'},
 
     low_hillside:     { id: 31,
      ap: 1,
@@ -1825,8 +1830,7 @@ $Data =
      Spring: 'You are wading through a small river, cool water running over your feet.',
      Summer: 'You are paddling through a small river. The water is slow and murky.',
      Autumn: 'You are wading through a small river, cool water running over your feet.',
-     Winter: 'You are wading through a small river. The water is ice cold and rapid.'}
-,
+     Winter: 'You are wading through a small river. The water is ice cold and rapid.'},
 
     deep_river:     { id: 56,
      class: :deep_water,
@@ -1836,9 +1840,7 @@ $Data =
      Spring: 'You are swimming through a deep river.',
      Summer: 'You are swimming through a deep river. The cool water brings relief from the heat of the sun.',
      Autumn: 'You are swimming through a deep river.',
-     Winter: 'You are swimming through a deep river. The cold water chills you to the bone.'}
-
-,
+     Winter: 'You are swimming through a deep river. The cold water chills you to the bone.'},
 
     flood_plain:     { id: 57,
      ap: 1.5,
@@ -1965,9 +1967,6 @@ $Data =
 
     track_forest:     { id: 81,
      ap: 0.5,
-     build_tiny?: true,
-     build_small?: true,
-     build_large?: true,
      class: :open,
      altitude: 0,
      image: 'p_dirt.jpg',
@@ -1983,9 +1982,6 @@ $Data =
 
     track_pine:     { id: 82,
      ap: 0.5,
-     build_tiny?: true,
-     build_small?: true,
-     build_large?: true,
      class: :open,
      altitude: 0,
      image: 'p_dirt.jpg',
@@ -2124,7 +2120,7 @@ $Data =
   }
   }
 
-Image_Folder = 'images/'.freeze
+Image_Folder = '/images/'.freeze
 Max_Hunger = 12
 AP_Recovery = 3.0
 Max_AP = 100

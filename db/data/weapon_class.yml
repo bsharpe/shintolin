@@ -1,0 +1,10 @@
+---
+:blunt:
+  :hit_msg: "$ACTOR cudgeled $TARGET with a "
+  :miss_msg: "$ACTOR swung at $TARGET with a "
+:slash:
+  :hit_msg: "$ACTOR slashed $TARGET with a "
+  :miss_msg: "$ACTOR swiped at $TARGET with a "
+:stab:
+  :hit_msg: "$ACTOR stabbed $TARGET with a "
+  :miss_msg: "$ACTOR lunged at $TARGET with a "

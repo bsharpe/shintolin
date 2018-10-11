@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
-print "Content-type: text/html\r\n\r\n"
-require 'cgi'
-load 'mysql-connect.cgi'
-load 'functions-mysql.rb'
-mysql_connect
+
+require 'bundler/setup'
+Bundler.require
+$LOAD_PATH << '../lib'
+require 'header.rb'
 
   query = "select min(x) from grid"
   minX = $mysql.query(query)
