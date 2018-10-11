@@ -37,7 +37,7 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
       type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - Skills</title>
-<link rel="stylesheet" type="text/css" href="shintolin.css" />
+<link rel="stylesheet" type="text/css" href="/html/shintolin.css" />
 </head>
 <body>
 <h1>Skills</h1>'

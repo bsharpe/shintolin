@@ -48,7 +48,7 @@ $map += '</table>'
 puts <<ENDTEXT
 <html>
 <head><title>Shintolin - World</title>
-<link rel="stylesheet" type="text/css" href="shintolin.css" />
+<link rel="stylesheet" type="text/css" href="/html/shintolin.css" />
 </head>
 <body>
 <h1>Map</h1>
