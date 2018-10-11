@@ -1,4 +1,4 @@
-# Shintolin
+# Shintolin (circa 2010)
 A multi-player browser-based game.
 
 This is a cleaup project for the exercise.
