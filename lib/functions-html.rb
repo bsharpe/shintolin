@@ -497,7 +497,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   tile = Tile.new(x, y)
   source_terrain = (user&.tile&.terrain)
 
-  html = '<td class="map"" style="background-image:url("' + Image_Folder + tile.image + '")>'
+  html = '<td class="map" style="background-image:url(' + Image_Folder + tile.image + ')">'
 
   html += yield(tile) if block_given?
 
