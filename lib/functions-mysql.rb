@@ -1,5 +1,25 @@
 # frozen_string_literal: true
 
+require 'yaml'
+require 'json'
+require 'ostruct'
+
+def db
+  @db ||= begin
+    db_config = JSON.parse(YAML.load_file('../db/database.yml').to_json, object_class: OpenStruct).send(ENV['GAME_ENV'])
+
+    Mysql2::Client.new(
+      host: db_config.host,
+      username: db_config.username,
+      password: db_config.password,
+      database: db_config.database
+    )
+  end
+rescue Exception => e
+  # print "Error code: ", e.errno, "\n"
+  puts "Error message: #{e}".yellow
+end
+
 def mysql_bounded_update(table, field, where_clause, change, bound = nil)
   return 0 if change == 0
 
@@ -72,7 +92,7 @@ def mysql_change_inv(inv, item_id, amt)
     row_id = inv.mysql_id
   end
 
-  item_id = db_field(:item, item_id, :id) if item_id.is_a?(Symbol)
+  item_id = lookup_table_row(:item, item_id, :id) if item_id.is_a?(Symbol)
 
   row_id['item_id'] = item_id
   current_amount = mysql_row(table, row_id)
@@ -97,7 +117,7 @@ def mysql_change_inv(inv, item_id, amt)
 end
 
 def mysql_change_stockpile(x, y, item_id, change)
-  item_id = db_field(:item, item_id, :id) if item_id.is_a?(Symbol)
+  item_id = lookup_table_row(:item, item_id, :id) if item_id.is_a?(Symbol)
   current_amount = mysql_row('stockpiles', 'x' => x, 'y' => y, 'item_id' => item_id)
   if !current_amount.nil?
     current_amount = current_amount['amount'].to_i
@@ -127,35 +147,7 @@ end
 def mysql_delete(table, where_clause = nil)
   raise ArgumentError.new("Can't delete everything (where_clause is nil)") unless where_clause
 
-  $mysql.query("DELETE FROM `#{table}` #{mysql_where(where_clause)}")
-end
-
-def mysql_get_messages(x, y, z, user)
-  query = 'SELECT * FROM `messages` WHERE ' +
-
-          # spoken, whispered, game, /me or actions visible to all at same x, y, z
-          "((`type` = 'talk' OR `type` = 'whisper' " \
-          "OR `type` = 'slash_me' OR `type` = 'game' " \
-          "OR `type` = 'visible_all')" \
-          "AND `x` = '#{x}' AND `y` = '#{y}' AND `z` = '#{z}' " \
-          "AND (`time` + INTERVAL 1 MINUTE) > '#{user.lastaction}')" +
-
-          # shouted or distant at same x, y
-          " OR ((`type` = 'shout' OR `type` = 'distant') AND " \
-          "`x` = '#{x}' AND `y` = '#{y}'" \
-          "AND (`time` + INTERVAL 1 MINUTE) > '#{user.lastaction}')" +
-
-          # action targeted at player
-          " OR (`type` = 'action' AND `target_id` = '#{user.mysql_id}'" \
-          "AND (`time` + INTERVAL 1 MINUTE) > '#{user.lastaction}')" +
-
-          # persistent messages at same x, y, z
-          " OR (`type` = 'persistent' AND " \
-          "`x` = '#{x}' AND `y` = '#{y}' AND `z` = '#{z}'" \
-          "AND (`time` + INTERVAL 24 HOUR) > '#{user.lastaction}')" \
-          ' ORDER BY `time`'
-
-  $mysql.query(query)
+  db.query("DELETE FROM `#{table}` #{mysql_where(where_clause)}")
 end
 
 def mysql_give_xp(type, xp, user)
@@ -178,79 +170,32 @@ def mysql_give_xp(type, xp, user)
 end
 
 def mysql_insert(table, column_values_hash)
-  # query "INSERT INTO grid (x,y,terrain) VALUES ('101','87','2')
-  columns = column_values_hash.keys
-  values = column_values_hash.values
-  query = "INSERT INTO #{table} (" +
-          columns.join(',')
-  query += ') VALUES ('
-  values = values.map do |value|
-    case value
-    when :Today
-      'UTC_DATE()'
-    else
-      mysql_value(value).to_s
-    end
+  columns = []
+  values = []
+
+  column_values_hash.each do |key, value|
+    columns << key
+    values << mysql_value(value)
   end
 
-  query += values.join(',') + ')'
-  puts query if $mysql_debug
-  $mysql.query(query)
-end
-
-def mysql_max_id(table)
-  query = "SELECT MAX(`id`) FROM `#{table}`"
-  result = $mysql.query(query)
-  result.first['MAX(`id`)'].to_i
-end
-
-def mysql_put_message(type, message, speaker = nil, target = nil)
-  # Delete this after OOP refactoring
-  speaker_id =
-    if speaker.nil?
-      0
-    elsif speaker.is_a?(Integer) || speaker.is_a?(String)
-      speaker
-    else
-      speaker.mysql_id
-    end
-
-  target_id =
-    if target.nil?
-      0
-    elsif target.is_a?(Integer) || target.is_a?(String)
-      target
-    else
-      target.mysql_id
-    end
-
-  speaker = User.new(speaker_id)
-  target = User.new(target_id)
-  if speaker.exists?
-    mysql_insert('messages',  'x' => speaker.x, 'y' => speaker.y,
-                              'z' => speaker.z, 'type' => type, 'message' => message,
-                              'speaker_id' => speaker_id, 'target_id' => target_id)
-  else
-    mysql_insert('messages',  'x' => 0, 'y' => 0,
-                              'z' => 0, 'type' => type, 'message' => message,
-                              'speaker_id' => 0, 'target_id' => target_id)
-  end
+  query = "INSERT INTO #{table} (#{columns.join(',')}) VALUES (#{values.join(',')})"
+  db.query(query)
 end
 
 def mysql_select(table, where_clause, not_clause = nil)
-  query = "SELECT * FROM `#{table}`" + mysql_where(where_clause, not_clause)
-  $mysql.query(query)
+  query = "SELECT * FROM `#{table}` #{mysql_where(where_clause, not_clause)}"
+  db.query(query)
 end
 alias mysql_query mysql_select
 
 def mysql_select_all(table)
   query = "SELECT * FROM `#{table}`"
-  $mysql.query(query)
+  db.query(query)
 end
 
 def mysql_row(table, where_clause, not_clause = nil)
   query = "SELECT * FROM `#{table}` #{mysql_where(where_clause, not_clause)}"
-  $mysql.query(query).first
+  db.query(query).first
 end
 
 def mysql_tile(x, y)
@@ -258,30 +203,22 @@ def mysql_tile(x, y)
 end
 
 def mysql_update(table, where_clause, column_values_hash, not_clause = nil)
-  # query = "UPDATE users SET x = 9, y = 8, z = 0 WHERE id = 77"
-  query = "UPDATE `#{table}` SET"
-  updates_array = column_values_hash.map do |column, value|
-    " `#{column}` = #{mysql_value(value)}"
+  updates = column_values_hash.each_with_object([]) do |(column, value), result|
+    result << "`#{column}` = #{mysql_value(value)}"
   end
-  query += updates_array.join(',')
-  query += mysql_where(where_clause, not_clause)
-  $mysql.query(query)
-end
 
-def mysql_user(id)
-  mysql_row('users', id.to_i)
-end
-
-def mysql_user_id(username)
-  user = mysql_row('users', 'name' => username)
-  user['id'] unless user.nil?
+  query = "UPDATE `#{table}` SET #{updates.join(',')} #{mysql_where(where_clause, not_clause)}"
+  db.query(query)
 end
 
 def mysql_value(value)
   case value
-  when :Today then 'UTC_DATE()'
-  when :Now then 'NOW()'
-  else "'#{$mysql.escape(value.to_s)}'"
+  when :Today
+    'UTC_DATE()'
+  when :Now
+    'NOW()'
+  else
+    "'#{db.escape(value.to_s)}'"
   end
 end
 

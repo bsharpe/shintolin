@@ -1,10 +1,17 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
-print $cgi.header
+$user = get_user
+if $user
+  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  puts $cgi.header($header)
+else
+  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
+  exit
+end
 
 def input_action(action)
   if action != nil && ($params['magic'] != $user.magic)
@@ -57,7 +64,7 @@ def input_action(action)
       tile = Tile.new($user.x,$user.y)
       if not tile.building.exists?
         return "You must be at your settlement's totem pole to do that."
-      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include? :join
+      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
         return "You must be at your settlement's totem pole to do that." end
       msg = "You ousted "
       number = 0; total = 0
@@ -80,7 +87,7 @@ def input_action(action)
         "<a href=\"settlement.cgi?id=#{$settlement.mysql_id}\" " +
         "class=\"neutral\" " +
         ">#{$settlement.name}</a>"
-        mysql_put_message('action', query, $user.mysql_id, id)
+        Message.insert(query, speaker: $user, target: id)
         total = total + 1
       end
         msg = msg + describe_list(list)
@@ -93,7 +100,7 @@ def input_action(action)
       tile = Tile.new($user.x,$user.y)
       if not tile.building.exists?
         return "You must be at your settlement's totem pole to do that."
-      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include? :join
+      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
         return "You must be at your settlement's totem pole to do that." end
       msg = "You promoted "
       number = 0; total = 0
@@ -116,7 +123,7 @@ def input_action(action)
         "<a href=\"settlement.cgi?id=#{$settlement.mysql_id}\" " +
         "class=\"ally\" " +
         ">#{$settlement.name}</a> early"
-        mysql_put_message('action', query, $user.mysql_id, id)
+        Message.insert(query, speaker: $user, target: id)
         total = total + 1
       end
         msg = msg + describe_list(list)
@@ -130,8 +137,6 @@ end
 
 
 $settlement = Settlement.new($params['id'])
-user_id = get_validated_id
-$user = User.new(user_id) if user_id != false
 
 if $settlement.exists?
   $leader = $settlement.leader
@@ -154,7 +159,7 @@ puts <<ENDTEXT
       type="image/png"
       href="images/favicon.ico">
 <title>Shintolin - #{name}</title>
-<link rel='stylesheet' type='text/css' href='shintolin.css' />
+<link rel='stylesheet' type='text/css' href='/html/shintolin.css' />
 </head>
 <body>
 ENDTEXT
@@ -378,7 +383,7 @@ ENDTEXT
   else tile = Tile.new($user.x,$user.y)
     if not tile.building.exists?
       puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
-    elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include? :join
+    elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
       puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
     else
 puts <<ENDTEXT

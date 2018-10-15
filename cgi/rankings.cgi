@@ -1,13 +1,17 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
-print $cgi.header
-
-user_id = get_validated_id
-$user = User.new(user_id) if user_id
+$user = get_user
+if $user
+  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  puts $cgi.header($header)
+else
+  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
+  exit
+end
 
 rank = $cgi['metric']
 rank = 'frags' if rank == nil
@@ -25,7 +29,7 @@ case rank
   when "points" then type, metric = "players", "points"
   when "revives" then type, metric = "players", "revives"
   when "survival"
-    type, metric, order = "players", "lastrevive", "ASC"
+    type, metric, order = "players", "last_revive", "ASC"
     column = "Last Revived"
     display = Proc.new {|date| Time.str_to_time(date).ago}
     clause = "`hp` != '0' "
@@ -53,7 +57,7 @@ if type == "players"
     "AND `active` = '1' " +
     "ORDER BY `#{metric}` #{order} " +
     "LIMIT 0, 100"
-  result = $mysql.query(query)
+  result = db.query(query)
   i = 1
   column = metric.capitalize if column == nil
   $rankings = "<tr>" +
@@ -108,14 +112,14 @@ puts <<ENDTEXT
 <link rel="icon" 
       type="image/png" 
       href="images/favicon.ico">
-<link rel='stylesheet' type='text/css' href='shintolin.css' />
+<link rel='stylesheet' type='text/css' href='/html/shintolin.css' />
 <title>Shintolin - Rankings</title>
 </head>
 <body>
 It is Year #{game_year}, #{month.to_s} -----
 ENDTEXT
 query = "SELECT COUNT(*) FROM `users` WHERE `active` = 1"
-result = $mysql.query(query).first
+result = db.query(query).first
 puts "Active Users: #{result['COUNT(*)']}"
 puts <<ENDTEXT
 <hr>

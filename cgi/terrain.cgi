@@ -2,14 +2,14 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
 print $cgi.header
 
 puts "<b>Terrains:</b><br>"
 puts "<ul>"
-terrains = db_table(:terrain).values
+terrains = lookup_table(:terrain).values
 terrains = terrains.sort {|x, y| x[:id] <=> y[:id]}
 
 terrains.each do |t|
@@ -19,7 +19,7 @@ end
 puts "</ul>"
 puts "<br><br><b>Regions:</b><br>"
 puts "<ul>"
-regions = db_table(:region).values
+regions = lookup_table(:region).values
 regions = regions.sort {|x, y| x[:id] <=> y[:id]}
 
 regions.each do |t|

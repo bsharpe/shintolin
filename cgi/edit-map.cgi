@@ -1,19 +1,17 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
-UserID = get_validated_id
-if UserID != false
+$user = get_user
+if $user
   $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  puts $cgi.header($header)
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit
 end
-
-puts $cgi.header($header)
-$user = User.new(UserID)
 
 if !$user.is_admin?
   puts "You cannot edit the map."
@@ -98,12 +96,12 @@ Move_Forms =
   html_action_form('East',:inline,nil,'edit-map.cgi') {Hidden} + " | " +
   html_action_form('Goto Coordinates',:inline,nil,'edit-map.cgi') {
   "X:<input type='text' class='text' name='x' maxlength='6' style='width:100px' value='#{$x}'> Y:<input type='text' class='text' name='y' maxlength='6' style='width:100px' value='#{$y}'>
-Don't use values beyond -32768 to 32767 (the database uses smallint for x and y)"}
+Don't use values beyond -32768 to 32767 "}
 
-regions = db_table(:region).values
+regions = lookup_table(:region).values
 region_ids = regions.map {|r| r[:id]}
 
-Region_Select = html_select(region_ids, $params['option'].to_i) { |id| db_field(:region, id, :name) }
+Region_Select = html_select(region_ids, $params['option'].to_i) { |id| lookup_table_row(:region, id, :name) }
 
 puts <<ENDTEXT
 <html>
@@ -120,8 +118,7 @@ puts <<ENDTEXT
 <input type="Submit" value="Update" />
 <input type="hidden" name="action" value="edit" />
 #{Hidden}
- | #{Region_Select} <i>(Edited tiles will join this region)</i> | <b>(Use the number 0 to delete a tile.)</b>
- | See terrain.cgi for list of regions/terrains.
+ | #{Region_Select} <i>(Edited tiles will join this region)</i> | <b>(Set to `wilderness` to delete a tile.)</b>
 <br>
 <hr>
 #{Map}

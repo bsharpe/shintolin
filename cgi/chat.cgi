@@ -4,23 +4,21 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-def input_action(action)
-  case action
-    when 'chat' then chat($user, $params['text'], $params['magic'])
-  end
-end
-
-UserID = get_validated_id
-if UserID != false
+$user = get_user
+if $user
   print $cgi.header
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit
 end
 
-$user = User.new(UserID)
+def input_action(action)
+  case action
+    when 'chat' then chat($user, $params['text'], $params['magic'])
+  end
+end
 
-input_action $params['action']
+input_action($params['action'])
 
 puts <<ENDTEXT
 <html>

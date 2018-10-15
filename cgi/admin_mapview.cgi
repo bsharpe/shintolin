@@ -8,16 +8,16 @@ require 'header.rb'
 print $cgi.header
 
   query = "select min(x) from grid"
-  minX = $mysql.query(query)
+  minX = db.query(query)
 
   query = "select min(y) from grid"
-  minY = $mysql.query(query)
+  minY = db.query(query)
 
   query = "select max(x) from grid"
-  maxX = $mysql.query(query)
+  maxX = db.query(query)
 
   query = "select max(y) from grid"
-  maxY = $mysql.query(query)
+  maxY = db.query(query)
 
 puts "Maximum map range:<br>"
 puts minX.first, maxX.first, minY.first, maxY.first
@@ -45,16 +45,16 @@ puts "<br><br><b>Tile Types</b> How much map do you want to make?"
 ENDTEXT
 
   query = "select min(x) from grid"
-  minX = $mysql.query(query)
+  minX = db.query(query)
 
   query = "select min(y) from grid"
-  minY = $mysql.query(query)
+  minY = db.query(query)
 
   query = "select max(x) from grid"
-  maxX = $mysql.query(query)
+  maxX = db.query(query)
 
   query = "select max(y) from grid"
-  maxY = $mysql.query(query)
+  maxY = db.query(query)
 
 puts "Maximum map range:<br>"
 puts minX.first, maxX.first, minY.first, maxY.first

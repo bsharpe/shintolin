@@ -1,8 +1,17 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
+
+$user = get_user
+if $user
+  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  puts $cgi.header($header)
+else
+  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
+  exit
+end
 
 def input_action(action)
   if action != nil && ($params['magic'] != $user.magic)
@@ -33,7 +42,7 @@ def change_contacts(x) # x = charlist array
 
 	# select * from enemies where id = user_id
 	query = "SELECT COUNT(*) FROM `enemies` WHERE `user_id` = #{UserID}"
-	result = $mysql.query(query).first
+	result = db.query(query).first
 	num_enemies = result['COUNT(*)'].to_i
 
   for i in (1..x.size/2)
@@ -63,17 +72,6 @@ def change_contacts(x) # x = charlist array
   return "Contact list successfully changed."
 end
 
-UserID = get_validated_id
-if UserID != false
-  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
-else
-  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
-  exit
-end
-
-
-puts $cgi.header($header)
-$user = User.new(UserID)
 
 Action_Outcome = input_action($params['action'])
 puts <<ENDTEXT

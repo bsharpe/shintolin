@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
 print $cgi.header
@@ -65,13 +65,13 @@ puts <<ENDTEXT
 
 ENDTEXT
 query = "SELECT COUNT(*) FROM `settlements`"
-result = $mysql.query(query).first
+result = db.query(query).first
 puts "<b>Settlements: #{result['COUNT(*)']}</b>"
 
 puts "<br>"
 
 query = "SELECT COUNT(*) FROM `grid`"
-result = $mysql.query(query).first
+result = db.query(query).first
 puts "<b>Map: #{result['COUNT(*)']} squares</b>"
 
 puts <<ENDTEXT

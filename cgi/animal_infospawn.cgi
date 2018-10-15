@@ -1,19 +1,19 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
 print $cgi.header
 
 def check_animals()
-  regions = db_table(:region)
+  regions = lookup_table(:region)
   regions.each do |name, region|
     puts name ; puts "/<b>"; puts region[:name]; puts "</b>"
     animals = region[:animals_per_100] || []
     puts animals
     animals.each do |animal, amt|
-      animal_id = db_field(:animal, animal, :id)
+      animal_id = lookup_table_row(:animal, animal, :id)
       puts "</b><br>";puts animal; puts": spawn factor:"; puts amt
       habitats = habitats(animal)
       habitat_tiles = mysql_select('grid', region_id: region[:id], terrain: habitats)

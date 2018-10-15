@@ -12,30 +12,16 @@ def html_action_form(action, inline = false, ap = nil, post = 'game.cgi')
   html
 end
 
-def html_chat_box(chats = 30)
-  query = 'SELECT * FROM `messages` ' \
-          "WHERE `type` = 'chat' " \
-          'ORDER BY `time` DESC ' \
-          "LIMIT 0,#{chats}"
-  db_chats = $mysql.query(query)
-  chats = ''
-  db_chats.each do |chat|
-    next if chat['speaker_id'] == '0'
-    chats << "<div>#{describe_message(chat)}</div>"
-  end
-  chats
+def html_chat_box(limit = 30)
+  Message.chats(limit).each_with_object([]) do |message, result|
+    result << "<div>#{message.to_s}</div>"
+  end.join
 end
 
 def html_chat_large(chats = 150)
-  query = 'SELECT * FROM `messages` ' \
-          "WHERE `type` = 'chat' " \
-          'ORDER BY `time` DESC ' \
-          "LIMIT 0,#{chats}"
-  db_chats = $mysql.query(query)
   chats = ''
-  db_chats.each do |chat|
-    next if chat['speaker_id'] == '0'
-    chats << "<div>#{describe_message(chat)}</div>"
+  Message.chats(limit).each do |message|
+    chats << "<div>#{message.to_s}</div>"
   end
   html_action_form('Chat', false, nil, 'chat.cgi') do
     html_text_box(200)
@@ -54,7 +40,7 @@ def html_drop_item(user)
     html += html_action_form('Drop') do
       html_select_num(15) +
         html_select_item(:plural) do |item|
-          user_has_item?(user_id, item[:id])
+          user.has_item?(item[:id])
         end
     end
   end
@@ -63,17 +49,14 @@ end
 def html_forms(user)
   # generate the buttons that should be visible to user
   tile = user.tile
-  user_id = user.mysql_id
   players = []
   animals = []
   building = []
-  player_rows = mysql_select('users', { 'x' => user.x, 'y' => user.y, 'z' => user.z, 'active' => 1 }, 'id' => user.mysql_id)
-  player_rows.each { |row| players << User.new(row['id']) }
-  if user.z == 0
-    animal_rows = mysql_select('animals', 'x' => user.x, 'y' => user.y)
-    animal_rows.each { |row| animals << Animal.new(row['id']) }
+  user.others_at_location.each { |row| players << User.new(row: row) }
+  if user.outside?
+    animals = Animal.at_location(user.x, user.y)
   end
-  building << tile.building if tile.building_id.to_i > 0
+  building << tile.building if tile.has_building?
 
   has_players = !players.empty?
   has_targets = (has_players || !animals.empty? || !building.empty?)
@@ -85,17 +68,16 @@ def html_forms(user)
     html += html_action_form('Attack') do
       html_select_target(animals + players + building) +
         ' with ' +
-        html_select_item(:weapon, user_id) do |item|
-          (item[:use] == :weapon && user_has_item?(user_id, item[:id])) || item[:id] == 24 # 24 -> fist
+        html_select_item(:weapon, user.id) do |item|
+          (item[:use] == :weapon && user.has_item?(item[:id])) || item[:id] == 24 # 24 -> fist
         end
     end
   end
 
-  if actions.include? :use
+  if actions.include?(:use)
     html += html_action_form('Use') do
       html_select_item do |item|
-        !item[:use].nil? && item[:use] != :weapon &&
-          user_has_item?(user_id, item[:id])
+        !item[:use].nil? && item[:use] != :weapon && user.has_item?(item[:id])
       end +
         ' on ' +
         html_select_target(players, 'Self')
@@ -109,8 +91,8 @@ def html_forms(user)
     end
   end
 
-  if actions.include? :craft
-    craftables = craft_list(user_id)
+  if actions.include?(:craft)
+    craftables = craft_list(user.id)
     html += html_action_form('Craft') do
       html_select_item(:craft) do |item|
         craftables.include? item
@@ -122,14 +104,14 @@ def html_forms(user)
     html += html_action_form('Give') do
       html_select_num(15) +
         html_select_item(:plural) do |item|
-          user_has_item?(user_id, item[:id])
+          user.has_item?(item[:id])
         end +
         ' to ' +
         html_select_target(players + building)
     end
   end
 
-  if actions.include? :take
+  if actions.include?(:take)
     html += html_action_form('Take') do
       html_select_num(5) +
         html_select_item(:plural) do |item|
@@ -149,35 +131,35 @@ def html_forms(user)
 
   end
 
-  if actions.include? :write
+  if actions.include?(:write)
     html += html_action_form('Write', false, '3 ap') do
       html_text_box(200) + ' on the building'
     end
 
   end
 
-  if actions.include? :sow
+  if actions.include?(:sow)
     html += html_action_form('Sow', false, '15 ap') do
       html_select_item(:plural) do |item|
         item[:plantable] == true
       end
     end
   end
-  html += html_action_form('Search', :inline) if actions.include? :search
-  html += html_action_form('Chop Tree', :inline, "#{chop_tree_ap(user_id)}ap") if actions.include?(:chop_tree) && (user.z == 0)
-  html += html_action_form('Harvest', :inline, "#{harvest_ap(user_id)}ap") if actions.include? :harvest
-  html += html_action_form('Add Fuel', :inline) if actions.include? :add_fuel
-  html += html_action_form('Fill', :inline) if actions.include? :fill
-  html += html_action_form('Water', :inline) if actions.include? :water
+  html += html_action_form('Search', :inline) if actions.include?(:search)
+  html += html_action_form('Chop Tree', :inline, "#{chop_tree_ap(user.id)}ap") if actions.include?(:chop_tree) && (user.z == 0)
+  html += html_action_form('Harvest', :inline, "#{harvest_ap(user.id)}ap") if actions.include?(:harvest)
+  html += html_action_form('Add Fuel', :inline) if actions.include?(:add_fuel)
+  html += html_action_form('Fill', :inline) if actions.include?(:fill)
+  html += html_action_form('Water', :inline) if actions.include?(:water)
   html += html_action_form('Dig', :inline, '2 ap') if actions.include?(:dig) && (user.z == 0)
-  html += html_action_form('Quarry', :inline, '4 ap') if actions.include? :quarry
-  if actions.include? :join
-    if user.settlement_id == tile.settlement_id
-    else
-      html += html_action_form('Join Settlement', :inline, '25 ap') end
+  html += html_action_form('Quarry', :inline, '4 ap') if actions.include?(:quarry)
+  if actions.include?(:join)
+    if user.settlement_id != tile.settlement_id
+      html += html_action_form('Join Settlement', :inline, '25 ap')
+    end
   end
-  html += msg_no_ap(user_id) if actions.include? :no_ap
-  html += msg_no_ip if actions.include? :no_ip
+  html += msg_no_ap(user.id) if actions.include?(:no_ap)
+  html += msg_no_ip if actions.include?(:no_ip)
   html += html_action_form('Refresh', :inline)
   html
 end
@@ -188,7 +170,8 @@ end
 
 def html_inventory(user_id, y = nil, infix = ' x ', commas = false, inline = false)
   # if y is passed, look for stockpile at location (user_id, y)
-  items = db_table(:item).values
+  user = User.ensure(user_id)
+  items = lookup_table(:item).values
   html = ""
   weight = 0
   item_descs = items.map do |item|
@@ -196,7 +179,7 @@ def html_inventory(user_id, y = nil, infix = ' x ', commas = false, inline = fal
     amount = if !y.nil?
                stockpile_item_amount(user_id, y, item[:id])
              else
-               user_item_amount(user_id, item[:id])
+               user.item_count(item[:id])
              end
     if amount > 0
       weight += (amount * item[:weight])
@@ -231,7 +214,7 @@ def html_location_box(user)
   html = '<div class="locationbox">'
   html += tile.settlement.link if tile.settlement
   begin
-    html += '<br>' + db_field(:region, tile.region_id, :name)
+    html += '<br>' + lookup_table_row(:region, tile.region_id, :name)
   rescue Exception => e
     html += 'The Wilderness'
   end
@@ -258,12 +241,11 @@ def html_map(centre, size, user = nil, show_occupants = true, &block)
   html
 end
 
-def html_messages(user_id, x, y, z)
-  user = User.new(user_id)
-  messages = mysql_get_messages(x, y, z, user)
+def html_messages(user, x, y, z)
+  user = User.new(user)
   html = []
-  messages.each do |row|
-    html << "<div class='#{row['type']}'>#{describe_message(row, user_id)}</div>"
+  Message.for_user(user).each do |message|
+    html << "<div class='#{row['type']}'>#{message.to_s(user.id)}</div>"
   end
   html.join
 end
@@ -271,32 +253,27 @@ end
 def html_move_button(dir, ap = 0)
   # displays a move button to travel in direction 'dir'
   # if ap is provided, display that on tile
+  return '' if ap.nil? || dir.blank?
 
-  if ap.nil? || dir == ''
-    html = ''
-  else
-    x, y, z = dir_to_offset(dir)
-    html = "<form method = \"POST\" action=\"game.cgi\">" \
-           "<input class=\"movebutton\" type=\"submit\" value=\"" +
-           dir
-    if z != 0 then ap = 1 end # ap always 1 when entering/exiting
-    html += ': ' + ap.to_s + 'ap' if ap != 1 && ap != 0
-    html += '"/>' + "" +
-            html_hidden('action', 'move') + "" +
-            html_hidden('x', x) + "" +
-            html_hidden('y', y) + "" +
-            html_hidden('z', z) +
-            html_hidden('magic', $user.magic) +
-            '</form>'
-  end
+  x, y, z = dir_to_offset(dir)
+  ap = 1 if z != 0  # ap always 1 when entering/exiting
+
+  html = %Q[<form method = "POST" action="game.cgi">
+            <input class="movebutton" type="submit" value="#{dir}]
+  html << ": #{ap}ap" if ap > 1
+  html << '"/>'
+  html << html_hidden('action', 'move')
+  html << html_hidden('x', x)
+  html << html_hidden('y', y)
+  html << html_hidden('z', z)
+  html << html_hidden('magic', $user.magic)
+  html << '</form>'
   html
 end
 
-def html_player_data(user_id)
-  user = User.new(user_id)
-  player = mysql_user(user_id)
-  html = '<center>You are ' +
-         html_userlink(user_id, player['name'])
+def html_player_data(user)
+  user = User.ensure(user)
+  html = '<center>You are ' + html_userlink(user.id, user.name)
   settlement = user.settlement
   unless user.settlement.nil?
     html = if user == settlement.leader
@@ -306,15 +283,15 @@ def html_player_data(user_id)
     html += "<a href=\"settlement.cgi?id=#{settlement.mysql_id}\" class=\"ally\">#{settlement.name}</a>"
   end
   html += '.<br>' \
-         " HP: <b>#{player['hp']}/#{player['maxhp']}</b>" \
-         " AP: <b>#{player['ap'].to_i.ceil}/#{Max_AP}</b>" \
-         " <span style=\"font-size:80%\">(#{ap_recovery(user_id)} AP/hour)</span>" \
-         " Hunger: <b>#{player['hunger']}/#{Max_Hunger}</b>" \
+         " HP: <b>#{user['hp']}/#{user['maxhp']}</b>" \
+         " AP: <b>#{user['ap'].to_i.ceil}/#{Max_AP}</b>" \
+         " <span style=\"font-size:80%\">(#{ap_recovery(user.id)} AP/hour)</span>" \
+         " Hunger: <b>#{user['hunger']}/#{Max_Hunger}</b>" \
          " Level: <b>#{user.level}</b><br>" \
-         "<b>XP:</b> #{db_field(:skills_renamed, :name, :wanderer).to_s.capitalize}: <b>#{player['wander_xp']}</b>" \
-         " #{db_field(:skills_renamed, :name, :herbalist).to_s.capitalize}: <b>#{player['herbal_xp']}</b>" \
-         " #{db_field(:skills_renamed, :name, :crafter).to_s.capitalize}: <b>#{player['craft_xp']}</b>" \
-         " #{db_field(:skills_renamed, :name, :warrior).to_s.capitalize}: <b>#{player['warrior_xp']}</b></center>"
+         "<b>XP:</b> #{lookup_table_row(:skills_renamed, :name, :wanderer).to_s.capitalize}: <b>#{user['wander_xp']}</b>" \
+         " #{lookup_table_row(:skills_renamed, :name, :herbalist).to_s.capitalize}: <b>#{user['herbal_xp']}</b>" \
+         " #{lookup_table_row(:skills_renamed, :name, :crafter).to_s.capitalize}: <b>#{user['craft_xp']}</b>" \
+         " #{lookup_table_row(:skills_renamed, :name, :warrior).to_s.capitalize}: <b>#{user['warrior_xp']}</b></center>"
 end
 
 def html_select(coll, selected = nil)
@@ -341,7 +318,7 @@ def html_select_item(display = :name, user_id = nil)
   # <select name=weapon style='width:10em'><option value=fist>Fist</option>
   # <option value='hand axe'>Hand axe</option></select>
   html = "<select name=\"item\" style=\"width:10em\">"
-  items = db_table(:item).values
+  items = lookup_table(:item).values
   items = items.select { |item| yield(item) } if block_given?
   items.each do |item|
     html += "<option "
@@ -418,7 +395,7 @@ def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
   # <i>obtain more meat when killing animals </i><br>
 
   skill_name = id_to_key(:skill, skill_name) if skill_name.is_a?(Integer)
-  skill = db_row(:skill, skill_name)
+  skill = lookup_table_row(:skill, skill_name)
   style = has_skill?(user_id, skill[:id]) ? 'bought' : 'unbought'
 
   html = '<div style="padding:8px">'
@@ -461,8 +438,8 @@ def html_skills_list(type, user_id = 0)
     user = User.new(user_id)
     level = user.level(type)
     xp_field = xp_field(type)
-    html += "<h2>Level #{level} #{db_field(:skills_renamed, :name, type).to_s.capitalize}</h2>" \
-            "You have #{user.mysql[xp_field]} #{db_field(:skills_renamed, :name, type)} experience points.<br>"
+    html += "<h2>Level #{level} #{lookup_table_row(:skills_renamed, :name, type).to_s.capitalize}</h2>" \
+            "You have #{user.mysql[xp_field]} #{lookup_table_row(:skills_renamed, :name, type)} experience points.<br>"
   end
   form = (user.level < Max_Level) ? 'buy' : 'sell'
 
@@ -500,7 +477,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
 
   if !tile.building_id.nil? && tile.building_id != 0
     html += '<span class="mapdata" style="color:#990000">' +
-            db_field(:building, tile.building_id, :name).capitalize +
+            lookup_table_row(:building, tile.building_id, :name).capitalize +
             '</span><br>'
   end
 
@@ -539,7 +516,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
 end
 
 def html_userlink(id, name = nil, desc = false, show_hp = false)
-  name = mysql_user(id)['name'] if name.nil?
+  name = User.find(id)['name'] if name.nil?
   user = User.new(id)
   description = ''
   extra = ''

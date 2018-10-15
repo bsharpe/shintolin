@@ -2,7 +2,7 @@
 
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 Dotenv.load
 require 'yaml'
 require 'json'
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `joined` timestamp NOT NULL,
   `kills` int unsigned NOT NULL default '0',
   `temp_sett_id` int unsigned NOT NULL default '0',
-  `lastrevive` timestamp NULL,
+  `last_revive` timestamp NULL,
   `description` text collate utf8_unicode_ci NOT NULL,
   `image` varchar(255) collate utf8_unicode_ci NOT NULL default '',
   `deaths` int unsigned NOT NULL default '0',

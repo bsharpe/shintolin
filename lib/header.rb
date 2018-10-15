@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require 'mysql-connect'
+
+require 'patches'
 require 'functions-mysql'
 require 'functions-html'
 require 'functions'
@@ -11,7 +12,5 @@ require 'time'
 Dotenv.load("../.env")
 
 $cgi = CGI.new
-
-$mysql = mysql_connect
 $params = $cgi
 

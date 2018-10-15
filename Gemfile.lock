@@ -5,6 +5,7 @@ GEM
     bcrypt (3.1.12)
     colorize (0.8.1)
     dotenv (2.5.0)
+    fast_blank (1.0.0)
     mysql2 (0.5.2)
 
 PLATFORMS
@@ -15,6 +16,7 @@ DEPENDENCIES
   bcrypt
   colorize
   dotenv
+  fast_blank
   mysql2
 
 RUBY VERSION

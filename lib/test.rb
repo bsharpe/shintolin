@@ -22,7 +22,7 @@ class Tests < Test::Unit::TestCase
     @hare = Animal.new(1)
     @valhalla = Settlement.new(22)
 
-    items = db_table(:item).keys
+    items = lookup_table(:item).keys
     items.each { |item| mysql_change_inv(@isaac, item, -1000) }
 
     mysql_change_inv(@isaac, :test_weapon, -100)
@@ -53,7 +53,7 @@ class Tests < Test::Unit::TestCase
 
   def test_attack_user
     hp = @allt.hp
-    @last_message_id = mysql_max_id('messages')
+    @last_message_id = Message.max_id
     assert_nothing_raised { @msg = attack(@isaac, @allt, 25) }
 
     @allt = User.new 47
@@ -107,7 +107,7 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_build_materials
-    hut = db_row(:building, :hut)
+    hut = lookup_table_row(:building, :hut)
     can_build, msg = can_build?(@isaac, hut)
     assert(!can_build)
     assert(msg =~ /You need .* to build a hut./)
@@ -142,11 +142,6 @@ class Tests < Test::Unit::TestCase
     assert(describe_message(msg) =~ msg_re)
     msg_re = /<b>You<\/b> .*/
     assert(describe_message(msg, 1) =~ msg_re)
-  end
-
-  def test_mysql_max_id
-    assert_nothing_raised { mysql_max_id('animals') }
-    assert_equal(Integer, mysql_max_id('animals').class)
   end
 
   def test_write

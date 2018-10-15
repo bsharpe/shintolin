@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
 $return_page = "index.cgi?settlement=#{$cgi['settlement']}"
@@ -60,7 +60,7 @@ mysql_insert('accounts', {
   'id'=>id,
   'email'=>$cgi['email'],
   'joined'=>:Today,
-  'lastrevive'=>:Today,
+  'last_revive'=>:Today,
   'settlement_id'=> 0,
   'website' => '',
   'temp_sett_id'=>settlement_id,
@@ -69,8 +69,7 @@ mysql_insert('accounts', {
 })
 
 if settlement_id != 0
-  mysql_put_message('action',
-  "$ACTOR have arrived at a settlement, however you must survive for a day before you are entitled to its privileges.", id, id)
+  Message.insert("$ACTOR have arrived at a settlement, however you must survive for a day before you are entitled to its privileges.", speaker: id)
 end
 
 mysql_change_inv(id, :noobcake, 9)

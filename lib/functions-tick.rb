@@ -49,14 +49,14 @@ def tick_settlement_membership
 
     mysql_update('accounts', player['id'], 'settlement_id' => player['temp_sett_id'])
     mysql_update('accounts', player['id'], 'temp_sett_id' => 0)
-    mysql_put_message('action', '$ACTOR, having made it through the day, are now entitled to the benefits of settlement membership.', player['id'], player['id'])
+    Message.insert('$ACTOR, having made it through the day, are now entitled to the benefits of settlement membership.', speaker: player['id'])
   end
   'Settlement membership updated!'
 end
 
 def tick_damage_buildings
   puts "<li>Applying Storm Damage</li><ul>"
-  regions = db_table(:region).values
+  regions = lookup_table(:region).values
   regions.each do |region|
     next if rand > 0.1
 
@@ -113,24 +113,21 @@ def tick_hunger
           "(`ap` <> '#{Max_AP}' OR " \
           '`lastaction` > (NOW() - INTERVAL 24 HOUR))'
   puts query
-  players = $mysql.query(query)
+  players = db.query(query)
   players.each do |player|
-    puts player['name']
-    if player['hunger'].to_i != 0
-      mysql_update('users', player['id'], 'hunger' => (player['hunger'].to_i - 1))
+    player = User.new(row: player)
+    puts player.name
+    if player.hunger.positive?
+      player.update(hunger: (player.hunger - 1))
       next
     end
 
     # if user has noobcake, and is < level 2, auto eat
-    if user_has_item?(player['id'], 23)
-      query = 'SELECT * FROM `skills` WHERE ' \
-             "`user_id` = '#{player['id']}'"
-      skills = $mysql.query(query)
-      if skills.count < 2
-        mysql_change_inv(player['id'], 23, -1) # 23 -> noobcake
-        mysql_put_message('action',
-                          "Feeling hungry, $ACTOR ate #{a_an('noobcake')}",
-                          player['id'], player['id'])
+    if player.has_item?(23) # noobcake
+      if player.skills.count < 2
+        player.update_item_count(23, -1)
+        Message.insert("Feeling hungry, $ACTOR ate #{a_an('noobcake')}",
+                          speaker: player)
         puts 'Om nom nom noobarific'
         next
       end
@@ -143,9 +140,8 @@ def tick_hunger
       next unless user_has_item?(player['id'], food[:id])
 
       mysql_change_inv(player['id'], food[:id], -1)
-      mysql_put_message('action',
-                        "Feeling hungry, $ACTOR ate #{a_an(food[:name])}",
-                        player['id'], player['id'])
+      Message.insert("Feeling hungry, $ACTOR ate #{a_an(food[:name])}",
+                        speaker: player)
       eaten = true
       puts 'Om nom nom'
       break
@@ -156,23 +152,21 @@ def tick_hunger
     hp_dmg = mysql_bounded_update('users', 'hp', player['id'], -3, 0)
     maxhp_dmg = mysql_bounded_update('users', 'maxhp', player['id'], -2, 25)
     if hp_dmg != 0
-      mysql_put_message('action',
-                        "$ACTOR, weakened by lack of food, lost <b>#{-hp_dmg} hp</b>",
-                        player['id'], player['id'])
+      Message.insert("$ACTOR, weakened by lack of food, lost <b>#{-hp_dmg} hp</b>",
+                        speaker: player['id'])
       if player['hp'].to_i + hp_dmg <= 0 # dazed from hunger
         temp = mysql_select('accounts', 'id' => player['id']).first
         if temp['temp_sett_id'].to_i != 0
           mysql_update('accounts', player['id'], 'temp_sett_id' => 0)
-          mysql_put_message('action', '$ACTOR, dazed by hunger, have lost your pending settlement residency.',
-                            player['id'].to_i, player['id'].to_i)
+          Message.insert('$ACTOR, dazed by hunger, have lost your pending settlement residency.',
+                            speaker: player['id'])
         end
       end
     end
     next unless maxhp_dmg != 0
 
-    mysql_put_message('action',
-                      "$ACTOR, weakened by lack of food, lost <b>#{-maxhp_dmg} max hp</b>",
-                      player['id'], player['id'])
+    Message.insert("$ACTOR, weakened by lack of food, lost <b>#{-maxhp_dmg} max hp</b>",
+                      speaker: player['id'])
   end
 
   'Hungry guys!'
@@ -180,7 +174,7 @@ end
 
 def tick_inactive
   query = 'UPDATE `users` SET `active` = 0 WHERE lastaction < (NOW() - INTERVAL 5 DAY)'
-  $mysql.query(query)
+  db.query(query)
   'Inactive players!'
 end
 
@@ -200,14 +194,14 @@ end
 
 def tick_restore_ip
   query = "UPDATE `ips` SET `hits` = '0'"
-  $mysql.query(query)
+  db.query(query)
   'IP limits reset!'
 end
 
 def tick_restore_search
   tiles = mysql_select_all('grid')
   tiles.each do |tile|
-    restore_odds = db_field(:terrain, tile['terrain'], :restore_odds)
+    restore_odds = lookup_table_row(:terrain, tile['terrain'], :restore_odds)
     restore_odds = 10 if restore_odds.nil?
     next unless rand(100) < restore_odds
 
@@ -246,7 +240,7 @@ end
 def tick_rot_food
   invs = mysql_select_all('inventories')
   invs.each do |inv|
-    next if db_field(:item, inv['item_id'], :use) != :food
+    next if lookup_table_row(:item, inv['item_id'], :use) != :food
 
     rot_amount = Math.binomial(inv['amount'].to_i, Food_Rot_Chance)
     next if rot_amount == 0
@@ -258,7 +252,7 @@ def tick_rot_food
 
   stockpiles = mysql_select_all('stockpiles')
   stockpiles.each do |stock|
-    next if db_field(:item, stock['item_id'], :use) != :food
+    next if lookup_table_row(:item, stock['item_id'], :use) != :food
 
     rot_amount = Math.binomial(stock['amount'].to_i, Food_Rot_Chance)
     next if rot_amount == 0
@@ -273,15 +267,15 @@ end
 def tick_spawn_animals
   puts "<li>Spawing Animals</li>"
   puts "<ul>"
-  regions = db_table(:region)
+  regions = lookup_table(:region)
   regions.each do |name, region|
     puts "<li>#{name}"
     animals = region[:animals_per_100]
     animals = [] if animals.nil?
     puts animals
     animals.each do |animal, amt|
-      animal_id = db_field(:animal, animal, :id)
-      animal_hp = db_field(:animal, animal, :max_hp)
+      animal_id = lookup_table_row(:animal, animal, :id)
+      animal_hp = lookup_table_row(:animal, animal, :max_hp)
       count = mysql_select('animals', 'region_id' => region[:id], 'type_id' => animal_id)
       habitats = habitats(animal)
       habitat_tiles = mysql_select('grid',
@@ -307,10 +301,10 @@ end
 def tick_terrain_transitions
   tiles = mysql_select_all('grid')
   tiles.each do |tile|
-    new_terrain = db_field(:terrain, tile['terrain'], :transition)
+    new_terrain = lookup_table_row(:terrain, tile['terrain'], :transition)
     next if new_terrain.nil?
 
-    transition_odds = db_field(:terrain, tile['terrain'], :transition_odds)
+    transition_odds = lookup_table_row(:terrain, tile['terrain'], :transition_odds)
     odds = if transition_odds.is_a?(Integer)
              transition_odds
            else
@@ -318,7 +312,7 @@ def tick_terrain_transitions
     odds = transition_odds[:default] if odds.nil?
     next unless rand(100) < odds || odds == 100
 
-    terrain_id = db_field(:terrain, new_terrain, :id)
+    terrain_id = lookup_table_row(:terrain, new_terrain, :id)
     mysql_update('grid', { 'x' => tile['x'], 'y' => tile['y'] },
                  'terrain' => terrain_id)
   end
@@ -327,7 +321,7 @@ end
 
 def tick_delete_empty_data
   # Kill empty data to save space. Things like having 0 of an item are useless to keep around.
-  $mysql.query('delete from `inventories` where `amount` = 0')
-  $mysql.query('delete from `stockpiles` where `amount` = 0')
+  db.query('delete from `inventories` where `amount` = 0')
+  db.query('delete from `stockpiles` where `amount` = 0')
   'Empty/unneeded DB data dumped!'
 end

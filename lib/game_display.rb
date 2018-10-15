@@ -26,6 +26,11 @@ puts <<~ENDTEXT
     <a class="buttonlink" href="contacts.cgi">Contacts</a>
     <a class="buttonlink" href="rankings.cgi">Rankings</a>
     <a class="buttonlink" href="/html/faq.html">FAQ</a>
+ENDTEXT
+if $user.is_admin?
+  puts '<a class="buttonlink" href="/edit-map.cgi">Edit Map</a>'
+end
+puts <<~ENDTEXT
     #{Logout_Button}
 
   </div>

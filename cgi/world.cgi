@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
 print $cgi.header
@@ -21,9 +21,9 @@ ys.each do |y|
     tiles = mysql_select('grid',{'x'=>x_range,'y'=>y_range})
     terrains = values_freqs_hash(tiles, 'terrain')
     most_common = terrains.index(terrains.values.max)
-    image = db_field(:terrain, most_common, :image)
+    image = lookup_table_row(:terrain, most_common, :image)
     image = image[:default] if image.is_a?(Hash)
-    image = db_field(:terrain, :wilderness, :image) if image == nil
+    image = lookup_table_row(:terrain, :wilderness, :image) if image == nil
 
     $map += "\n<td class=\"map\" " +
     "style=\"background-image:url('#{Image_Folder + image}')\" " +

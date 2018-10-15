@@ -2,10 +2,17 @@
 
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
-print $cgi.header
+$user = get_user
+if $user
+  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  puts $cgi.header($header)
+else
+  puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
+  exit
+end
 
 def input_action(action)
   if !action.nil? && ($params['magic'] != $user.magic)
@@ -27,7 +34,7 @@ def change_contact(e_id, type) # modified from function in contacts.cgi
   return 'Error. Try again.' if $params['magic'] != $user.magic
 
   query = "SELECT COUNT(*) FROM `enemies` WHERE `user_id` = #{$user.mysql_id}"
-  result = $mysql.query(query).first
+  result = db.query(query).first
   num_enemies = result['COUNT(*)'].to_i
   if type <= 0
     mysql_delete('enemies', 'user_id' => $user.mysql_id, 'enemy_id' => e_id); return 'Contact deleted.'
@@ -49,14 +56,12 @@ end
 
 
 profile = User.new($params['id'])
-user_id = get_validated_id
-$user = User.new(user_id) if user_id != false
 
 name = profile.exists? ? profile.name : ''
 
 msg = ''
 input_action($params['action']) if $user == profile
-if user_id != false && $params['action'] == 'update_contact' && $params['enemy'] != ''
+if $user && $params['action'] == 'update_contact' && $params['enemy'] != ''
   msg = change_contact($params['id'].to_i, $params['enemy'].to_i)
 end
 # bug-fix: have to update profile reference as input_action may have
@@ -70,7 +75,7 @@ puts <<~ENDTEXT
         type="image/png"
         href="images/favicon.ico">
   <title>Shintolin - #{name}</title>
-  <link rel='stylesheet' type='text/css' href='shintolin.css' />
+  <link rel='stylesheet' type='text/css' href='/html/shintolin.css' />
   </head>
   <body>
 ENDTEXT
@@ -185,7 +190,7 @@ puts <<ENDTEXT
 ENDTEXT
 
 if profile.hp != 0
-  puts "<tr><td><b>Alive since: </td><td>#{profile.lastrevive}</td></tr>"
+  puts "<tr><td><b>Alive since: </td><td>#{profile.last_revive}</td></tr>"
 else
   puts '<tr><td><b>Alive since: </td><td><i>Dazed</i></td></tr>'
 end

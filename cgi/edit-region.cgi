@@ -1,19 +1,17 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
-UserID = get_validated_id
-if UserID != false
+$user = get_user
+if $user
   $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  puts $cgi.header($header)
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit
 end
-
-puts $cgi.header($header)
-$user = User.new(UserID)
 
 if !$user.is_admin?
   puts "You cannot edit the map."

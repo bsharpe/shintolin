@@ -1,18 +1,18 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib'
+$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
 require 'header.rb'
 
-user_id = get_validated_id
-if user_id != false
-  $user = User.new(user_id)
-  print $cgi.header
+$user = get_user
+if $user
+  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  puts $cgi.header($header)
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
   exit
 end
-$user = User.new(user_id)
+
 
 Map =
   if has_skill?($user, :tracking)

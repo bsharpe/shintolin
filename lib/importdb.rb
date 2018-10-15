@@ -2,7 +2,6 @@
 
 load 'mysql.rb'
 load 'functions.rb'
-$mysql_debug = true
 
 $old_db = mysql_connect('shishito')
 $new_db = mysql_connect('shintoby')
@@ -14,7 +13,7 @@ class String
 end
 
 def load_inventories
-  items = db_table(:item).values
+  items = lookup_table(:item).values
   old_invs = $old_db.query('SELECT * FROM inventories')
   old_invs.each do |inv|
 
@@ -34,7 +33,7 @@ def load_inventories
 end
 
 def load_stockpiles
-  items = db_table(:item).values
+  items = lookup_table(:item).values
   old_stocks = $old_db.query('SELECT * FROM stockpiles')
   old_stocks.each do |stock|
 
@@ -54,20 +53,20 @@ def load_stockpiles
 end
 
 def load_grid
-  buildings = db_table(:building).values
-  regions = db_table(:region).values
+  buildings = lookup_table(:building).values
+  regions = lookup_table(:region).values
   old_map = $old_db.query('SELECT * FROM grid')
   old_map.each do |tile|
 
     bid = if !tile['building'].nil?
-            row_where(:building, :name, tile['building'])[:id]
+            lookup_row_where(:building, :name, tile['building'])[:id]
           # print "Building: #{tile['building']}, id: #{bid}"
           else
             0
           end
     if !tile['region'].nil? && tile['region'] != ''
       print "Region: #{tile['region']},"
-      rid = row_where(:region, :name, tile['region'].capitalize)[:id]
+      rid = lookup_row_where(:region, :name, tile['region'].capitalize)[:id]
       puts " id: #{rid}"
     else
       rid = 0
@@ -81,7 +80,7 @@ def load_grid
 end
 
 def load_skills
-  skills = db_table(:skill).values
+  skills = lookup_table(:skill).values
   old_skills = $old_db.query('SELECT * FROM skills')
   old_skills.each do |row|
 
@@ -114,7 +113,7 @@ def load_animals
   old_animals = $old_db.query('SELECT * FROM animals')
   old_animals.each do |row|
 
-    type_id = row_where(:animal, :name, row['type'])[:id]
+    type_id = lookup_row_where(:animal, :name, row['type'])[:id]
     puts "Animal: #{row['type']} ID: #{type_id}"
     mysql_insert('animals', 'id' => row['ID'], 'x' => row['X'], 'y' => row['Y'], 'hp' => row['hp'], 'type_id' => type_id)
   end
@@ -145,6 +144,6 @@ def load_accounts
 
     desc = insert_breaks(row['description'])
     mysql_insert('accounts',
-                 'deaths' => row['deaths'], 'vote' => row['vote'], 'kills' => row['kills'], 'lastrevive' => row['lastrevive'], 'joined' => row['joined'], 'frags' => row['frags'], 'points' => row['points'], 'id' => row['ID'], 'website' => '', 'settlement_id' => settlement_id, 'description' => desc, 'image' => row['image'], 'revives' => row['revives'], 'email' => row['email'])
+                 'deaths' => row['deaths'], 'vote' => row['vote'], 'kills' => row['kills'], 'last_revive' => row['last_revive'], 'joined' => row['joined'], 'frags' => row['frags'], 'points' => row['points'], 'id' => row['ID'], 'website' => '', 'settlement_id' => settlement_id, 'description' => desc, 'image' => row['image'], 'revives' => row['revives'], 'email' => row['email'])
   end
 end
