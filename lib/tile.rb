@@ -24,10 +24,6 @@ class Tile < Base
     (mysql['terrain'] || 3).to_i
   end
 
-  def ==(other)
-    x == other.x && y == other.y
-  end
-
   def building
     @building ||= Building.new(tile: self)
   end

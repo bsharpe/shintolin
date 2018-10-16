@@ -658,7 +658,8 @@ end
 
 def describe_items(amount, item, length = :short, infix = ' ')
   case amount.to_i
-  when 0 then ''
+  when 0
+    ''
   when 1
     length == :short ? "1#{infix}#{lookup_table_row(:item, item, :name)}" : a_an(lookup_table_row(:item, item, :name))
   else
@@ -671,6 +672,7 @@ def describe_items(amount, item, length = :short, infix = ' ')
 end
 
 def describe_items_list(items, length = :short, infix = ' ')
+  items ||= []
   item_descs = if items.is_a?(Hash)
                  items.map { |item, amt| describe_items(amt, item, length, infix) }
                else
