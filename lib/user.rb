@@ -22,10 +22,6 @@ class User < Base
     BCrypt::Password.new(self.password) == password
   end
 
-  def ==(other)
-    other.class == User && other.mysql_id == mysql_id
-  end
-
   def description
     mysql_2["description"] != "" ? mysql_2["description"] : "A rather non-descript individual."
   end

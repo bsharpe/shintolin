@@ -1,5 +1,3 @@
-
-
 require 'base'
 
 class Building < Base
@@ -92,7 +90,7 @@ class Building < Base
   end
 
   def exists?
-    building_id.positive? 
+    building_id.positive?
   end
 
   def item_storage?

@@ -1,5 +1,3 @@
-
-
 require 'base'
 
 class Animal < Base

@@ -1,5 +1,3 @@
-
-
 class Tile < Base
   def self.mysql_table
     'grid'
@@ -113,16 +111,14 @@ class Tile < Base
       else
         mysql_insert('stockpiles', x: x, y: y, item_id: item_id, amount: amount)
       end
-    else
-      if (row = mysql_row('stockpiles', x: x, y: y, item_id: item_id))
-        if row['amount'].to_i - amount <= 0
-          mysql_delete('stockpiles', x: x, y: y, item_id: item_id)
-        else
-          mysql_update('stockpiles', { x: x, y: y, item_id: item_id }, amount: row['amount'].to_i - amount)
-        end
+    elsif (row = mysql_row('stockpiles', x: x, y: y, item_id: item_id))
+      if row['amount'].to_i - amount <= 0
+        mysql_delete('stockpiles', x: x, y: y, item_id: item_id)
       else
-        mysql_insert('stockpiles', x: x, y: y, item_id: item_id, amount: amount)
+        mysql_update('stockpiles', { x: x, y: y, item_id: item_id }, amount: row['amount'].to_i - amount)
       end
+    else
+      mysql_insert('stockpiles', x: x, y: y, item_id: item_id, amount: amount)
     end
   end
 end

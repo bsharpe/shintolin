@@ -1,5 +1,3 @@
-
-
 puts <<~ENDTEXT
   <html>
 

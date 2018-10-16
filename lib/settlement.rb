@@ -1,5 +1,3 @@
-
-
 class Settlement < Base
   def self.mysql_table
     'settlements'
@@ -9,10 +7,6 @@ class Settlement < Base
 
   mysql_fields 'mysql', 'name', 'motto', 'title', 'type',
                'founded', 'website'
-
-  def ==(settlement)
-    settlement.class == Settlement && settlement.mysql_id == mysql_id
-  end
 
   def description
     mysql['description'].present? ? mysql['description'] : "A #{type} located in #{region_name}."

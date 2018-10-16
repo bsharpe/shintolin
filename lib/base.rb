@@ -1,5 +1,3 @@
-
-
 class Base
   attr_reader :mysql_id
 
@@ -24,6 +22,10 @@ class Base
       @mysql = row
       @mysql_id = row['id']
     end
+  end
+
+  def ==(other)
+    other.class == self.class && other.mysql_id == mysql_id
   end
 
   def self.max_id
@@ -74,7 +76,7 @@ class Base
   end
 
   def lookup_data
-    @data ||= lookup_table_row(self.class.lookup_table, mysql['type_id'])
+    @lookup_data ||= lookup_table_row(self.class.lookup_table, mysql['type_id'])
   end
 
   def self.data_fields(*fields)

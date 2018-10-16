@@ -1,5 +1,3 @@
-
-
 class Message < Base
   def self.mysql_table
     'messages'
@@ -93,7 +91,9 @@ class Message < Base
         " shouted <i>\"#{self['message']}\"</i>" +
         if self['target_id'] != '0'
           " to #{you_or_him(user_id, self['target_id'])}"
-        else '' end
+        else
+          ''
+        end
       when 'game'
         self['message']
       when 'distant'
