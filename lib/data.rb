@@ -1499,6 +1499,19 @@ $Data =
 
   terrain: #:id => 0 is used in edit-map.cgi to delete tiles. Do not use as a terrain type.
   {
+    wilderness:     { id: 3,
+     ap: 2,
+     altitude: 0,
+     image: 'p_wilderness.jpg',
+     search: {
+       'You can\'t expect to find anything in the wilderness!' => 90,
+       'You find nothingness - whiteness - endlessness - stretching beyond the human imagination... <i>desolation of the soul...</i> OH MY GOD!' => 10
+     },
+     Spring: 'You are wandering through a seemingly endless wilderness.',
+     Summer: 'You are wandering through a seemingly endless wilderness. The hot sun beats down upon you.',
+     Autumn: 'You are wandering through a seemingly endless wilderness.',
+     Winter: 'You are wandering through a seemingly endless wilderness. A cold wind whistles through the desolate landscape.'},
+
     grassland:     { id: 1,
      ap: 1,
      altitude: 0,
@@ -1610,19 +1623,6 @@ $Data =
      Summer: 'You are walking through a verdant grassland, with many dandelions and other flowers. Crickets are chirping in the long grass.',
      Autumn: 'You are walking through a grassland. The cold weather is beginning to turn the grass brown.',
      Winter: 'You are walking through a grassland. Frost has hardened the ground, and there is little sign of life.'},
-
-    wilderness:     { id: 3,
-     ap: 2,
-     altitude: 0,
-     image: 'p_wilderness.jpg',
-     search: {
-       'You can\'t expect to find anything in the wilderness!' => 90,
-       'You find nothingness - whiteness - endlessness - stretching beyond the human imagination... <i>desolation of the soul...</i> OH MY GOD!' => 10
-     },
-     Spring: 'You are wandering through a seemingly endless wilderness.',
-     Summer: 'You are wandering through a seemingly endless wilderness. The hot sun beats down upon you.',
-     Autumn: 'You are wandering through a seemingly endless wilderness.',
-     Winter: 'You are wandering through a seemingly endless wilderness. A cold wind whistles through the desolate landscape.'},
 
     cleared_wood:     { id: 4,
      ap: 1,
