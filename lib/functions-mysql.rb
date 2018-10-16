@@ -82,10 +82,10 @@ def mysql_change_inv(inv, item_id, amt)
   table = 'inventories'
   case inv.class.name
   when 'Fixnum', 'String'
-    row_id = { 'user_id' => inv }
+    row_id = { user_id: inv }
   when 'User'
     table = 'inventories'
-    row_id = { 'user_id' => inv.mysql_id }
+    row_id = { user_id: inv.mysql_id }
   when 'Building'
     table = 'stockpiles'
     row_id = inv.mysql_id
@@ -118,7 +118,7 @@ end
 
 def mysql_change_stockpile(x, y, item_id, change)
   item_id = lookup_table_row(:item, item_id, :id) if item_id.is_a?(Symbol)
-  current_amount = mysql_row('stockpiles', 'x' => x, 'y' => y, 'item_id' => item_id)
+  current_amount = mysql_row('stockpiles', x: x, y: y, item_id: item_id)
   if !current_amount.nil?
     current_amount = current_amount['amount'].to_i
     new_amount = current_amount + change
@@ -126,14 +126,14 @@ def mysql_change_stockpile(x, y, item_id, change)
       # if the change would set that item below 0, set that item to 0
       # and return the actual amount changed
       change = -current_amount
-      mysql_update('stockpiles', { 'x' => x, 'y' => y, 'item_id' => item_id }, 'amount' => 0)
+      mysql_update('stockpiles', { x: x, y: y, item_id: item_id }, amount: 0)
     else
       mysql_update('stockpiles',
-                   { 'x' => x, 'y' => y, 'item_id' => item_id }, 'amount' => new_amount)
+                   { x: x, y: y, item_id: item_id }, amount: new_amount)
     end
   elsif change >= 0
     mysql_insert('stockpiles',
-                 'x' => x, 'y' => y, 'item_id' => item_id, 'amount' => change)
+                 x: x, y: y, item_id: item_id, amount: change)
   else
     # if trying to reduce items the stockpile doesn't have,
     # do nothing and return 0

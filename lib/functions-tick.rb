@@ -1,24 +1,24 @@
 def tick_campfires
   puts '<li>Campfires burned!</li><ul>'
-  campfire_tiles = mysql_select('grid', 'building_id' => 5)
+  campfire_tiles = mysql_select('grid', building_id: 5)
   campfire_tiles.each do |tile|
     next unless rand(2).zero?
 
     puts "<li>hp #{tile['building_hp']}"
     if tile['building_hp'].to_i <= 1
-      mysql_update('grid', { 'x' => tile['x'], 'y' => tile['y'] },
-                   'building_id' => 0, 'building_hp' => 0)
-      mysql_insert('messages', 'x' => tile['x'], 'y' => tile['y'], 'z' => '0',
-                               'type' => 'game',
-                               'message' => 'The campfire burned away to nothing')
+      mysql_update('grid', { x: tile['x'], y: tile['y'] },
+                   building_id: 0, building_hp: 0)
+      mysql_insert('messages', x: tile['x'], y: tile['y'], z: '0',
+                               type: 'game',
+                               message: 'The campfire burned away to nothing')
 
     else
-      mysql_update('grid', { 'x' => tile['x'], 'y' => tile['y'] },
-                   'building_hp' => (tile['building_hp'].to_i - 1))
+      mysql_update('grid', { x: tile['x'], y: tile['y'] },
+                   building_hp: (tile['building_hp'].to_i - 1))
       if tile['building_hp'] == '5'
-        mysql_insert('messages',  'x' => tile['x'], 'y' => tile['y'], 'z' => '0',
-                                  'type' => 'game',
-                                  'message' => 'The campfire began to get low')
+        mysql_insert('messages',  x: tile['x'], y: tile['y'], z: '0',
+                                  type: 'game',
+                                  message: 'The campfire began to get low')
       end
     end
   end
@@ -32,7 +32,7 @@ def tick_change_leader
   settlements.each do |settlement|
     leader = settlement.inhabitants.max_by(&:supporters)
     leader_id = (leader.nil? || leader.supporters.zero?) ? 0 : leader.mysql_id
-    mysql_update('settlements', settlement.mysql_id, 'leader_id' => leader_id)
+    mysql_update('settlements', settlement.mysql_id, leader_id: leader_id)
     puts "#{leader.name} (#{leader_id}) " \
          "is now #{settlement.title} of #{settlement.name}."
   end
@@ -40,12 +40,12 @@ def tick_change_leader
 end
 
 def tick_settlement_membership
-  result = mysql_select('accounts', { 'settlement_id' => 0 }, 'temp_sett_id' => 0)
+  result = mysql_select('accounts', { settlement_id: 0 }, temp_sett_id: 0)
   result.each do |player|
     if Time.now - 86_400 + 3600 <= Time.str_to_time(player['when_sett_joined']) then next end # 23 hours
 
-    mysql_update('accounts', player['id'], 'settlement_id' => player['temp_sett_id'])
-    mysql_update('accounts', player['id'], 'temp_sett_id' => 0)
+    mysql_update('accounts', player['id'], settlement_id: player['temp_sett_id'])
+    mysql_update('accounts', player['id'], temp_sett_id: 0)
     Message.insert('$ACTOR, having made it through the day, are now entitled to the benefits of settlement membership.',
                    speaker: player['id'])
   end
@@ -59,7 +59,7 @@ def tick_damage_buildings
     next if rand > 0.1
 
     puts "<li>#{region[:name]}</li>"
-    tiles = mysql_select('grid', { 'region_id' => region[:id] }, 'building_id' => 0)
+    tiles = mysql_select('grid', { region_id: region[:id] }, building_id: 0)
     tiles.each do |tile|
       dmg = rand(-5..9)
       next if dmg.negative?
@@ -77,11 +77,11 @@ def tick_damage_buildings
       deal_damage(dmg, building)
       msg = "A storm blew across #{region[:name]}, doing #{dmg} damage to #{building.a}"
       mysql_insert('messages',
-                   'x' => building.x,
-                   'y' => building.y,
-                   'z' => 0,
-                   'type' => 'persistent',
-                   'message' => msg)
+                   x: building.x,
+                   y: building.y,
+                   z: 0,
+                   type: 'persistent',
+                   message: msg)
     end
   end
   puts "</ul>"
@@ -90,17 +90,17 @@ end
 def tick_grow_fields
   return 'Crops only grow in Summer' if season != :Summer
 
-  tiles = mysql_select('grid', 'terrain' => 91)
+  tiles = mysql_select('grid', terrain: 91)
   tiles.each do |tile|
     growth = (tile['hp'].to_i * 3.5).to_i + 3
     mysql_bounded_update('grid', 'building_hp',
-                         { 'x' => tile['x'], 'y' => tile['y'] }, +growth, 200)
+                         { x: tile['x'], y: tile['y'] }, +growth, 200)
   end
-  tiles = mysql_select('grid', 'terrain' => 92)
+  tiles = mysql_select('grid', terrain: 92)
   tiles.each do |tile|
     growth = (tile['hp'].to_i * 3.5).to_i + 3
     mysql_bounded_update('grid', 'building_hp',
-                         { 'x' => tile['x'], 'y' => tile['y'] }, +growth, 200)
+                         { x: tile['x'], y: tile['y'] }, +growth, 200)
   end
   'Fields grown!'
 end
@@ -153,9 +153,9 @@ def tick_hunger
       Message.insert("$ACTOR, weakened by lack of food, lost <b>#{-hp_dmg} hp</b>",
                      speaker: player['id'])
       if player['hp'].to_i + hp_dmg <= 0 # dazed from hunger
-        temp = mysql_select('accounts', 'id' => player['id']).first
+        temp = mysql_select('accounts', id: player['id']).first
         if temp['temp_sett_id'].to_i != 0
-          mysql_update('accounts', player['id'], 'temp_sett_id' => 0)
+          mysql_update('accounts', player['id'], temp_sett_id: 0)
           Message.insert('$ACTOR, dazed by hunger, have lost your pending settlement residency.',
                          speaker: player['id'])
         end
@@ -183,7 +183,7 @@ def tick_move_animals
 end
 
 def tick_restore_ap
-  users = mysql_select('users', 'active' => 1)
+  users = mysql_select('users', active: 1)
   users.each do |user|
     mysql_change_ap(user['id'], ap_recovery(user['id']))
   end
@@ -205,11 +205,11 @@ def tick_restore_search
 
     case tile['terrain']
     when '8' # 8 -> 'dirt track'
-      mysql_update('grid', { 'x' => tile['x'], 'y' => tile['y'] },
-                   'hp' => 1, 'terrain' => 1)
+      mysql_update('grid', { x: tile['x'], y: tile['y'] },
+                   hp: 1, terrain: 1)
     else
       mysql_bounded_update('grid', 'hp',
-                           { 'x' => tile['x'], 'y' => tile['y'] }, +1, 4)
+                           { x: tile['x'], y: tile['y'] }, +1, 4)
     end
   end
   'Search rates restored!'
@@ -222,11 +222,11 @@ def tick_delete_rotten_food
     next unless stock['item_id'] == '33'
 
     onground = true
-    builtpiles = mysql_select('grid', 'building_id' => 3)
+    builtpiles = mysql_select('grid', building_id: 3)
     builtpiles.each do |built|
       onground = false if (stock['x'] == built['x']) && (stock['y'] == built['y'])
     end
-    mysql_delete('stockpiles', 'x' => stock['x'], 'y' => stock['y'], 'item_id' => '33') if onground == true
+    mysql_delete('stockpiles', x: stock['x'], y: stock['y'], item_id: '33') if onground == true
   end
   'And so the rotten food on the ground became dirt.'
 end
@@ -270,10 +270,10 @@ def tick_spawn_animals
     animals.each do |animal, amt|
       animal_id = lookup_table_row(:animal, animal, :id)
       animal_hp = lookup_table_row(:animal, animal, :max_hp)
-      count = mysql_select('animals', 'region_id' => region[:id], 'type_id' => animal_id)
+      count = mysql_select('animals', region_id: region[:id], type_id: animal_id)
       habitats = habitats(animal)
       habitat_tiles = mysql_select('grid',
-                                   'region_id' => region[:id], 'terrain' => habitats)
+                                   region_id: region[:id], terrain: habitats)
       # changed 100 to 300 to reduce spawn rate
       spawn_no = ((habitat_tiles.count / 300.0) * amt * (rand + 0.5))
       freq = spawn_no / (habitat_tiles.count + 1) # to prevent dividing by zero
@@ -283,8 +283,8 @@ def tick_spawn_animals
 
       habitat_tiles.each do |tile|
         if rand < freq
-          mysql_insert('animals', 'x' => tile['x'], 'y' => tile['y'],
-                                  'type_id' => animal_id, 'hp' => animal_hp, 'region_id' => region[:id])
+          mysql_insert('animals', x: tile['x'], y: tile['y'],
+                                  type_id: animal_id, hp: animal_hp, region_id: region[:id])
         end
       end
     end
@@ -308,8 +308,8 @@ def tick_terrain_transitions
     next unless rand(100) < odds || odds == 100
 
     terrain_id = lookup_table_row(:terrain, new_terrain, :id)
-    mysql_update('grid', { 'x' => tile['x'], 'y' => tile['y'] },
-                 'terrain' => terrain_id)
+    mysql_update('grid', { x: tile['x'], y: tile['y'] },
+                 terrain: terrain_id)
   end
   'Forests regrown!'
 end

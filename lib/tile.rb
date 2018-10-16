@@ -12,7 +12,7 @@ class Tile < Base
   def initialize(x, y)
     @x = x.to_i
     @y = y.to_i
-    @mysql_id = { 'x' => x, 'y' => y }
+    @mysql_id = { x: x, y: y }
   end
 
   def terrain
@@ -54,7 +54,7 @@ class Tile < Base
   end
 
   def exists?
-    !mysql_row('grid', 'x' => x, 'y' => y).nil?
+    !mysql_row('grid', x: x, y: y).nil?
   end
 
   def image
@@ -82,7 +82,7 @@ class Tile < Base
     if @settlement_id.nil?
       @settlement_id = false
       @settlement = false
-      settlement = mysql_row('settlements', 'x' => (x - 2..x + 2), 'y' => (y - 2..y + 2))
+      settlement = mysql_row('settlements', x: (x - 2..x + 2), y: (y - 2..y + 2))
       unless settlement.nil?
         # there's a settlement in the area, but is it close enough?
         x_offset = settlement['x'].to_i - x

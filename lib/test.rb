@@ -6,17 +6,17 @@ class Tests < Test::Unit::TestCase
   def setup
     # this method gets called before each test
     mysql_update('users', 1,
-                 'x' => -98, 'y' => -98, 'z' => 0, 'hp' => 50, 'ap' => 100, 'active' => 1, 'hunger' => 6)
+                 x: -98, y: -98, z: 0, hp: 50, ap: 100, active: 1, hunger: 6)
     mysql_update('users', 47,
-                 'x' => -98, 'y' => -98, 'ap' => 100, 'hp' => 33, 'active' => 1, 'hunger' => 6)
+                 x: -98, y: -98, ap: 100, hp: 33, active: 1, hunger: 6)
     mysql_delete('animals', 1)
-    mysql_insert('animals', 'id' => 1)
-    mysql_update('animals', 1, 'x' => -98, 'y' => -98, 'hp' => 50, 'type_id' => 6)
-    mysql_update('grid', { 'x' => -98, 'y' => -98 },
-                 'building_id' => 0, 'terrain' => 1)
-    mysql_update('grid', { 'x' => -97, 'y' => -98 },
-                 'building_id' => 0, 'terrain' => 41)
-    mysql_delete('skills', 'user_id' => 47)
+    mysql_insert('animals', id: 1)
+    mysql_update('animals', 1, x: -98, y: -98, hp: 50, type_id: 6)
+    mysql_update('grid', { x: -98, y: -98 },
+                 building_id: 0, terrain: 1)
+    mysql_update('grid', { x: -97, y: -98 },
+                 building_id: 0, terrain: 41)
+    mysql_delete('skills', user_id: 47)
     @isaac = User.new(1)
     @allt = User.new(47)
     @hare = Animal.new(1)
@@ -44,7 +44,7 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_attack_totem
-    mysql_update('users', 1, 'x' => @valhalla.x, 'y' => @valhalla.y)
+    mysql_update('users', 1, x: @valhalla.x, y: @valhalla.y)
     @isaac = User.new 1
     @totem = @isaac.tile.building
     assert_nothing_raised { @msg = attack(@isaac, @totem, 25) }
@@ -83,7 +83,7 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_attack_animal_kill
-    mysql_update('animals', 1, 'hp' => 1)
+    mysql_update('animals', 1, hp: 1)
     assert_nothing_raised { attack(@isaac, @hare, 25) }
     @hare = Animal.new 1
     assert(!@hare.exists?)
@@ -137,7 +137,7 @@ class Tests < Test::Unit::TestCase
 
   def test_describe_message
     msg =
-      mysql_select('messages', { 'speaker_id' => 1 }, 'type' => 'distant').first
+      mysql_select('messages', { speaker_id: 1 }, type: 'distant').first
     msg_re = /<a href=.*>Isaac<\/a>/
     assert(describe_message(msg) =~ msg_re)
     msg_re = /<b>You<\/b> .*/
@@ -145,7 +145,7 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_write
-    mysql_update('grid', { 'x' => -98, 'y' => -98 }, 'building_id' => 5)
+    mysql_update('grid', { x: -98, y: -98 }, building_id: 5)
     assert_nothing_raised { @msg = write(@isaac, 'hiso!') }
     assert_equal('You cannot write on a campfire.', @msg)
   end
@@ -161,7 +161,7 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_revive
-    mysql_update('users', 47, 'hp' => 0)
+    mysql_update('users', 47, hp: 0)
     mysql_change_inv(@isaac, :poultice, 1)
     revives = @isaac.revives
     assert_nothing_raised { revive(1, 47, 5) }
@@ -179,9 +179,9 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_population
-    mysql_update('accounts', 1, 'settlement_id' => 0)
+    mysql_update('accounts', 1, settlement_id: 0)
     warwick_pop = Settlement.new(20).population
-    mysql_update('accounts', 1, 'settlement_id' => 20)
+    mysql_update('accounts', 1, settlement_id: 20)
     assert_equal(warwick_pop + 1, Settlement.new(20).population)
   end
 
@@ -201,7 +201,7 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_quarry
-    mysql_update('grid', @isaac.tile.mysql_id, 'terrain' => 110)
+    mysql_update('grid', @isaac.tile.mysql_id, terrain: 110)
     assert_nothing_raised { quarry(@isaac) }
     assert_equal(0, user_item_amount(@isaac, :boulder))
 
@@ -215,8 +215,8 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_join
-    mysql_update('users', 1, 'x' => @valhalla.x, 'y' => @valhalla.y)
-    mysql_update('accounts', 1, 'settlement_id' => 0)
+    mysql_update('users', 1, x: @valhalla.x, y: @valhalla.y)
+    mysql_update('accounts', 1, settlement_id: 0)
     assert_nothing_raised { @msg = join(@isaac) }
     assert(/.*pledge allegiance to Valhalla.*/ =~ @msg)
     @isaac = User.new 1
@@ -226,7 +226,7 @@ class Tests < Test::Unit::TestCase
   end
 
   def test_leave
-    mysql_update('accounts', 1, 'settlement_id' => 20)
+    mysql_update('accounts', 1, settlement_id: 20)
     assert_nothing_raised { @msg = leave(@isaac) }
     assert(/.*are no longer a resident of Valhalla.*/ =~ @msg)
     @isaac = User.new 1

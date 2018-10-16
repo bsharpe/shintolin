@@ -7,7 +7,7 @@ require 'header.rb'
 
 $user = get_user
 if $user
-  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
@@ -22,10 +22,10 @@ def input_action(action)
   case action
   when 'description'
     mysql_update('accounts', $user.mysql_id,
-                 'description' => insert_breaks(CGI.escapeHTML($params['text'])))
+                 description: insert_breaks(CGI.escapeHTML($params['text'])))
   when 'image'
     mysql_update('accounts', $user.mysql_id,
-                 'image' => CGI.escapeHTML($params['text']))
+                 image: CGI.escapeHTML($params['text']))
   else ''
   end
 end
@@ -37,19 +37,19 @@ def change_contact(e_id, type) # modified from function in contacts.cgi
   result = db.query(query).first
   num_enemies = result['COUNT(*)'].to_i
   if type <= 0
-    mysql_delete('enemies', 'user_id' => $user.mysql_id, 'enemy_id' => e_id); return 'Contact deleted.'
+    mysql_delete('enemies', user_id: $user.mysql_id, enemy_id: e_id); return 'Contact deleted.'
   elsif type > 255
     return 'Error. Contact type out of range (maximum 255).'
   else
-    enemy = mysql_row('enemies', 'user_id' => $user.mysql_id, 'enemy_id' => e_id)
+    enemy = mysql_row('enemies', user_id: $user.mysql_id, enemy_id: e_id)
     if enemy.nil?
       return 'Contact list is full. Delete some contacts if you wish to add more.' if num_enemies >= 50
 
-      mysql_insert('enemies', 'user_id' => $user.mysql_id, 'enemy_id' => e_id, 'enemy_type' => type); return "Contact added. Now using #{num_enemies + 1}/50 contacts."
+      mysql_insert('enemies', user_id: $user.mysql_id, enemy_id: e_id, enemy_type: type); return "Contact added. Now using #{num_enemies + 1}/50 contacts."
     else
       return 'No change.' if (enemy['enemy_type'].to_i == type) || (enemy['enemy_type'].to_i >= 9 && type == 9)
 
-      mysql_update('enemies', { 'user_id' => $user.mysql_id, 'enemy_id' => e_id }, 'enemy_type' => type, 'updated' => :Now); return 'Contact updated.'
+      mysql_update('enemies', { user_id: $user.mysql_id, enemy_id: e_id }, enemy_type: type, updated: :Now); return 'Contact updated.'
     end
   end
 end
@@ -129,7 +129,7 @@ if $user == profile
 ENDTEXT
 elsif user_id != false
   colors = [['#389038', '1', 'green'], ['#902020', '2', 'red'], ['#663399', '3', 'purple'], ['#996600', '4', 'orange'], ['#445044', '5', 'gray'], ['#fafbff', '6', 'white'], ['#330000; color:#f8fbec', '7', 'black'], ['#6f850b', '8', 'yellow-green'], ['#CC6699', '9', 'pink'], ['#c3b080', '', ''], ['#c3b080', '0', 'delete contact']]
-  result = mysql_row('enemies', 'user_id' => $user.mysql_id, 'enemy_id' => profile.mysql_id)
+  result = mysql_row('enemies', user_id: $user.mysql_id, enemy_id: profile.mysql_id)
   if result.nil?
     colors.pop # remove "delete contact" option
     result = {}
@@ -171,7 +171,7 @@ end
 
 if profile.temp_sett_id != 0
   if $user == profile
-    pending = mysql_select('settlements', 'id' => $user.temp_sett_id).first
+    pending = mysql_select('settlements', id: $user.temp_sett_id).first
     puts "<a href=\"settlement.cgi?id=#{$user.temp_sett_id}\" " \
          'class="neutral" ' \
          ">#{pending['name']}</a>"

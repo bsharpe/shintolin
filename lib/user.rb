@@ -14,7 +14,7 @@ class User < Base
                    "frags", "kills", "deaths", "revives", "vote"
 
   def self.find_by_username(username)
-    user = mysql_row('users', 'name' => username) || {}
+    user = mysql_row('users', name: username) || {}
     new(user['id']) if user['id']
   end
 

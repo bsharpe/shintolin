@@ -26,7 +26,7 @@ class Building < Base
       @y = tile.y
       @tile = tile
     end
-    @mysql_id = { 'x' => x, 'y' => y }
+    @mysql_id = { x: x, y: y }
   end
 
   def a
@@ -151,7 +151,7 @@ class Building < Base
       settlement = tile.settlement
       return "#{settlement.name}, population #{settlement.population}. #{settlement.motto}"
     end
-    writing = mysql_row('writings', 'x' => x, 'y' => y, 'z' => z) || {}
+    writing = mysql_row('writings', x: x, y: y, z: z) || {}
     writing['message']
   end
 end

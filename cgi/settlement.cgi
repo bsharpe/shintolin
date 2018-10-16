@@ -6,7 +6,7 @@ require 'header.rb'
 
 $user = get_user
 if $user
-  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
@@ -23,17 +23,17 @@ def input_action(action)
       if not [1,11,23,24,28].include?($settlement.region_id) #God's Glade, Scavenger Isles,
                                        #Terra Nullis Si, Terra Nullis Wu, Terra Nullis Jiu
       mysql_update('settlements', CGI::escapeHTML($params['id']),
-        {'allow_new_users' => CGI::escapeHTML($params['option'])})
+        {allow_new_users: CGI::escapeHTML($params['option'])})
       else return "This settlement is far too isolated to allow new characters to join." end
     when 'description'
       mysql_update('settlements', CGI::escapeHTML($params['id']),
-        {'description' => insert_breaks(CGI::escapeHTML($params['text']))})
+        {description: insert_breaks(CGI::escapeHTML($params['text']))})
     when 'image'
       mysql_update('settlements', CGI::escapeHTML($params['id']),
-        {'image' => CGI::escapeHTML($params['text'])})
+        {image: CGI::escapeHTML($params['text'])})
     when 'motto'
       mysql_update('settlements', CGI::escapeHTML($params['id']),
-        {'motto' => CGI::escapeHTML($params['text'])})
+        {motto: CGI::escapeHTML($params['text'])})
     when 'name'
       if $params['text'].length < 2
         return "The settlement name must contain at least 2 characters."
@@ -52,13 +52,13 @@ def input_action(action)
         end
       end
       mysql_update('settlements', CGI::escapeHTML($params['id']),
-        {'name' => CGI::escapeHTML($params['text'])})
+        {name: CGI::escapeHTML($params['text'])})
     when 'title'
       mysql_update('settlements', CGI::escapeHTML($params['id']),
-        {'title' => CGI::escapeHTML($params['text'])})
+        {title: CGI::escapeHTML($params['text'])})
     when 'website'
       mysql_update('settlements', CGI::escapeHTML($params['id']),
-        {'website' => CGI::escapeHTML($params['text'])})
+        {website: CGI::escapeHTML($params['text'])})
     when 'evict'
       if $user.hp <= 0 then return "You are dazed and cannot do that." end
       tile = Tile.new($user.x,$user.y)

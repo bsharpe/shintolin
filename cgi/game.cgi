@@ -7,10 +7,10 @@ require 'header.rb'
 
 $user = get_user
 if $user
-  $header = { 'cookie' => [$cookie], 'type' => 'text/html' }
+  $header = { cookie: [$cookie], type: 'text/html' }
   puts $cgi.header($header)
 else
-  puts $cgi.header('Location' => 'index.cgi?msg=bad_pw')
+  puts $cgi.header(Location: 'index.cgi?msg=bad_pw')
   exit
 end
 
@@ -45,7 +45,7 @@ def input_action(action)
     when 'write' then write($user, $params['text'], $params['magic'])
     else ''
     end
-  mysql_update('users', $user.id, 'lastaction' => :Now) if result != ''
+  mysql_update('users', $user.id, lastaction: :Now) if result != ''
   result
 end
 

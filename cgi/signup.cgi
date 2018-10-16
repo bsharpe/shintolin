@@ -62,10 +62,10 @@ mysql_insert('accounts', {
   'joined'=>:Today,
   'last_revive'=>:Today,
   'settlement_id'=> 0,
-  'website' => '',
+  website: '',
   'temp_sett_id'=>settlement_id,
-  'when_sett_joined' => :Now,
-  'description' => "an adventurer"
+  when_sett_joined: :Now,
+  description: "an adventurer"
 })
 
 if settlement_id != 0

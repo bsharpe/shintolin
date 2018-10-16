@@ -8,7 +8,7 @@ profile = User.new($cgi['id'])
 
 $user = get_user
 if $user
-  $header = {'cookie' => [$cookie], 'type' => 'text/html'}
+  $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
