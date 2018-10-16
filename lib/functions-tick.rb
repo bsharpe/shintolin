@@ -125,7 +125,7 @@ def tick_hunger
     # if user has noobcake, and is < level 2, auto eat
     if player.has_item?(23) # noobcake
       if player.skills.count < 2
-        player.update_item_count(23, -1)
+        player.change_inv(23, -1)
         Message.insert("Feeling hungry, $ACTOR ate #{a_an('noobcake')}",
                           speaker: player)
         puts 'Om nom nom noobarific'
@@ -134,7 +134,7 @@ def tick_hunger
     end
 
     # if user has food, auto eat
-    foods = all_where(:item, :use, :food)
+    foods = lookup_all_where(:item, :use, :food)
     eaten = false
     foods.each do |food|
       next unless user_has_item?(player['id'], food[:id])
