@@ -23,11 +23,11 @@ def html_chat_large(limit = 150)
   Message.chats(limit).each do |message|
     chats << "<div>#{message}</div>"
   end
-  html_action_form('Chat', false, nil, 'chat.cgi') do
+  output = html_action_form('Chat', false, nil, 'chat.cgi') do
     html_text_box(200)
-  end +
-    '<hr><br><a class="buttonlink" href="chat.cgi">Refresh</a><br><br>' +
-    chats
+  end
+  output << '<hr><br><a class="buttonlink" href="chat.cgi">Refresh</a><br><br>'
+  output << chats
 end
 
 def html_drop_item(user)
@@ -485,7 +485,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   end
 
   if z.zero?
-    animals = mysql_select('animals', x: x, y: y)
+    animals = mysql_select('animals', 'x' => x, 'y' => y)
     animals = values_freqs_hash(animals, 'type_id')
     animals.each do |type, amt|
       html << "<span class=\"mapdata\" style=\"color:#0000BB\">#{describe_animals(amt, type).capitalize}</span></br>"
