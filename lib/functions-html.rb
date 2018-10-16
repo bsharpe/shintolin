@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+
 
 def html_action_form(action, inline = false, ap = nil, post = 'game.cgi')
   html = "<form action=\"#{post}\" method=\"post\" "

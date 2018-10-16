@@ -214,7 +214,7 @@ def mysql_where(clause, not_clause = nil)
 
   if clause.is_a?(Integer)
     # assume where_clause is an id value
-    result = " WHERE `id` =  '#{clause}'"
+    result = " WHERE `id` = '#{clause}'"
 
   elsif clause.is_a?(Hash)
     result = ' WHERE'
@@ -224,7 +224,7 @@ def mysql_where(clause, not_clause = nil)
       else
         # if hash->value is "x => [1,2,3]", query should be
         # WHERE ('x' in(1,2,3))
-        result << "(`#{column}` in(#{mysql_value(v).join(',')}))"
+        "(`#{column}` in(#{value.map{|e| mysql_value(e)}.join(',')}))"
       end
     end
     result << where_array.join(' AND')

@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+
 
 load 'functions.rb'
 require 'test/unit'

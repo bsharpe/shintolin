@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+
 
 class Tile < Base
   def self.mysql_table

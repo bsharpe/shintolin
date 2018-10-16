@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+
 
 class Message < Base
   def self.mysql_table

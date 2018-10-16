@@ -173,7 +173,7 @@ class User < Base
   end
 
   def has_skill?(skill_id)
-    return true if skill_id.zero? || skill_id.nil? || skill_id == :default
+    return true if skill_id.nil? || skill_id == :default
 
     skill_id = lookup_table_row(:skill, skill_id, :id) if skill_id.is_a?(Symbol)
 

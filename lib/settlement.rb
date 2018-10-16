@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+
 
 class Settlement < Base
   def self.mysql_table
