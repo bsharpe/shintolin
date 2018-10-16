@@ -362,9 +362,10 @@ def html_select_target(targets, default = 'No-one', &block)
 end
 
 def html_option_animal(animal)
+  animal = Animal.ensure(animal)
   html = '<option '
-  html << 'selected="yes" ' if $target.mysql_id == animal.mysql_id
-  html << "value=\"#{animal.mysql_id}:animal\">" \
+  html << 'selected="yes" ' if $target == animal
+  html << "value=\"#{animal.id}:animal\">" \
           "#{animal.name} " \
           "(#{animal.hp}hp)" \
           '</option>'
@@ -382,8 +383,8 @@ def html_option_user(user)
   display = block_given? ? yield(user) : user.name
 
   html = '<option '
-  html << 'selected="yes" ' if !$target.nil? && $target.mysql_id == user.mysql_id
-  html << "value=\"#{user.mysql_id}:user\">#{display}</option>"
+  html << 'selected="yes" ' if $target == user
+  html << "value=\"#{user.id}:user\">#{display}</option>"
 end
 
 def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
@@ -488,7 +489,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
     animals = mysql_select('animals', 'x' => x, 'y' => y)
     animals = values_freqs_hash(animals, 'type_id')
     animals.each do |type, amt|
-      html << "<span class=\"mapdata\" style=\"color:#0000BB\">#{describe_animals(amt, type).capitalize}</span></br>"
+      html << "<span class=\"animal mapdata\">#{describe_animals(amt, type).capitalize}</span></br>"
     end
   end
 

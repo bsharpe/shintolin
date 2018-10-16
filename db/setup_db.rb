@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `animals` (
   `type_id` int NOT NULL,
   `x` int NOT NULL default '10',
   `y` int NOT NULL default '-10',
-  `z` int NOT NULL,
+  `z` int NOT NULL default '0',
   `hp` int NOT NULL default '10',
   `region_id` int NOT NULL default '0',
   PRIMARY KEY  (`id`)

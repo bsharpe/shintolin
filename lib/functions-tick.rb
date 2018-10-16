@@ -264,30 +264,33 @@ def tick_spawn_animals
   regions = lookup_table(:region)
   regions.each do |name, region|
     puts "<li>#{name}"
-    animals = region[:animals_per_100]
-    animals = [] if animals.nil?
-    puts animals
+    animals = region[:animals_per_100] || []
+    puts "<ul>"
     animals.each do |animal, amt|
+      print "<li>#{animal} "
       animal_id = lookup_table_row(:animal, animal, :id)
       animal_hp = lookup_table_row(:animal, animal, :max_hp)
-      count = mysql_select('animals', region_id: region[:id], type_id: animal_id)
+      animal_count = mysql_count('animals', region_id: region[:id], type_id: animal_id)
       habitats = habitats(animal)
-      habitat_tiles = mysql_select('grid',
-                                   region_id: region[:id], terrain: habitats)
+      habitat_tiles = mysql_select('grid', region_id: region[:id], terrain: habitats)
       # changed 100 to 300 to reduce spawn rate
       spawn_no = ((habitat_tiles.count / 300.0) * amt * (rand + 0.5))
       freq = spawn_no / (habitat_tiles.count + 1) # to prevent dividing by zero
       max_allowed = ((habitat_tiles.count / 300.0) * amt) * 10 # (factor of DOOM!)
       # If > total animals of that type allowed for that region then skip spawning that type
-      next if max_allowed <= count.count
+      next if max_allowed <= animal_count
 
       habitat_tiles.each do |tile|
         if rand < freq
-          mysql_insert('animals', x: tile['x'], y: tile['y'],
+          print "+"
+          mysql_insert('animals', x: tile['x'], y: tile['y'], z: 0,
                                   type_id: animal_id, hp: animal_hp, region_id: region[:id])
         end
       end
+      puts "</li>"
     end
+    puts "</ul>"
+
   end
   puts "</ul>"
 end

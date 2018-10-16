@@ -1,5 +1,5 @@
 class Base
-  attr_reader :mysql_id
+  attr_reader :mysql_id, :mysql
 
   def self.find(id)
     new(row: mysql_row(mysql_table, id.to_i))
@@ -22,6 +22,10 @@ class Base
       @mysql = row
       @mysql_id = row['id']
     end
+  end
+
+  def delete
+    mysql_delete(self.class.mysql_table, self.mysql_id)
   end
 
   def ==(other)
@@ -68,10 +72,6 @@ class Base
   end
 
   def name
-    "the #{name_only}"
-  end
-
-  def name_only
     data[:name]
   end
 

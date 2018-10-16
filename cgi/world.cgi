@@ -20,7 +20,7 @@ ys.each do |y|
 
     tiles = mysql_select('grid',{'x'=>x_range,'y'=>y_range})
     terrains = values_freqs_hash(tiles, 'terrain')
-    most_common = terrains.index(terrains.values.max)
+    most_common = terrains.key(terrains.values.max)
     image = lookup_table_row(:terrain, most_common, :image)
     image = image[:default] if image.is_a?(Hash)
     image = lookup_table_row(:terrain, :wilderness, :image) if image == nil

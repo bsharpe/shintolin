@@ -109,7 +109,7 @@ def ap_recovery(user)
 end
 
 def attack(attacker, target, item_id, _magic)
-  if !(user_has_item?(attacker, item_id) || item_id.to_i == 24) # 24 -> fist
+  if !(item_id.to_i == 24 || attacker.has_item?(item_id)) # 24 -> fist
     return "You don't have #{a_an(lookup_table_row(:item, item_id, :name))}"
   end
   return '' if attacker.mysql.nil? || target.mysql.nil?
@@ -137,7 +137,7 @@ def attack(attacker, target, item_id, _magic)
   attacker.change_ap(-1)
 
   accuracy = item_stat(item_id, :accuracy, attacker)
-  dmg = target.is_a? Building ? rand_to_i(1.333) : item_stat(item_id, :effect, attacker)
+  dmg = target&.is_a?(Building) ? rand_to_i(1.333) : item_stat(item_id, :effect, attacker)
 
   if rand(100) > accuracy || accuracy.zero?
     msg = lookup_table_row(:weapon_class, weapon[:weapon_class], :miss_msg) +
@@ -218,7 +218,7 @@ def attack_response(target, attacker)
         msg = "#{target.name.capitalize} #{target.hit_msg}, for #{dmg} hp damage."
       end
     when :flee
-      msg = "#{target.name.capitalize} flees the area." if move_animal(target.mysql)
+      msg = "#{target.name.capitalize} flees the area." if move_animal(target)
     end
   when 'User'
     msg = '$TARGET flinched.'
@@ -588,16 +588,14 @@ end
 
 def deal_damage(dmg, target)
   if target.hp > dmg
-    field = 'hp'
-    field = 'building_hp' if target.class == Building
-    mysql_update(target.mysql_table, target.mysql_id,
-                 field => (target.hp - dmg))
+    field = target.is_a?(Building) ? :building_hp : :hp
+    target.update(**{field => (target.hp - dmg)})
     kill = false
   else
     case target.class.name
 
     when 'User'
-      mysql_update('users', target.mysql_id, hp: 0)
+      target.update(hp: 0)
       if target.temp_sett_id != 0
         mysql_update('accounts', target.mysql_id, temp_sett_id: 0)
         Message.insert('$ACTOR, dazed before the day ended, have lost your pending settlement residency.',
@@ -605,7 +603,7 @@ def deal_damage(dmg, target)
       end
 
     when 'Animal'
-      mysql_delete('animals', target.mysql_id)
+      target.delete
 
     when 'Building'
       destroy_building(target)
@@ -1227,17 +1225,17 @@ end
 def move_animal(animal)
   animal = Animal.ensure(animal)
   # tile = Tile.new(animal['x'], animal['y'])
-  animal_data = lookup_table_row(:animal, animal['type_id'])
+  animal_data = animal.data
 
   return false if animal_data[:immobile]
 
-  habitats = habitats(animal['type_id'])
+  habitats = habitats(animal.type_id)
   8.times do
     dir = random_dir
     x, y = dir_to_offset(dir)
-    dest_tile = Tile.new(animal['x'].to_i + x, animal['y'].to_i + y)
+    dest_tile = Tile.new(animal.x + x, animal.y + y)
     if habitats.include?(dest_tile['terrain'].to_i)
-      animal.update(x: (animal['x'].to_i + x), y: (animal['y'].to_i + y))
+      animal.update(x: (animal.x + x), y: (animal.y + y))
       return true
     end
   end

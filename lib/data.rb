@@ -1146,7 +1146,9 @@ $Data =
 
     region:   {
       Gods_Glade:     { id: 1,
-                        name: 'Gods Glade' },
+                        name: 'Gods Glade',
+                      animals_per_100: { deer: 1.5, boar: 2, wolf: 0.7, hare: 1.6, goose: 1.8 }
+                     },
 
       Midlands:     { id: 2,
                       name: 'The Midlands',
