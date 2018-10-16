@@ -462,11 +462,13 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   # <td class='map' style=background-image:url('images/p_grass.jpg')></td>
 
   tile = Tile.new(x, y)
-  source_terrain = (user&.tile&.terrain)
+  source_terrain = user&.tile&.terrain || 3
 
-  html = '<td class="map" style="background-image:url(' + Image_Folder + tile.image + ')">'
+  html = "<td class=\"map\" style=\"background-image:url(#{Image_Folder}#{tile.image}); "
+  html << ";box-shadow: #{-tile.altitude}px #{tile.altitude}px 5px rgba(0,0,0,0.5);" if tile.altitude.positive?
+  html << "\">"
 
-  html += yield(tile) if block_given?
+  html << yield(tile) if block_given?
 
   if button != false
     button = tile_dir(user, tile)
