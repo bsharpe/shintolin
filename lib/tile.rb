@@ -5,18 +5,23 @@ class Tile < Base
 
   data_fields 'actions'
 
-  mysql_int_fields 'mysql', 'terrain', 'building_id', 'region_id', 'hp', 'building_hp', 'id'
+  mysql_int_fields 'mysql', 'terrain', 'building_id', 'region_id', 'hp', 'building_hp'
 
   attr_reader :x, :y
 
-  def initialize(x, y)
+  def initialize(x = nil, y = nil, row: nil)
     @x = x.to_i
     @y = y.to_i
-    @mysql_id = { x: x, y: y }
+    if row
+      @mysql = row
+      @x = row['x']
+      @y = row['y']
+    end
+    @id = { x: x, y: y }
   end
 
   def terrain
-    mysql['terrain'] || 3
+    (mysql['terrain'] || 3).to_i
   end
 
   def ==(other)

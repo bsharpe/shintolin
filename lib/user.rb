@@ -66,7 +66,7 @@ class User < Base
   end
 
   def mysql_2
-    @mysql_2 ||= mysql_row("accounts", @mysql_id)
+    @mysql_2 ||= mysql_row("accounts", @id)
   end
 
   def relation(target)

@@ -1,5 +1,5 @@
 class Base
-  attr_reader :mysql_id, :mysql
+  attr_reader :id, :mysql
 
   def self.find(id)
     new(row: mysql_row(mysql_table, id.to_i))
@@ -17,10 +17,10 @@ class Base
   end
 
   def initialize(id = nil, row: nil)
-    @mysql_id = id.to_i
+    @id = id.to_i
     if row
       @mysql = row
-      @mysql_id = row['id']
+      @id = row['id'].to_i
     end
   end
 
@@ -45,7 +45,7 @@ class Base
     'unknown'
   end
 
-  alias :id :mysql_id
+  alias :mysql_id :id
 
   def [](value)
     mysql[value.to_s]
@@ -56,7 +56,11 @@ class Base
   end
 
   def mysql
-    @mysql ||= mysql_row(self.class.mysql_table, mysql_id)
+    @mysql ||= mysql_row(self.class.mysql_table, @id)
+  end
+
+  def load
+    mysql
   end
 
   def update(**params)

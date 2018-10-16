@@ -277,7 +277,7 @@ def html_player_data(user)
              html + ", #{settlement.title} of "
            else html + ', pledged to '
            end
-    html << "<a href=\"settlement.cgi?id=#{settlement.mysql_id}\" class=\"ally\">#{settlement.name}</a>"
+    html << "<a href=\"settlement.cgi?id=#{settlement.id}\" class=\"ally\">#{settlement.name}</a>"
   end
   html << '.<br>' \
          " HP: <b>#{user['hp']}/#{user['maxhp']}</b>" \
@@ -318,11 +318,11 @@ def html_select_item(display = :name, user_id = nil)
   items = lookup_table(:item).values
   items = items.select { |item| yield(item) } if block_given?
 
-  selected_item = $params['item'] || $cookie['item']
+  selected_item = $params['item'].to_i
 
   items.each do |item|
     html << '<option '
-    html << 'selected="yes" ' if $params && $params['item'].to_i == item[:id]
+    html << 'selected="yes" ' if selected_item == item[:id]
     html << 'value="' +
             item[:id].to_s + '">' +
             case display
@@ -473,7 +473,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   if button != false
     button = tile_dir(user, tile)
     if !button.nil?
-      ap_cost = ap_cost(tile.terrain, source_terrain, user.mysql_id, tile.settlement)
+      ap_cost = ap_cost(tile.terrain, source_terrain, user.id, tile.settlement)
       html << html_move_button(button, ap_cost)
     end
   end
@@ -498,7 +498,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
 
   # show tile occupants if user is outside, or user is on tile
   if z.zero? || user.tile == tile
-    users = mysql_count('users', { x: x, y: y, z: z, active: 1 }, id: user&.mysql_id)
+    users = mysql_count('users', { x: x, y: y, z: z, active: 1 }, id: user&.id)
     if users.positive?
       html << "<span class=\"mapdata\">#{users} #{users == 1 ? 'person' : 'people'}</span>"
     end

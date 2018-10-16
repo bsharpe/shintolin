@@ -26,7 +26,7 @@ class Building < Base
       @y = tile.y
       @tile = tile
     end
-    @mysql_id = { x: x, y: y }
+    @id = { x: x, y: y }
   end
 
   def a

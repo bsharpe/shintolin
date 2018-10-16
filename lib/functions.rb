@@ -145,7 +145,7 @@ def attack(attacker, target, item_id, _magic)
           ', but missed!'
     msg += ' ' + attack_response(target, attacker)
 
-    return insert_names(msg, attacker.mysql_id, target.name, attacker.mysql_id, :no_link)
+    return insert_names(msg, attacker.id, target.name, attacker.id, :no_link)
   end
 
   kill = deal_damage(dmg, target)
@@ -192,14 +192,14 @@ def attack(attacker, target, item_id, _magic)
   when 'User'
     Message.insert(msg, speaker: attacker, target: target)
   when 'Animal'
-    #      Message.insert('action', msg, attacker.mysql_id) # waste of DB space
+    #      Message.insert('action', msg, attacker.id) # waste of DB space
   when 'Building'
     Message.insert("$ACTOR attacked #{target.a}", type: 'persistent', speaker: attacker)
   end
 
   msg += " #{break_attempt(attacker, item_id)}"
 
-  insert_names(msg, attacker.mysql_id, target.name, attacker.mysql_id, :no_link)
+  insert_names(msg, attacker.id, target.name, attacker.id, :no_link)
 end
 
 def attack_response(target, attacker)
@@ -271,31 +271,21 @@ def build(user, building_id, magic)
     end
     return can_settle_msg
   when :terrain
-    terrain_id = lookup_table_row(:terrain, building[:terrain_type], :id)
+    terrain_id = lookup_table_row(:terrain, building[:terrain_type])
     update_hash['terrain'] = terrain_id
     update_hash['hp'] = building[:build_hp]
   when :walls
-    terrain_id = lookup_table_row(:terrain, building[:terrain_type], :id)
+    terrain_id = lookup_table_row(:terrain, building[:terrain_type])
     update_hash['terrain'] = terrain_id
     update_hash['hp'] = building[:build_hp]
     update_hash['building_id'] = building_id
-    update_hash['building_hp'] =
-      if !building[:build_hp].nil?
-        building[:build_hp]
-      else
-        building[:max_hp]
-      end
+    update_hash['building_hp'] =!building[:build_hp].nil? ? building[:build_hp] : building[:max_hp]
   when nil
     update_hash['building_id'] = building_id
-    update_hash['building_hp'] =
-      if !building[:build_hp].nil?
-        building[:build_hp]
-      else
-        building[:max_hp]
-      end
+    update_hash['building_hp'] = !building[:build_hp].nil? ? building[:build_hp] : building[:max_hp]
   end
 
-  mysql_update('grid', tile.mysql_id, update_hash)
+  mysql_update('grid', tile.id, update_hash)
 
   building[:materials].each do |item, amt|
     user.change_inv(item, -amt)
@@ -597,7 +587,7 @@ def deal_damage(dmg, target)
     when 'User'
       target.update(hp: 0)
       if target.temp_sett_id != 0
-        mysql_update('accounts', target.mysql_id, temp_sett_id: 0)
+        mysql_update('accounts', target.id, temp_sett_id: 0)
         Message.insert('$ACTOR, dazed before the day ended, have lost your pending settlement residency.',
                        speaker: target)
       end
@@ -744,11 +734,11 @@ def destroy_building(building)
                              type: 'persistent', message: "#{building.a.capitalize} was destroyed!")
     mysql_delete('writings', x: building.x, y: building.y)
     mysql_update('users', { x: building.x, y: building.y }, z: 0)
-    mysql_update('grid', building.mysql_id,
+    mysql_update('grid', building.id,
                  building_hp: 0, building_id: 0)
     destroy_settlement(building.tile.settlement) if building.special == :settlement
     if building.special == :walls
-      mysql_update('grid', building.mysql_id,
+      mysql_update('grid', building.id,
                    building_hp: 0, building_id: 0, terrain: 8, hp: 0)
     end
   end
@@ -758,9 +748,9 @@ def destroy_settlement(settlement)
   mysql_transaction do
     mysql_insert('messages', x: settlement.x, y: settlement.y, z: 0,
                              type: 'persistent', message: "The settlement of #{settlement.name} was destroyed!")
-    mysql_update('accounts', { settlement_id: settlement.mysql_id }, settlement_id: 0)
-    mysql_update('accounts', { temp_sett_id: settlement.mysql_id }, temp_sett_id: 0)
-    mysql_delete('settlements', settlement.mysql_id)
+    mysql_update('accounts', { settlement_id: settlement.id }, settlement_id: 0)
+    mysql_update('accounts', { temp_sett_id: settlement.id }, temp_sett_id: 0)
+    mysql_delete('settlements', settlement.id)
   end
 end
 
@@ -894,9 +884,9 @@ def give(giver, receiver, amount, item_id, magic)
 
   receiver.change_inv(item_id, amt_given)
   if receiver.is_a?(Building)
-    Message.insert("$ACTOR dropped #{items_desc} in the stockpile", speaker: giver.mysql_id, type: 'persistent')
+    Message.insert("$ACTOR dropped #{items_desc} in the stockpile", speaker: giver.id, type: 'persistent')
   else
-    Message.insert("$ACTOR gave #{items_desc} to $TARGET", speaker: giver.mysql_id, target: receiver.mysql_id)
+    Message.insert("$ACTOR gave #{items_desc} to $TARGET", speaker: giver.id, target: receiver.id)
   end
 
   giver.change_ap(-1)
@@ -955,14 +945,14 @@ def heal(healer, target, item_id)
   end
 
   if target.hp.zero?
-    return you_or_her(healer.mysql_id, target.mysql_id, 'You', false) +
+    return you_or_her(healer.id, target.id, 'You', false) +
            ' are currently dazed and must be revived before healing items ' \
            'have any effect.'
   end
 
   healer.change_inv(item_id, -1)
   hp_healed = mysql_bounded_update('users', 'hp',
-                                   target.mysql_id, +item_stat(item_id, :effect, healer), target.maxhp)
+                                   target.id, +item_stat(item_id, :effect, healer), target.maxhp)
   healer.change_ap(-1)
   xp = (hp_healed.to_f / 2) + 1
   healer.give_xp(:herbal, xp)
@@ -1114,19 +1104,19 @@ def join(user, magic)
   end
 
   if tile.settlement.population.zero?
-    mysql_update('accounts', user.mysql_id,
+    mysql_update('accounts', user.id,
                  settlement_id: tile.settlement_id)
     msg = "You pledge allegiance to #{tile.settlement.name}. As its only resident, you declare yourself its leader."
-    mysql_update('accounts', user.mysql_id, vote: user.mysql_id)
-    mysql_update('settlements', tile.settlement_id, leader_id: user.mysql_id)
+    mysql_update('accounts', user.id, vote: user.id)
+    mysql_update('settlements', tile.settlement_id, leader_id: user.id)
   else
-    mysql_update('accounts', user.mysql_id,
+    mysql_update('accounts', user.id,
                  temp_sett_id: tile.settlement_id)
     msg = "You pledge allegiance to #{tile.settlement.name}. You must survive the day to be entitled to its privileges."
   end
-  mysql_update('accounts', user.mysql_id,
+  mysql_update('accounts', user.id,
                when_sett_joined: :Now)
-  user.mysql_id.change_ap(-25)
+  user.id.change_ap(-25)
   Message.insert('$ACTOR made a pledge to join this settlement.', speaker: user, type: 'persistent')
   msg += " You are no longer a resident of #{user.settlement.name}." if user.settlement_id != 0
   msg
@@ -1137,15 +1127,15 @@ def leave(user, magic)
   return 'You are not currently a member of any settlement.' if user.settlement_id.zero? && user.temp_sett_id.zero?
 
   if user.settlement_id != 0
-    if user.mysql_id == user.settlement.leader_id # Non-residents don't get to be leader :P
+    if user.id == user.settlement.leader_id # Non-residents don't get to be leader :P
       mysql_update('settlements', user.settlement_id,
                    leader_id: 0)
     end
   end
-  mysql_update('accounts', user.mysql_id,
+  mysql_update('accounts', user.id,
                settlement_id: 0)
   if user.temp_sett_id != 0
-    mysql_update('accounts', user.mysql_id,
+    mysql_update('accounts', user.id,
                  temp_sett_id: 0)
     return 'You give up your attempt to gain settlement residency.'
   end
@@ -1157,7 +1147,7 @@ def logout(user, magic)
   $cookie.expires = Time.now
 
   # undo ip hit cost
-  ip_hit(user.mysql_id, -10)
+  ip_hit(user.id, -10)
 
   # redirect to homepage
   $header['Location'] = './index.cgi'
@@ -1314,8 +1304,7 @@ def quarry(user, _magic)
 
   user.change_ap(-4)
   if rand < 0.5
-    msg = 'Chipping away at the rock face, you manage to work free ' \
-          'a large boulder.'
+    msg = 'Chipping away at the rock face, you manage to work free a large boulder.'
     user.change_inv(:boulder, 1)
     user.give_xp(:craft, 2.5)
   else
@@ -1377,7 +1366,7 @@ def repair(user)
 
   return 'Use the Add Fuel button instead.' if building[:name] == 'campfire'
 
-  mysql_update('grid', user.tile.mysql_id,
+  mysql_update('grid', user.tile.id,
                building_hp: building[:max_hp])
 
   building[:materials].each do |item, amt|
@@ -1426,14 +1415,16 @@ def revive(healer_id, target_id, item_id)
   return "#{target.name} is starved. They need a little food before herbal remedies will do any good." if target.hunger.zero?
 
   hp_healed = mysql_bounded_update('users', 'hp',
-                                   target.mysql_id, +item_stat(item_id, :effect, healer), target.maxhp)
+                                   target.id, +item_stat(item_id, :effect, healer), target.maxhp)
   xp = (hp_healed.to_f / 2).ceil + 10
-  mysql_update('users', target_id, hp: hp_healed)
-  healer_id.change_ap(-10)
-  healer.give_xp(:herbal, xp)
-  healer_id.change_inv(item_id, -1)
-  mysql_change_stat(healer, 'revives', +1)
-  mysql_update('accounts', target_id, last_revive: :Today)
+  mysql_transaction do
+    mysql_update('users', target_id, hp: hp_healed)
+    healer_id.change_ap(-10)
+    healer.give_xp(:herbal, xp)
+    healer_id.change_inv(item_id, -1)
+    mysql_change_stat(healer, 'revives', +1)
+    mysql_update('accounts', target_id, last_revive: :Today)
+  end
   Message.insert("$ACTOR used #{item_desc} on $TARGET, reviving them from their daze.",
                  speaker: healer_id, target: target_id)
   "You use #{item_desc} on #{target.name}, reviving them from their daze. " \
@@ -1485,7 +1476,7 @@ def say(speaker, message, volume, magic, target = nil)
     dirs.each do |dir|
       x, y, z = dir_to_offset(dir)
       mysql_insert('messages',
-                   speaker_id: speaker.mysql_id, message: message, type: 'distant',
+                   speaker_id: speaker.id, message: message, type: 'distant',
                    x: (speaker.x + x), y: (speaker.y + y),
                    z: (speaker.z + z))
     end
@@ -1493,9 +1484,8 @@ def say(speaker, message, volume, magic, target = nil)
 
   # work out display
   if volume == 'slash_me'
-    target_id =
-      target.exists? ? target.mysql_id : 0
-    insert_names(message, speaker.mysql_id, target_id, speaker.mysql_id)
+    target_id = target.exists? ? target.id : 0
+    insert_names(message, speaker.id, target_id, speaker.id)
   else
     volume = 'say' if volume == 'talk'
     "You #{volume} <i>\"#{message}\"</i>" +
@@ -1593,7 +1583,7 @@ def search(user, _magic)
   end
   return found_item if found_item.is_a?(String)
 
-  mysql_bounded_update('grid', 'hp', tile.mysql_id, -1, 0) if rand < Search_Dmg_Chance
+  mysql_bounded_update('grid', 'hp', tile.id, -1, 0) if rand < Search_Dmg_Chance
   user.change_inv(found_item, +1)
   user.give_xp(:wander, 1)
   'Searching the area, you find ' +
@@ -1604,7 +1594,7 @@ def search_hidden_items(user)
   tile = user.tile
   return nil if tile.building.exists? && tile.building.item_storage?
 
-  item_rows = mysql_select('stockpiles', tile.mysql_id, amount: 0)
+  item_rows = mysql_select('stockpiles', tile.id, amount: 0)
   item_amts = {}
   item_rows.each do |row|
     item_amts[row['item_id'].to_i] = row['amount'].to_i
@@ -1651,11 +1641,11 @@ def settle(user, settlement_name, magic)
 
   user.change_inv(:log, -1)
   user.change_ap(-30)
-  mysql_update('grid', tile.mysql_id, building_id: 4, building_hp: 30) # 4 -> totem pole
+  mysql_update('grid', tile.id, building_id: 4, building_hp: 30) # 4 -> totem pole
   mysql_insert('settlements',
-               name: settlement_name, x: tile.x, y: tile.y, founded: :Today, leader_id: user.mysql_id)
-  mysql_update('accounts', user.mysql_id,
-               settlement_id: tile.settlement_id, vote: user.mysql_id, when_sett_joined: :Now)
+               name: settlement_name, x: tile.x, y: tile.y, founded: :Today, leader_id: user.id)
+  mysql_update('accounts', user.id,
+               settlement_id: tile.settlement_id, vote: user.id, when_sett_joined: :Now)
   Message.insert("$ACTOR established the settlement of #{settlement_name}", speaker: user, type: 'persistent')
 
   "You have established the settlement of #{settlement_name}. " \
@@ -1764,8 +1754,8 @@ end
 
 def transfer_frags(attacker, target)
   frags = (target.frags / 2.0).ceil
-  mysql_bounded_update('accounts', 'frags', attacker.mysql_id, +frags)
-  mysql_bounded_update('accounts', 'frags', target.mysql_id, -frags, 0)
+  mysql_bounded_update('accounts', 'frags', attacker.id, +frags)
+  mysql_bounded_update('accounts', 'frags', target.id, -frags, 0)
   if frags != 0
     "$TARGET lost #{describe_number(frags)} " \
       'frags; they have been transferred to $ACTOR.'
@@ -1794,7 +1784,7 @@ def use(user, target, item_id, magic)
   when :weapon
     "Use the 'Attack' button to attack."
   when :food
-    feed(user.mysql_id, target.mysql_id, item_id)
+    feed(user.id, target.id, item_id)
   when :heal
     heal(user, target, item_id)
   when :noobcake
@@ -1805,7 +1795,7 @@ def use(user, target, item_id, magic)
         "You offer a noobcake to #{target.name}. They wrinkle their nose in disgust."
       end
     else
-      feed(user.mysql_id, target.mysql_id, item_id) +
+      feed(user.id, target.id, item_id) +
         if user == target
           " You particularly enjoy the sugary frosting - it's decorated with a picture of a cuddly bear surrounded by hearts."
         else
@@ -1815,7 +1805,7 @@ def use(user, target, item_id, magic)
   when :ocarina
     ocarina(user, target, item_id)
   when :revive
-    revive(user.mysql_id, target.mysql_id, item_id)
+    revive(user.id, target.id, item_id)
   end
 end
 
@@ -1855,19 +1845,19 @@ def vote(voter, candidate)
   return 'Error. Try again.' if $params['magic'] != current_user.magic
   return 'You are not currently a member of any settlement.' if voter.settlement.nil? && voter.temp_sett_id.zero?
 
-  if candidate.mysql_id.zero?
-    mysql_update('accounts', voter.mysql_id,
-                 vote: candidate.mysql_id)
+  if candidate.id.zero?
+    mysql_update('accounts', voter.id,
+                 vote: candidate.id)
     return 'As none of the candidates suit your fancy, you choose to support no one.'
   end
 
   return 'You cannot support that person.' if candidate.settlement.nil?
 
-  if voter.settlement != candidate.settlement && voter.temp_sett_id != candidate.settlement.mysql_id
+  if voter.settlement != candidate.settlement && voter.temp_sett_id != candidate.settlement.id
     return 'You cannot support that person.'
   end
 
-  mysql_update('accounts', voter.mysql_id, vote: candidate.mysql_id)
+  mysql_update('accounts', voter.id, vote: candidate.id)
   "You pledge your support for <b>#{candidate.name}</b> as #{candidate.settlement.title} of #{candidate.settlement.name}."
 end
 
@@ -1881,8 +1871,8 @@ def water(user, magic)
 
   growth = ((tile.hp + 1) / 3).to_i + 4 # 5 at 2 or 3 hp, 4 at 1 hp
 
-  mysql_bounded_update('grid', 'building_hp', tile.mysql_id, +growth)
-  mysql_bounded_update('grid', 'terrain', tile.mysql_id, 1) # change tile to "watered field"
+  mysql_bounded_update('grid', 'building_hp', tile.id, +growth)
+  mysql_bounded_update('grid', 'terrain', tile.id, 1) # change tile to "watered field"
   user.change_inv(:water_pot, -1)
   user.change_inv(:pot, +1)
   user.change_ap(-1)
