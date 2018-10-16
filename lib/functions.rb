@@ -7,22 +7,19 @@ require 'settlement'
 require 'tile'
 require 'user'
 require 'message'
-
-def a_an(str)
-  str =~ /^[aeiou].*/ ? "an #{sr}" : "a #{str}"
-end
+require 'utils'
 
 def add_fuel(user, _magic)
   player = User.ensure(user)
   tile = player.tile
 
-  unless lookup_table_row(:building, tile['building_id'], :actions).include?(:add_fuel)
+  if !lookup_table_row(:building, tile['building_id'], :actions).include?(:add_fuel)
     return "There's nothing to add fuel to here."
   end
 
   return 'The fire is very large and is too hot to approach.' if tile['building_hp'].to_i >= 30
 
-  return "You don't have any sticks to add to the fire." unless player.has_item?(:stick)
+  return "You don't have any sticks to add to the fire." if !player.has_item?(:stick)
 
   mysql_transaction do
     player.change_inv(1, -1)
@@ -106,13 +103,13 @@ def ap_recovery(user)
   ap += building_bonus if !building_bonus.nil? && (user.z != 0 || lookup_table_row(:building, tile.building_id, :floors).zero?)
 
   tile_bonus = lookup_table_row(:terrain, tile.terrain, :ap_recovery)
-  ap += tile_bonus unless tile_bonus.nil?
+  ap += tile_bonus if !tile_bonus.nil?
 
   ap == ap.to_i ? ap.to_i : ap
 end
 
 def attack(attacker, target, item_id, _magic)
-  unless user_has_item?(attacker, item_id) || item_id.to_i == 24 # 24 -> fist
+  if !(user_has_item?(attacker, item_id) || item_id.to_i == 24) # 24 -> fist
     return "You don't have #{a_an(lookup_table_row(:item, item_id, :name))}"
   end
   return '' if attacker.mysql.nil? || target.mysql.nil?
@@ -123,11 +120,11 @@ def attack(attacker, target, item_id, _magic)
   end
   return "You attack #{target.name}, but they're already knocked out." if target.hp.zero?
   return "You can't attack while dazed." if attacker.hp.zero?
-  return "#{target.name.capitalize} isn't in the vicinity." unless same_location?(attacker, target)
+  return "#{target.name.capitalize} isn't in the vicinity." if !same_location?(attacker, target)
 
   if target.is_a?(Building) && target.special == :settlement
     can_attack, msg = can_attack_totem?(target)
-    return msg unless can_attack
+    return msg if !can_attack
   end
   if target.is_a?(Building) && target.special == :ruins
     return "You ready yourself to attack, but can't bring yourself to harm the ruins."
@@ -253,7 +250,7 @@ def break_attempt(user, items)
 end
 
 def build(user, building_id, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   building_id = building_id.to_i
   tile = user.tile
@@ -262,7 +259,7 @@ def build(user, building_id, magic)
   building = lookup_table_row(:building, building_id)
 
   can_build, msg = can_build?(user, building)
-  return msg unless can_build
+  return msg if !can_build
 
   update_hash = {}
   case building[:special]
@@ -348,14 +345,14 @@ def buildings_in_radius(tile, radius_squared, building)
 end
 
 def buy_skill(user_id, skill_id, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   user = User.new(user_id)
   if user.level >= Max_Level
     return 'You have reached the current maximum level; you must unlearn ' \
            'some skills before you can learn any more.'
   end
-  unless can_buy_skill?(user_id, skill_id)
+  if !can_buy_skill?(user_id, skill_id)
     return 'You are not able to buy that skill; ' \
            'either you already have it, or lack the required prerequisites.'
   end
@@ -390,10 +387,6 @@ def can_attack_totem?(totem)
   true
 end
 
-def can_act?(user)
-  user.ap >= 1 && ($ip_hits.nil? || $ip_hits <= 3300)
-end
-
 def can_build?(user, building)
   tile = user.tile
 
@@ -401,7 +394,7 @@ def can_build?(user, building)
 
   building = lookup_table_row(:building, building) if building.is_a?(Symbol)
 
-  unless user.has_skill?(building[:build_skill])
+  if !user.has_skill?(building[:build_skill])
     return false, "You don't have the required skills " \
       "to build #{a_an(building[:name])}."
   end
@@ -430,13 +423,13 @@ def can_build?(user, building)
       ' can only be built in an established settlement.'
   end
 
-  unless user.has_item?(building[:tools])
+  if !user.has_item?(building[:tools])
     return false, 'You need ' +
       describe_items_list(building[:tools], 'long') +
       " to build #{a_an(building[:name])}."
   end
 
-  unless user.has_item?(building[:materials])
+  if !user.has_item?(building[:materials])
     return false, 'You need ' +
       describe_items_list(building[:materials], 'long') +
       " to build #{a_an(building[:name])}."
@@ -455,7 +448,7 @@ end
 
 def can_sell_skill?(user_id, skill_id)
   user = User.ensure(user_id)
-  return false unless user.has_skill?(skill_id)
+  return false if !user.has_skill?(skill_id)
 
   skill = id_to_key(:skill, skill_id)
   post_reqs = lookup_all_where(:skill, :prereq, skill)
@@ -486,7 +479,7 @@ def can_settle?(tile)
 end
 
 def chat(user, text, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
   return "You can't think of anything to say." if text == ''
   return 'Message too long.' if text.length > 255
 
@@ -500,9 +493,9 @@ def chop_tree(user, _magic)
   tile_actions = lookup_table_row(:terrain, tile['terrain'], :actions)
   return 'There are no trees here.' if tile_actions.nil? || !tile_actions.include?(:chop_tree)
 
-  return 'You cannot chop down trees while inside.' unless user.outside?
+  return 'You cannot chop down trees while inside.' if !user.outside?
 
-  return 'You need an axe to chop down trees.' unless user.has_item?(:hand_axe) || user.has_item?(:stone_axe)
+  return 'You need an axe to chop down trees.' if !(user.has_item?(:hand_axe) || user.has_item?(:stone_axe))
 
   mysql_transaction do
     user.change_ap(-chop_tree_ap(user))
@@ -545,7 +538,7 @@ def craft(user, item_id, _magic)
   craft_skill = product[:craft_skill]
   return 'You do not have the required skills to craft that.' if !craft_skill.nil? && !user.has_skill?(craft_skill)
 
-  unless product[:craft_building].nil?
+  if !product[:craft_building].nil?
     building = user.tile.building_id
     if lookup_table_row(:building, product[:craft_building], :id) != building
       return 'You must be in the vicinity of ' \
@@ -554,11 +547,11 @@ def craft(user, item_id, _magic)
     end
   end
 
-  unless user.has_all_items?(product[:tools])
+  if !user.has_all_items?(product[:tools])
     return "You need #{describe_items_list(product[:tools], 'long')} to build #{a_an(product[:name])}."
   end
 
-  unless user.has_all_items?(product[:materials])
+  if !user.has_all_items?(product[:materials])
     return 'You need ' +
            describe_items_list(product[:materials], 'long') +
            " to build #{a_an(product[:name])}."
@@ -579,7 +572,7 @@ def craft(user, item_id, _magic)
   user.change_inv(item_id, +craft_amount)
 
   product[:extra_products]&.each do |item, value|
-    mysql_change_inv user, item, +value
+    mysql_change_inv(user, item, +value)
   end
   msg = "You craft #{describe_items(craft_amount, item_id, :long)}."
   msg << break_attempt(user, product[:tools])
@@ -627,16 +620,15 @@ def describe_animals(amount, type, length = :short)
   # example (short) output = '3 wolves' / 'wolf'
   # example (long) output = 'three wolves' / 'a wolf'
   case amount
-  when 0 then ''
+  when 0
+     ''
   when 1
     length == :short ? lookup_table_row(:animal, type, :name) : a_an(lookup_table_row(:animal, type, :name))
   else
     if length == :short
-      amount.to_s +
-        ' ' +
-        lookup_table_row(:animal, type, :plural) else describe_number(amount) +
-          ' ' +
-          lookup_table_row(:animal, type, :plural)
+      "#{amount} #{lookup_table_row(:animal, type, :plural)}"
+    else
+      "#{describe_number(amount)} #{lookup_table_row(:animal, type, :plural)}"
     end
   end
 end
@@ -645,11 +637,11 @@ def describe_animals_on_tile(x, y)
   animals = mysql_select('animals', x: x, y: y)
   num_animals = animals.count
 
-  return '' if animals.count.zero?
-
-  animals = values_freqs_hash(animals, 'type_id')
-  animal_descs = animals.map { |type, amt| describe_animals(amt, type, :long) }
-  "#{describe_list(animal_descs).capitalize} #{is_are(num_animals)} here."
+  if num_animals.positive?
+    animals = values_freqs_hash(animals, 'type_id')
+    animal_descs = animals.map { |type, amt| describe_animals(amt, type, :long) }
+    "#{describe_list(animal_descs).capitalize} #{is_are(num_animals)} here."
+  end
 end
 
 def describe_craft(item_row)
@@ -663,17 +655,16 @@ def describe_craft(item_row)
 
   name = "Repair #{name}" if item_row[:repair]
 
-  ap_cost = item_row[:craft_ap]
-  ap_cost = item_row[:build_ap] if ap_cost.nil?
+  ap_cost = item_row[:craft_ap] || item_row[:build_ap]
 
   tools = []
   materials = []
-  unless item_row[:tools].nil?
+  if !item_row[:tools].nil?
     tools = item_row[:tools].map do |tool|
       describe_items(1, tool, 'long')
     end
   end
-  materials = item_row[:materials].map { |item, amt| describe_items(amt, item, :short, ' x ') } unless item_row[:materials].nil?
+  materials = item_row[:materials].map { |item, amt| describe_items(amt, item, :short, ' x ') } if !item_row[:materials].nil?
   "#{name} (#{ap_cost}ap, #{(tools + materials).join(', ')})"
 end
 
@@ -707,7 +698,7 @@ def describe_list(coll)
   if coll.size > 1
     "#{coll[0..-2].join(', ')} and #{coll.last}"
   else
-    coll.join(' and ')
+    coll.join
   end
 end
 
@@ -720,11 +711,7 @@ end
 
 def describe_number(n)
   n = n.to_i
-  if n < 50
-    n.to_words
-  else
-    'loads of'
-  end
+  (n < 50) ? n.to_words : 'loads of'
 end
 
 def describe_occupants(x, y, z, omit = 0)
@@ -749,6 +736,7 @@ def describe_weapon(item, user_id)
   user = User.new(user_id)
   accuracy = item_stat(item[:id], :accuracy, user)
   dmg = item_stat(item[:id], :effect, user)
+
   "#{item[:name].capitalize} (#{accuracy}%, #{dmg} dmg)"
 end
 
@@ -783,8 +771,8 @@ def dig(user, _magic)
   tile = user.tile
 
   return 'You would rather not dig a hole in the floor.' if user.inside?
-  return 'You cannot dig here.' unless tile.actions.include?(:dig)
-  return 'You need a digging stick to dig here.' unless user.has_item?(:digging_stick)
+  return 'You cannot dig here.' if !tile.actions.include?(:dig)
+  return 'You need a digging stick to dig here.' if !user.has_item?(:digging_stick)
 
   diggables = lookup_table_row(:terrain, tile.terrain, :dig)
   found_item = random_select(diggables, 100)
@@ -805,37 +793,47 @@ end
 
 def dir_to_offset(dir)
   case dir
-  when 'NW' then [-1, -1, 0]
-  when 'Northwest' then [-1, -1, 0]
-  when 'N' || 'North' then [0, -1, 0]
-  when 'NE' || 'Northeast' then [1, -1, 0]
-  when 'W' || 'West' then [-1, 0, 0]
-  when '' then [0, 0, 0]
-  when 'E' || 'East' then [1, 0, 0]
-  when 'SW' || 'Southwest' then [-1, 1, 0]
-  when 'S' || 'South' then [0, 1, 0]
-  when 'SE' || 'Southeast' then [1, 1, 0]
-  when 'Enter' then [0, 0, 1]
-  when 'In' then [0, 0, 1]
-  when 'Up' then [0, 0, 1]
-  when 'Down' then [0, 0, -1]
-  when 'Exit' then [0, 0, -1]
-  when 'Out' then [0, 0, -1]
+  when 'NW','Northwest'
+     [-1, -1, 0]
+  when 'N','North'
+     [0, -1, 0]
+  when 'NE','Northeast'
+     [1, -1, 0]
+  when 'W' || 'West'
+     [-1, 0, 0]
+  when 'E','East'
+     [1, 0, 0]
+  when 'SW','Southwest'
+     [-1, 1, 0]
+  when 'S','South'
+     [0, 1, 0]
+  when 'SE','Southeast'
+     [1, 1, 0]
+  when 'Enter'
+     [0, 0, 1]
+  when 'In'
+     [0, 0, 1]
+  when 'Up'
+     [0, 0, 1]
+  when 'Down'
+     [0, 0, -1]
+  when 'Exit'
+     [0, 0, -1]
+  when 'Out'
+     [0, 0, -1]
+  else
+     [0, 0, 0]
   end
 end
 
 def drop(user, item_id, amount, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
   return 'You drop nothing.' if item_id.nil?
   return "That's an invalid quantity to drop." if amount.to_i < 1 || amount.to_i > 15
 
   amt_dropped = -user.change_inv(item_id, -amount.to_i)
   user.tile.change_inv(item_id, +amt_dropped)
   "You drop #{describe_items(amt_dropped, item_id, :long)}."
-end
-
-def encrypt(str)
-  BCrypt::Password.create(str)
 end
 
 def feed(feeder_id, target_id, item_id)
@@ -861,11 +859,11 @@ def feed(feeder_id, target_id, item_id)
 end
 
 def fill(user, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   tile = user.tile
-  return 'You cannot fill a pot here.' unless tile.actions.include?(:fill)
-  return "You don't have any container to fill with water." unless user.has_item?(:pot)
+  return 'You cannot fill a pot here.' if !tile.actions.include?(:fill)
+  return "You don't have any container to fill with water." if !user.has_item?(:pot)
 
   user.change_inv(:water_pot, 1)
   user.change_inv(:pot, -1)
@@ -873,42 +871,14 @@ def fill(user, magic)
   'You fill a pot with water.'
 end
 
-def get_user
-  @get_user ||= begin
-    if $cgi.key?('username')
-      return false if $cgi['username'].empty?
-
-      user = User.find_by_username($cgi['username'])
-      return false if user.nil?
-      return false unless user.validate($cgi['password'])
-
-      $cookie = CGI::Cookie.new(
-        name: 'shintolin',
-        value: [user_id.to_s, user.password],
-        expires: (Time.now + 1800)
-      )
-      user
-    else
-      $cookie = $cgi.cookies['shintolin']
-      return nil if $cookie.nil?
-
-      user_id = $cookie[0]
-
-      user = User.new(user_id)
-      user = nil if $cookie[1] != user.password
-      user
-    end
-  end
-end
-
 def give(giver, receiver, amount, item_id, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
-  return '' unless receiver.exists?
+  return '' if !receiver.exists?
 
   return 'ERROR: Invalid user.' if giver.nil? || receiver.nil?
 
-  return "#{receiver.name} is not in the vicinity." unless same_location?(giver, receiver)
+  return "#{receiver.name} is not in the vicinity." if !same_location?(giver, receiver)
 
   return "You cannot leave items in #{receiver.name}." if receiver.is_a?(Building) && !receiver.item_storage?
 
@@ -947,7 +917,7 @@ end
 def harvest(user, _magic)
   return 'You must wait until Autumn before the crops can be harvested.' if season != :Autumn
 
-  return 'You have not yet discovered the secrets of agriculture.' unless user.has_skill?(:agriculture)
+  return 'You have not yet discovered the secrets of agriculture.' if !user.has_skill?(:agriculture)
 
   tile = user.tile.mysql
   return 'There is nothing to harvest here.' if tile['terrain'] != '91' # 91 = wheat field
@@ -1084,9 +1054,9 @@ end
 def item_building_bonus(item_id, stat, user)
   user = User.ensure(user)
   building = user.tile.building
-  return 1 unless building.exists?
+  return 1 if !building.exists?
   return 1 if building.use_skill.nil?
-  return 1 unless user.has_skill?(building.use_skill)
+  return 1 if !user.has_skill?(building.use_skill)
 
   item_type = lookup_table_row :item, item_id, :use
   return 1 if item_type.nil?
@@ -1130,12 +1100,12 @@ def item_stat(item_id, stat, user)
 end
 
 def join(user, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   tile = user.tile
   building = tile.building
-  return 'You must be at a totem pole to join a settlement.' unless building.exists?
-  return 'You must be at a totem pole to join a settlement.' unless building.actions.include?(:join)
+  return 'You must be at a totem pole to join a settlement.' if !building.exists?
+  return 'You must be at a totem pole to join a settlement.' if !building.actions.include?(:join)
   return "You are already a resident of #{tile.settlement.name}." if user.settlement_id == tile.settlement_id
   if user.temp_sett_id == tile.settlement_id
     return "You are already on your way to becoming a resident of #{tile.settlement.name}."
@@ -1165,7 +1135,7 @@ def join(user, magic)
 end
 
 def leave(user, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
   return 'You are not currently a member of any settlement.' if user.settlement_id.zero? && user.temp_sett_id.zero?
 
   if user.settlement_id != 0
@@ -1185,8 +1155,6 @@ def leave(user, magic)
 end
 
 def logout(user, magic)
-  return 'Error. Try again.' if magic != $user.magic
-
   # delete cookies
   $cookie.expires = Time.now
 
@@ -1197,27 +1165,6 @@ def logout(user, magic)
   $header['Location'] = './index.cgi'
 end
 
-def minutes_to_hour
-  unix_t = Time.now.to_i
-  seconds_past = unix_t - ((unix_t / 3600) * 3600)
-  ((3600 - seconds_past) / 60) + 1
-end
-
-def month
-  # Ruby calculates time in seconds by GMT. To synch up with cron, we must lie and say whatever time zone
-  # we're in is actually GMT, -then- calculate the seconds.
-  gmt_time = Time.now.to_a
-  local_time = Time.utc(gmt_time[5], gmt_time[4], gmt_time[3], gmt_time[2], gmt_time[1], gmt_time[0])
-
-  day = local_time.to_i / (3600 * 24) % 3
-  prefix =
-    case day
-    when 0 then 'Early '
-    when 1 then 'Mid '
-    when 2 then 'Late '
-    end
-  prefix + season.to_s
-end
 
 def move(user, x, y, z, _magic)
   x = x.to_i
@@ -1362,44 +1309,11 @@ def ocarina(user, target, _item_id)
   end
 end
 
-SHORT_DIRECTIONS = %w[N NW W SW S SE E NE In Out].freeze
-LONG_DIRECTIONS = %w[North Northwest West Southwest South Southeast East Northeast inside outside].freeze
-
-def offset_to_dir(x_offset, y_offset, z_offset = 0, length = :short)
-  dirs = length == :short ? SHORT_DIRECTIONS : LONG_DIRECTIONS
-  case z_offset
-  when 0
-    case y_offset
-    when -1
-      case x_offset
-      when -1 then dirs[1]
-      when 0 then dirs[0]
-      when 1 then dirs[7]
-      end
-    when 0
-      case x_offset
-      when -1 then dirs[2]
-      when 0 then nil
-      when 1 then dirs[6]
-      end
-    when 1
-      case x_offset
-      when -1 then dirs[3]
-      when 0 then dirs[4]
-      when 1 then dirs[5]
-      end
-    end
-  when 1 then dirs[8]
-  when -1 then dirs[9]
-  end
-end
-
 def quarry(user, _magic)
   user = User.ensure(user)
-  return 'You cannot quarry here.' unless user.tile.actions.include?(:quarry)
-  return 'You do not have the required skills to quarry.' unless user.has_skill?(:quarrying)
-  return 'You need a pick to quarry here.' unless user.has_item?(:bone_pick) ||
-                                                  user.has_item?(:ivory_pick)
+  return 'You cannot quarry here.' if !user.tile.actions.include?(:quarry)
+  return 'You do not have the required skills to quarry.' if !user.has_skill?(:quarrying)
+  return 'You need a pick to quarry here.' if !(user.has_item?(:bone_pick) || user.has_item?(:ivory_pick))
 
   user.change_ap(-4)
   if rand < 0.5
@@ -1415,10 +1329,6 @@ def quarry(user, _magic)
         else
           " #{break_attempt(user, :bone_pick)}"
         end
-end
-
-def random_dir
-  DIRECTIONS[rand(8)]
 end
 
 def random_select(hash, denom = 0)
@@ -1445,33 +1355,28 @@ def random_select(hash, denom = 0)
   selected
 end
 
-def rand_to_i(x)
-  # eg, if x is 1.4, returns 1 60% of the time and 2 40% of the time
-  rand < (x - x.floor) ? x.floor + 1 : x.floor
-end
-
 def repair(user)
   user = User.ensure(user)
   building = user.tile.building.repair
 
-  unless user.has_skill?(building[:build_skill])
+  if !user.has_skill?(building[:build_skill])
     return "You don't have the required skills " \
            "to repair the #{building[:name]}."
   end
 
-  unless user.has_item?(building[:tools])
+  if !user.has_item?(building[:tools])
     return 'You need ' +
            describe_items_list(building[:tools], 'long') +
            " to repair the #{building[:name]}."
   end
 
-  unless user.has_item?(building[:materials])
+  if !user.has_item?(building[:materials])
     return 'You need ' +
            describe_items_list(building[:materials], 'long') +
            " to repair the #{building[:name]}."
   end
 
-  return "The #{building[:name]} does not need any repairs." unless user.tile.building_hp < building[:max_hp]
+  return "The #{building[:name]} does not need any repairs." if !user.tile.building_hp < building[:max_hp]
 
   return 'Use the Add Fuel button instead.' if building[:name] == 'campfire'
 
@@ -1542,7 +1447,7 @@ def same_location?(a, b)
   # this should be deleted after OOP refactoring!
   return a['x'] == b['x'] && a['y'] == b['y'] && a['z'] == b['z'] if a.is_a?(Hash) && b.is_a?(Hash)
 
-  unless a.exists? || !b.exists?
+  if !(a.exists? || !b.exists?)
     puts 'One of the arguments to same_location? refers to an invalid entity.'
     return false
   end
@@ -1553,7 +1458,7 @@ def same_location?(a, b)
 end
 
 def say(speaker, message, volume, magic, target = nil)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   return 'Error. Try again.' if volume != 'Talk' && volume != 'Shout' && volume != 'Whisper'
 
@@ -1601,23 +1506,6 @@ def say(speaker, message, volume, magic, target = nil)
   end
 end
 
-def season
-  three_day_block = Time.now.utc.to_i / (3600 * 24 * 3) % 4
-  case three_day_block
-  when 0 then :Winter
-  when 1 then :Spring
-  when 2 then :Summer
-  when 3 then :Autumn
-  end
-end
-
-def game_year
-  gmt_time = Time.now.to_a
-  game_time = Time.utc(gmt_time[5], gmt_time[4], gmt_time[3], 0, 0, 0)
-  game_time -= Time.utc(2009, 3, 28, 0, 0, 0)
-  game_time.to_i / (12 * 60 * 60 * 24)
-end
-
 def search(user, _magic)
   tile = user.tile
 
@@ -1635,7 +1523,7 @@ def search(user, _magic)
   items.collect do |item, odds|
     season_mod = lookup_table_row(:item, item, season)
     # puts season_mod
-    items[item] = odds * season_mod unless season_mod.nil?
+    items[item] = odds * season_mod if !season_mod.nil?
     # puts "Item: #{item} #{items[item]}%"
   end
   case tile.hp
@@ -1735,9 +1623,9 @@ def search_hidden_items(user)
 end
 
 def sell_skill(user_id, skill_id, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
-  unless can_sell_skill?(user_id, skill_id)
+  if !can_sell_skill?(user_id, skill_id)
     return "You cannot sell #{lookup_table_row(:skill, skill_id, :name)} " \
            'until you have sold all the skills that come after it.'
   end
@@ -1749,15 +1637,15 @@ def sell_skill(user_id, skill_id, magic)
 end
 
 def settle(user, settlement_name, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   user = User.ensure(user)
   tile = user.tile
   can_settle, settle_msg = can_settle?(tile)
-  return settle_msg unless can_settle
+  return settle_msg if !can_settle
 
   can_build, build_msg = can_build?(user, :totem)
-  return build_msg unless can_build
+  return build_msg if !can_build
 
   return 'Your settlement name must be at least two characters.' if $cgi['text'].length < 2
   return 'Your settlement name must not contain invalid characters.' if $cgi['text'] !~ /^\s?[a-zA-Z0-9 .\-']*\s?$/
@@ -1777,16 +1665,12 @@ def settle(user, settlement_name, magic)
     'May it grow and prosper.'
 end
 
-def skill_cost(level)
-  (level + 2) * 30
-end
-
 def sow(user, item_id, _magic)
   user = User.ensure(user)
 
   return 'Crops can only be planted in Spring.' if season != :Spring
 
-  return 'You have not yet discovered the secrets of agriculture.' unless user.has_skill?(:agriculture)
+  return 'You have not yet discovered the secrets of agriculture.' if !user.has_skill?(:agriculture)
 
   tile = user.tile.mysql
   return 'You cannot plant anything here.' if tile['terrain'] != '9' # 9 = empty field
@@ -1833,11 +1717,11 @@ def stockpile_item_amount(x, y, item_id)
 end
 
 def take(user_id, amount, item_id, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   user = User.new(user_id)
   stockpile = user.tile.building
-  return 'There is nothing you can take here.' unless stockpile.item_storage?
+  return 'There is nothing you can take here.' if !stockpile.item_storage?
 
   return 'You take nothing.' if item_id.nil?
 
@@ -1873,7 +1757,7 @@ def tile_dir(user, tile)
   y_offset = tile.y - user.y
 
   if user.z.zero?
-    return offset_to_dir(x_offset, y_offset, 0) unless user.tile == tile
+    return offset_to_dir(x_offset, y_offset, 0) if user.tile != tile
 
     valid_location?(tile.x, tile.y, 1) ? 'Enter' : nil
   else
@@ -1893,21 +1777,16 @@ def transfer_frags(attacker, target)
   end
 end
 
-def upcase_first(str)
-  str[0] = str[0] - 32 if (str[0] >= 97) && (str[0] <= 122) # 97, 122 = ascii(a, z)
-  str
-end
-
 def use(user, target, item_id, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
-  target = user unless target.exists?
+  target = user if !target.exists?
 
-  return "That person isn't in the vicinity." unless same_location?(user, target)
+  return "That person isn't in the vicinity." if !same_location?(user, target)
 
   item = lookup_table_row(:item, item_id)
   return 'Nothing happens.' if item.nil?
-  return "You don't have any #{item[:plural]}." unless user.has_item?(item_id)
+  return "You don't have any #{item[:plural]}." if !user.has_item?(item_id)
 
   return item[:use] if item[:use].is_a? String
 
@@ -1947,7 +1826,7 @@ def user_actions(user)
   # returns an array containing the forms to display for user
   tile = user.tile
   actions = []
-  if can_act?(user)
+  if user.can_act?
     if user.hp.positive?
       actions << %i[attack build craft]
       actions << :write if tile.building_id != 0
@@ -1975,14 +1854,8 @@ def valid_location?(x_loc, y_loc, floor)
   (0..floors).cover?(floor)
 end
 
-def values_freqs_hash(resources, field)
-  resources.each_with_object(Hash.new(0)) do |row, hash|
-    hash[row[field]] += 1
-  end
-end
-
 def vote(voter, candidate)
-  return 'Error. Try again.' if $params['magic'] != $user.magic
+  return 'Error. Try again.' if $params['magic'] != current_user.magic
   return 'You are not currently a member of any settlement.' if voter.settlement.nil? && voter.temp_sett_id.zero?
 
   if candidate.mysql_id.zero?
@@ -1993,7 +1866,7 @@ def vote(voter, candidate)
 
   return 'You cannot support that person.' if candidate.settlement.nil?
 
-  unless voter.settlement == candidate.settlement || voter.temp_sett_id == candidate.settlement.mysql_id
+  if voter.settlement != candidate.settlement && voter.temp_sett_id != candidate.settlement.mysql_id
     return 'You cannot support that person.'
   end
 
@@ -2002,11 +1875,11 @@ def vote(voter, candidate)
 end
 
 def water(user, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   tile = user.tile
-  return 'You cannot water here.' unless tile.actions.include?(:water)
-  return 'You dont have any water.' unless user.has_item?(:water_pot)
+  return 'You cannot water here.' if !tile.actions.include?(:water)
+  return 'You dont have any water.' if !user.has_item?(:water_pot)
   return "You don't need to water at this time of year." if %i[Fall Winter].include?(season)
 
   growth = ((tile.hp + 1) / 3).to_i + 4 # 5 at 2 or 3 hp, 4 at 1 hp
@@ -2023,17 +1896,16 @@ def water(user, magic)
 end
 
 def write(user, msg, magic)
-  return 'Error. Try again.' if magic != $user.magic
+  return 'Error. Try again.' if magic != current_user.magic
 
   building = Building.new(user.x, user.y)
-  return 'There is no building to write on in the vicinity.' unless building.exists?
+  return 'There is no building to write on in the vicinity.' if !building.exists?
 
   return "You don't have the cognizance to write while dazed." if user.hp.zero?
 
   return "You cannot write on #{building.a}." if building.unwritable
 
-  unless user.has_item?(:hand_axe) ||
-         user.has_item?(:stone_carpentry)
+  if !user.has_item?(:hand_axe) && !user.has_item?(:stone_carpentry)
     return ' You need a hand axe or a set of stone carpentry tools ' \
            'to write on the building.'
   end
@@ -2053,28 +1925,3 @@ def write(user, msg, magic)
   "You write \"#{msg}\" on #{building.name}."
 end
 
-def xp_field(type)
-  case type
-  when :herbalist then 'herbal_xp'
-  when :crafter then 'craft_xp'
-  when :wanderer then 'wander_xp'
-  when :warrior then 'warrior_xp'
-  end
-end
-
-def you_or_her(you_id, her_id, you = 'you', link = :link)
-  # exactly the same as the function below, but I didn't like
-  # having a gender-biased codebase. It's the 21st century.
-  you_or_him(you_id, her_id, you, link)
-end
-
-def you_or_him(you_id, him_id, you = 'you', link = true)
-  if you_id.to_i == him_id.to_i
-    "<b>#{you}</b>"
-  else
-    him = User.find(him_id)
-    return '' if him.nil?
-
-    link != :no_link ? html_userlink(him_id, him['name']) : him['name']
-  end
-end

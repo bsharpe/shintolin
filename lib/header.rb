@@ -1,6 +1,8 @@
 
 
 require 'patches'
+require 'utils'
+include Utils
 require 'functions-mysql'
 require 'functions-html'
 require 'functions'

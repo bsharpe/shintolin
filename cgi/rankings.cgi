@@ -4,8 +4,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-$user = get_user
-if $user
+
+if current_user
   $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else

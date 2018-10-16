@@ -4,8 +4,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-$user = get_user
-if $user
+
+if current_user
   $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
@@ -15,10 +15,10 @@ end
 
 
 Map =
-  if $user.has_skill?(:tracking)
-    html_map($user.tile, 9, $user, :show_occupants)
+  if current_user.has_skill?(:tracking)
+    html_map(current_user.tile, 9, current_user, :show_occupants)
   else
-    html_map($user.tile, 9, $user, :no_occupants)
+    html_map(current_user.tile, 9, current_user, :no_occupants)
   end
 
 puts <<ENDTEXT

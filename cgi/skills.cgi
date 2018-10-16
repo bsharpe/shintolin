@@ -4,8 +4,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-$user = get_user
-if $user
+
+if current_user
   $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
@@ -40,7 +40,7 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 </head>
 <body>
 <h1>Skills</h1>'
-print "You have learned #{$user.level} out of a maximum of #{Max_Level} skills.<br>"
+print "You have learned #{current_user.level} out of a maximum of #{Max_Level} skills.<br>"
 print'<hr>
 <a class="buttonlink" href="game.cgi">Return</a>
 <hr>

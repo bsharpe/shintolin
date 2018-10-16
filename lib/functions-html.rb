@@ -3,10 +3,10 @@ def html_action_form(action, inline = false, ap = nil, post = 'game.cgi')
   html << 'style="display:inline" ' if inline
   html << '><input type="submit" value="' +
           action
-  html << ": #{ap}" unless ap.nil?
+  html << ": #{ap}" if !ap.nil?
   html << '" />' +
           html_hidden('action', action.downcase) +
-          html_hidden('magic', $user.magic)
+          html_hidden('magic', current_user.magic)
   html << yield if block_given?
   html << '</form>'
   html
@@ -222,7 +222,7 @@ end
 def html_map(centre, size, user = nil, show_occupants = true, &block)
   # generate html to display a map centered on x, y, of size: size x size
 
-  show_buttons = !user.nil? ? can_act?(user) : false
+  show_buttons = !user.nil? ? user.can_act? : false
   range = (size.to_f / 2).floor
   z = !user.nil? ? user.z : 0
 
@@ -263,7 +263,7 @@ def html_move_button(dir, ap = 0)
   html << html_hidden('x', x)
   html << html_hidden('y', y)
   html << html_hidden('z', z)
-  html << html_hidden('magic', $user.magic)
+  html << html_hidden('magic', current_user.magic)
   html << '</form>'
   html
 end
@@ -272,7 +272,7 @@ def html_player_data(user)
   user = User.ensure(user)
   html = '<center>You are ' + html_userlink(user.id, user.name)
   settlement = user.settlement
-  unless user.settlement.nil?
+  if !user.settlement.nil?
     html = if user == settlement.leader
              html + ", #{settlement.title} of "
            else html + ', pledged to '
@@ -371,7 +371,7 @@ def html_option_animal(animal)
 end
 
 def html_option_building(building)
-  return '' unless building.exists?
+  return '' if !building.exists?
 
   html = '<option '
   html << 'selected="yes" ' if $target.is_a?(Building)
@@ -419,7 +419,7 @@ def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
 
   html << '</div>'
   subskills = lookup_all_where(:skill, :prereq, skill_name)
-  unless subskills.empty?
+  if !subskills.empty?
     subskills.each do |sub|
       html << html_skill(sub[:id], user_id, indent + 1, xp, form)
     end
@@ -468,7 +468,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
 
   if button != false
     button = tile_dir(user, tile)
-    unless button.nil?
+    if !button.nil?
       ap_cost = ap_cost(tile.terrain, source_terrain, user.mysql_id, tile.settlement)
       html << html_move_button(button, ap_cost)
     end
@@ -519,7 +519,7 @@ def html_userlink(id, name = nil, desc = false, show_hp = false)
       extra = "<span class=\"small\"> [#{user.hp}/#{user.maxhp}]</span>"
     end
   end
-  relation = !$user.nil? ? $user.relation(user).to_s : 'neutral'
+  relation = !current_user.nil? ? current_user.relation(user).to_s : 'neutral'
 
   "<a href=\"profile.cgi?id=#{id}\" class=\"#{relation}\" title=\"#{description}\">#{name}</a>#{extra}"
 end

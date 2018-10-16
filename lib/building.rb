@@ -38,7 +38,7 @@ class Building < Base
   end
 
   def description(z = 0)
-    return '' unless exists?
+    return '' if !exists?
 
     dmg = case (hp.to_f / max_hp)
           when (0...0.33)

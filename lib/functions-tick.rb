@@ -2,7 +2,7 @@ def tick_campfires
   puts '<li>Campfires burned!</li><ul>'
   campfire_tiles = mysql_select('grid', building_id: 5)
   campfire_tiles.each do |tile|
-    next unless rand(2).zero?
+    next if !rand(2).zero?
 
     puts "<li>hp #{tile['building_hp']}"
     if tile['building_hp'].to_i <= 1
@@ -135,7 +135,7 @@ def tick_hunger
     foods = lookup_all_where(:item, :use, :food)
     eaten = false
     foods.each do |food|
-      next unless user_has_item?(player['id'], food[:id])
+      next if !user_has_item?(player['id'], food[:id])
 
       mysql_change_inv(player['id'], food[:id], -1)
       Message.insert("Feeling hungry, $ACTOR ate #{a_an(food[:name])}",
@@ -201,7 +201,7 @@ def tick_restore_search
   tiles.each do |tile|
     restore_odds = lookup_table_row(:terrain, tile['terrain'], :restore_odds)
     restore_odds = 10 if restore_odds.nil?
-    next unless rand(100) < restore_odds
+    next if (rand(100) >= restore_odds)
 
     case tile['terrain']
     when '8' # 8 -> 'dirt track'
@@ -219,7 +219,7 @@ def tick_delete_rotten_food
   # delete rotten food that is on the ground but not in a built stockpile
   stockpiles = mysql_select_all('stockpiles')
   stockpiles.each do |stock|
-    next unless stock['item_id'] == '33'
+    next if stock['item_id'] != '33'
 
     onground = true
     builtpiles = mysql_select('grid', building_id: 3)
@@ -279,7 +279,7 @@ def tick_spawn_animals
       freq = spawn_no / (habitat_tiles.count + 1) # to prevent dividing by zero
       max_allowed = ((habitat_tiles.count / 300.0) * amt) * 10 # (factor of DOOM!)
       # If > total animals of that type allowed for that region then skip spawning that type
-      next unless max_allowed > count.count
+      next if max_allowed <= count.count
 
       habitat_tiles.each do |tile|
         if rand < freq
@@ -305,7 +305,7 @@ def tick_terrain_transitions
              transition_odds[season]
            end
     odds = transition_odds[:default] if odds.nil?
-    next unless rand(100) < odds || odds == 100
+    next if !(rand(100) < odds || odds == 100)
 
     terrain_id = lookup_table_row(:terrain, new_terrain, :id)
     mysql_update('grid', { x: tile['x'], y: tile['y'] },

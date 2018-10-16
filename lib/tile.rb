@@ -83,11 +83,11 @@ class Tile < Base
       @settlement_id = false
       @settlement = false
       settlement = mysql_row('settlements', x: (x - 2..x + 2), y: (y - 2..y + 2))
-      unless settlement.nil?
+      if !settlement.nil?
         # there's a settlement in the area, but is it close enough?
         x_offset = settlement['x'].to_i - x
         y_offset = settlement['y'].to_i - y
-        if (x_offset * x_offset) + (y_offset * y_offset) <= 5
+        if Math.sqrt((x_offset * x_offset) + (y_offset * y_offset)) <= 5
           @settlement_id = settlement['id'].to_i
           @settlement = Settlement.new(@settlement_id)
         end

@@ -179,4 +179,8 @@ class User < Base
   def others_at_location
     mysql_select(self.class.mysql_table, { x: x, y: y, z: z, active: 1 }, id: id)
   end
+
+  def can_act?
+    self.ap >= 1 && ($ip_hits.nil? || $ip_hits <= 3300)
+  end
 end

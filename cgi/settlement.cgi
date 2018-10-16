@@ -4,8 +4,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-$user = get_user
-if $user
+
+if current_user
   $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
@@ -14,7 +14,7 @@ else
 end
 
 def input_action(action)
-  if action != nil && ($params['magic'] != $user.magic)
+  if action != nil && ($params['magic'] != current_user.magic)
     return "Error. Try again."
   end
   case action
@@ -60,11 +60,11 @@ def input_action(action)
       mysql_update('settlements', CGI::escapeHTML($params['id']),
         {website: CGI::escapeHTML($params['text'])})
     when 'evict'
-      if $user.hp <= 0 then return "You are dazed and cannot do that." end
-      tile = Tile.new($user.x,$user.y)
+      if current_user.hp <= 0 then return "You are dazed and cannot do that." end
+      tile = Tile.new(current_user.x,current_user.y)
       if not tile.building.exists?
         return "You must be at your settlement's totem pole to do that."
-      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
+      elsif current_user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
         return "You must be at your settlement's totem pole to do that." end
       msg = "You ousted "
       number = 0; total = 0
@@ -87,7 +87,7 @@ def input_action(action)
         "<a href=\"settlement.cgi?id=#{$settlement.mysql_id}\" " +
         "class=\"neutral\" " +
         ">#{$settlement.name}</a>"
-        Message.insert(query, speaker: $user, target: id)
+        Message.insert(query, speaker: current_user, target: id)
         total = total + 1
       end
         msg = msg + describe_list(list)
@@ -96,11 +96,11 @@ def input_action(action)
       return msg
 
     when 'allow_in'
-      if $user.hp <= 0 then return "You are dazed and cannot do that." end
-      tile = Tile.new($user.x,$user.y)
+      if current_user.hp <= 0 then return "You are dazed and cannot do that." end
+      tile = Tile.new(current_user.x,current_user.y)
       if not tile.building.exists?
         return "You must be at your settlement's totem pole to do that."
-      elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
+      elsif current_user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
         return "You must be at your settlement's totem pole to do that." end
       msg = "You promoted "
       number = 0; total = 0
@@ -123,7 +123,7 @@ def input_action(action)
         "<a href=\"settlement.cgi?id=#{$settlement.mysql_id}\" " +
         "class=\"ally\" " +
         ">#{$settlement.name}</a> early"
-        Message.insert(query, speaker: $user, target: id)
+        Message.insert(query, speaker: current_user, target: id)
         total = total + 1
       end
         msg = msg + describe_list(list)
@@ -140,10 +140,10 @@ $settlement = Settlement.new($params['id'])
 
 if $settlement.exists?
   $leader = $settlement.leader
-  $msg = input_action($params['action']) if $leader == $user
-  if ($user.exists? && $params['action'] == 'vote' &&
-      ($user.settlement == $settlement || $user.temp_sett_id == $settlement.mysql_id) )
-    $msg = vote($user, User.new($params['option'])) end
+  $msg = input_action($params['action']) if $leader == current_user
+  if (current_user.exists? && $params['action'] == 'vote' &&
+      (current_user.settlement == $settlement || current_user.temp_sett_id == $settlement.mysql_id) )
+    $msg = vote(current_user, User.new($params['option'])) end
   # bug-fix: have to update settlement reference as input_action may have
   # changed it
   $settlement = Settlement.new($params['id'])
@@ -189,7 +189,7 @@ puts <<ENDTEXT
   </td>
 ENDTEXT
 
-if $user == $leader
+if current_user == $leader
   puts <<ENDTEXT
   <td rowspan='3'>
   <div class='beigebox' style='width:28em'>
@@ -202,7 +202,7 @@ if $user == $leader
     <br><br>
     <input type='hidden' name='action' value='description' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -214,7 +214,7 @@ if $user == $leader
     <input type='text' class='text' name='text' maxlength='32' style='width:300px' value="#{$settlement.name}"/>
     <input type='hidden' name='action' value='name' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -224,7 +224,7 @@ if $user == $leader
     <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.image}"/>
     <input type='hidden' name='action' value='image' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' value='Submit' />
     <br>
     <i>Images must be hosted on external sites. Offensive content will be removed.</i>
@@ -236,7 +236,7 @@ if $user == $leader
     <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.motto}"/>
     <input type='hidden' name='action' value='motto' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -246,7 +246,7 @@ if $user == $leader
     <input type='text' class='text' name='text' maxlength='20' style='width:300px' value="#{$settlement.title}"/>
     <input type='hidden' name='action' value='title' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -256,7 +256,7 @@ if $user == $leader
     <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.website}"/>
     <input type='hidden' name='action' value='website' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -277,7 +277,7 @@ puts <<ENDTEXT
     &nbsp;&nbsp;
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
     <input type='hidden' name='action' value='allow_new_users' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' value='Submit' />
   </form>
 ENDTEXT
@@ -306,7 +306,7 @@ puts <<ENDTEXT
       <tr>
         <td colspan='2'>
 ENDTEXT
-if $user != nil && $user.settlement == $settlement
+if current_user != nil && current_user.settlement == $settlement
 puts "<hr><b><b>Pending Residents: #{describe_list($settlement.pending_links)}"
 end
 puts <<ENDTEXT
@@ -321,10 +321,10 @@ puts <<ENDTEXT
     </td>
   </tr>
 ENDTEXT
-$user = User.new(user_id) if user_id != false
-if $user != nil && ($user.settlement == $settlement || $user.temp_sett_id == $settlement.mysql_id)
+current_user = User.new(user_id) if user_id != false
+if current_user != nil && (current_user.settlement == $settlement || current_user.temp_sett_id == $settlement.mysql_id)
   candidate_ids = [0] + $settlement.inhabitant_ids
-  select_user = html_select(candidate_ids,$user.vote.to_s) do |id|
+  select_user = html_select(candidate_ids,current_user.vote.to_s) do |id|
     if id != 0
       user = User.new id
       "#{user.name} (#{user.supporters} supporters)"
@@ -339,7 +339,7 @@ if $user != nil && ($user.settlement == $settlement || $user.temp_sett_id == $se
   <td colspan='1'>
   <div class='beigebox'>
 ENDTEXT
-if $user.settlement != $settlement
+if current_user.settlement != $settlement
   puts "Your vote will <u>not</u> be counted until you achieve residency in #{$settlement.name}."
 else puts "As a resident of #{$settlement.name}, you may support someone for leader."
 end
@@ -348,14 +348,14 @@ puts <<ENDTEXT
       #{select_user}
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
     <input type='hidden' name='action' value='vote' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='Submit' value='Pledge Support' />
     </form>
 ENDTEXT
-  supported = User.new($user.vote)
-  if !supported.exists? || supported.active.zero? || supported.settlement_id != $user.settlement_id || $user.settlement_id.zero? then puts "Current vote: N/A"
+  supported = User.new(current_user.vote)
+  if !supported.exists? || supported.active.zero? || supported.settlement_id != current_user.settlement_id || current_user.settlement_id.zero? then puts "Current vote: N/A"
   else
-    puts "Current vote: #{User.new($user.vote).name}"
+    puts "Current vote: #{User.new(current_user.vote).name}"
   end
   puts <<ENDTEXT
   </div>
@@ -375,15 +375,15 @@ ENDTEXT
 end
 puts "</table>"
 
-if $user == $leader
+if current_user == $leader
 puts <<ENDTEXT
 <div style="width:65em; background-image: url('images/parchmentbg_dark.jpg'); border:thick solid #c8c8a0">
 ENDTEXT
-  if $user.hp <= 0 then puts "You can't eject settlement members, nor promote pending members early, while dazed."
-  else tile = Tile.new($user.x,$user.y)
+  if current_user.hp <= 0 then puts "You can't eject settlement members, nor promote pending members early, while dazed."
+  else tile = Tile.new(current_user.x,current_user.y)
     if not tile.building.exists?
       puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
-    elsif $user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
+    elsif current_user.settlement_id != tile.settlement_id or not tile.building.actions.include?(:join)
       puts "You must be at your settlement's totem pole to eject members, or to allow those attempting to join early membership."
     else
 puts <<ENDTEXT
@@ -391,7 +391,7 @@ The following players are pending residents and can be granted settlement member
 <form action='settlement.cgi' method='post'>
 <input type='hidden' name='action' value='allow_in'>
 <input type='hidden' name='id' value='#{$settlement.mysql_id}'>
-<input type="hidden" value="#{$user.magic}" name = "magic">
+<input type="hidden" value="#{current_user.magic}" name = "magic">
 ENDTEXT
 pending = 0
 $settlement.pendings.each do |member|
@@ -411,7 +411,7 @@ The following players are dazed and their ties to your settlement can be revoked
 <form action='settlement.cgi' method='post'>
 <input type='hidden' name='action' value='evict'>
 <input type='hidden' name='id' value='#{$settlement.mysql_id}'>
-<input type="hidden" value="#{$user.magic}" name = "magic">
+<input type="hidden" value="#{current_user.magic}" name = "magic">
 ENDTEXT
 dazed = 0
 $settlement.inhabitants.each do |member|

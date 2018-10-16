@@ -44,7 +44,7 @@ end
 password = encrypt($cgi['password_1'])
 username = $cgi['username']
 settlement = Settlement.new($cgi['settlement'])
-unless settlement.exists? && settlement.allow_new_users == 1
+if !(settlement.exists? && settlement.allow_new_users == 1)
   settlement_id = 0
   x, y = rand(40) - 20, rand(40) - 20
 else

@@ -4,8 +4,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-$user = get_user
-if $user
+
+if current_user
   $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
@@ -14,7 +14,7 @@ else
 end
 
 def input_action(action)
-  if action != nil && ($params['magic'] != $user.magic)
+  if action != nil && ($params['magic'] != current_user.magic)
     return "Error. Try again."
   end
   case action
@@ -80,7 +80,7 @@ puts <<ENDTEXT
 <link rel="icon"
       type="image/png"
       href="images/favicon.ico">
-<title>Contact list for #{$user.name}</title>
+<title>Contact list for #{current_user.name}</title>
 <link rel='stylesheet' type='text/css' href='html/shintolin.css' />
 </head>
 <body>
@@ -103,7 +103,7 @@ puts '<table width = "450">','<tr><td>ID#</td><td width="100%">Name</td><td>Colo
 
 puts <<ENDTEXT
 <form action ="contacts.cgi" method ="post">
-<input type="hidden" value="#{$user.lastaction.to_s + $user.name.to_s}" name = "magic">
+<input type="hidden" value="#{current_user.lastaction.to_s + current_user.name.to_s}" name = "magic">
 <input type='hidden' name='action' value='update_contacts'>
 <input type='hidden' name='id' value='#{UserID}'>
 ENDTEXT
@@ -144,7 +144,7 @@ Example:<br>
 <form action="contacts.cgi" method="post">
   Character list to import into contacts: <br>
   <textarea class='text' rows='7' cols='40' name='char_list'></textarea> <br>
-  <input type="hidden" value="#{$user.lastaction.to_s + $user.name.to_s}" name = "magic">
+  <input type="hidden" value="#{current_user.lastaction.to_s + current_user.name.to_s}" name = "magic">
   <input type='hidden' name='id' value='#{UserID}'>
   <input type='hidden' name='action' value='import_contacts'>
   <input type="submit" value="Import Contacts">

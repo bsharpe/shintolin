@@ -59,14 +59,14 @@ def mysql_change_ap(user, change)
     end
 
   # don't charge the admins any Action Point costs
-  return if $user.is_admin?
+  return if current_user.is_admin?
 
   if change.positive?
     mysql_bounded_update('users', 'ap', user_id, change, Max_AP)
   else
     mysql_bounded_update('users', 'ap', user_id, change, -Max_AP)
-    if ($user.ap + change) < -10
-      ip_hit(user_id, $user.ap * 10 + 90)
+    if (current_user.ap + change) < -10
+      ip_hit(user_id, current_user.ap * 10 + 90)
     else
       ip_hit(user_id, -(change * 10) - 10)
     end
@@ -143,7 +143,7 @@ def mysql_change_stockpile(x, y, item_id, change)
 end
 
 def mysql_delete(table, where_clause = nil)
-  raise ArgumentError, "Can't delete everything (where_clause is nil)" unless where_clause
+  raise ArgumentError, "Can't delete everything (where_clause is nil)" if !where_clause
 
   db.query("DELETE FROM `#{table}` #{mysql_where(where_clause)}")
 end
@@ -229,7 +229,7 @@ def mysql_where(clause, not_clause = nil)
     end
     result << where_array.join(' AND')
 
-    unless not_clause.nil?
+    if !not_clause.nil?
       result += ' AND NOT ('
       not_array = not_clause.map do |column, value|
         "`#{column}` = #{mysql_value(value)}"

@@ -72,11 +72,11 @@ while y < height
     when '#415B22'
       tile = :ruins
     else
-      puts "  (#{x},#{y}) [#{map_x},#{map_y}] Unknown Color: #{hex.upcase}" unless hex == '#000000'
+      puts "  (#{x},#{y}) [#{map_x},#{map_y}] Unknown Color: #{hex.upcase}" if hex != '#000000'
     end
     tile_id = tile_lookup[tile]
     puts "## UNKNOWN TILE: #{tile}" if tile_id.nil?
-    puts "INSERT INTO `grid` (`x`,`y`,`terrain`) VALUES(#{map_x},#{map_y},#{tile_lookup[tile]});" unless tile == :wilderness
+    puts "INSERT INTO `grid` (`x`,`y`,`terrain`) VALUES(#{map_x},#{map_y},#{tile_lookup[tile]});" if tile != :wilderness
 
   end
   y += y_inc

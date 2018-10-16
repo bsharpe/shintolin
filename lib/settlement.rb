@@ -77,7 +77,7 @@ class Settlement < Base
       desc.tr!('"', '\'') # double - single quotes
 
       relation =
-        !$user.nil? ? $user.relation(self) : 'neutral'
+        !current_user.nil? ? current_user.relation(self) : 'neutral'
       "<a href=\"settlement.cgi?id=#{mysql_id}\" " \
         "class=\"#{relation}\" " \
         "title=\"#{desc}\" " \

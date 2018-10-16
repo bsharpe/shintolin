@@ -13,7 +13,7 @@ class Markov
     source.each_with_index do
       |word, i|
       if @hash[word]
-        @hash[word] << source[i + 1] 
+        @hash[word] << source[i + 1]
       else
         @hash[word] = [source[i + 1]]
       end
@@ -25,7 +25,7 @@ class Markov
     text = last_word
     (n - 1).times do
       new_word = @hash[last_word].rand_select
-      new_word = @hash.keys.rand_select unless new_word
+      new_word = @hash.keys.rand_select if !new_word
       text += ' ' + new_word
       last_word = new_word
     end

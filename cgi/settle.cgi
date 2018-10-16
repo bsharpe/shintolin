@@ -6,8 +6,8 @@ require 'header.rb'
 
 profile = User.new($cgi['id'])
 
-$user = get_user
-if $user
+
+if current_user
   $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
@@ -15,7 +15,7 @@ else
   exit
 end
 
-can_settle, settle_msg = can_settle?($user)
+can_settle, settle_msg = can_settle?(current_user)
 
 puts <<ENDTEXT
 <html>
@@ -43,7 +43,7 @@ if can_settle
   <form method='post' action='game.cgi'>
     <input type='text' style='font-size:110%;margin-left:20px' class='text' maxLength='32' name='text' />
     <input type='hidden' name='action' value='settle' />
-    <input type="hidden" value="#{$user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name = "magic">
     <input type='submit' style='font-size:110%' value='Settle!' />
   </form>
 ENDTEXT

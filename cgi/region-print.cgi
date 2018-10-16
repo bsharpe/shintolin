@@ -4,8 +4,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-$user = get_user
-if $user
+
+if current_user
   $header = {cookie: [$cookie], type: 'text/html'}
   puts $cgi.header($header)
 else
@@ -13,7 +13,7 @@ else
   exit
 end
 
-if !$user.is_admin?
+if !current_user.is_admin?
   puts "You are not allowed to print out a map."
   exit
 end

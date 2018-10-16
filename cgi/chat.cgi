@@ -4,8 +4,8 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-$user = get_user
-if $user
+
+if current_user
   print $cgi.header
 else
   puts $cgi.header('Location'=>'index.cgi?msg=bad_pw')
@@ -14,7 +14,7 @@ end
 
 def input_action(action)
   case action
-    when 'chat' then chat($user, $params['text'], $params['magic'])
+    when 'chat' then chat(current_user, $params['text'], $params['magic'])
   end
 end
 
