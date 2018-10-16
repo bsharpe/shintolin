@@ -34,6 +34,10 @@ class Tile < Base
     @data ||= lookup_table_row(:terrain, terrain)
   end
 
+  def altitude
+    data[:altitude].to_i
+  end
+
   def description(z = 0)
     if z == 0
       desc = lookup_table_row(:terrain, terrain, season) || lookup_table_row(:terrain, terrain, :description)
