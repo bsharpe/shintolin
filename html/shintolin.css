@@ -27,6 +27,8 @@ input {
   border: 2px solid #335;
   padding: 0.25em 0.5em;
   border-radius: 5px;
+  min-width: 5em;
+  margin-right: 0.5em;
 }
 input.text {
   color: #000;
@@ -118,6 +120,7 @@ textarea {
 .buttonsbox {
   width: 516px;
   border-top-width: 0px;
+  text-align: center;
 }
 .chatbox {
   width: 25em;
@@ -139,6 +142,7 @@ textarea {
 }
 .invbox {
   width: 10em;
+  font-size: 70%;
 }
 .locationbox {
   width: 520px;
