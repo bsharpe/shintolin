@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
+$LOAD_PATH << '../lib'
 require 'header.rb'
 
 $user = get_user
@@ -71,18 +71,21 @@ Hidden = html_hidden('x',$x) + html_hidden('y',$y) + html_hidden('size',$size)
 
 def terrain_options_for_select(selected)
   result = []
-  $Data[:terrain].each do |id, values|
-    if selected == values[:id]
-      result << "<option value=\"#{values[:id]}\" selected=true>#{id}</option>"
+  terrains = $Data[:terrain].keys.sort
+  terrains.each do |key|
+    values = $Data[:terrain][key]
+    name = key.to_s.gsub(/_/,' ').split.map(&:capitalize).join(' ')
+    if selected.to_i == values[:id].to_i
+      result << "<option value=\"#{values[:id]}\" selected=true>#{name}</option>"
     else
-      result << "<option value=\"#{values[:id]}\">#{id}</option>"
+      result << "<option value=\"#{values[:id]}\">#{name}</option>"
     end
   end
   result.join
 end
 
 Map = html_map($tile, $size, nil, :show_occupants) do |tile|
-  "<div class=\"small\">#{tile.region_name}</div>" +
+
   "<select name=\"#{tile.x},#{tile.y}\" style=\"width:100%;\">" +
   terrain_options_for_select(tile.terrain) +
   "</select>" +
