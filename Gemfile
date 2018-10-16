@@ -11,3 +11,7 @@ gem 'dotenv'
 gem 'awesome_print'
 gem 'bcrypt'
 gem 'fast_blank'
+
+group :development do
+  gem 'chunky_png'
+end
