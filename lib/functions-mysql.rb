@@ -20,6 +20,12 @@ rescue Exception => e
   puts "Error message: #{e}".yellow
 end
 
+def mysql_transaction
+  db.query("BEGIN WORK;")
+  yield
+  db.query("COMMIT;")
+end
+
 def mysql_bounded_update(table, field, where_clause, change, bound = nil)
   return 0 if change == 0
 
@@ -148,25 +154,6 @@ def mysql_delete(table, where_clause = nil)
   raise ArgumentError.new("Can't delete everything (where_clause is nil)") unless where_clause
 
   db.query("DELETE FROM `#{table}` #{mysql_where(where_clause)}")
-end
-
-def mysql_give_xp(type, xp, user)
-  user_id =
-    if user.is_a?(Integer) || user.is_a?(String)
-      user
-    else
-      user.mysql_id
-    end
-
-  xp_field = case type
-             when :wander then 'wander_xp'
-             when :craft then 'craft_xp'
-             when :herbal then 'herbal_xp'
-             when :warrior then 'warrior_xp'
-  end
-  xp = rand_to_i(xp) if xp.is_a?(Float)
-  xp = xp.abs || 0
-  mysql_bounded_update('users', xp_field, user_id, +xp, 1000)
 end
 
 def mysql_insert(table, column_values_hash)
