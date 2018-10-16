@@ -25,11 +25,11 @@ class Base
   end
 
   def delete
-    mysql_delete(self.class.mysql_table, self.mysql_id)
+    mysql_delete(self.class.mysql_table, self.id)
   end
 
   def ==(other)
-    other.class == self.class && other.mysql_id == mysql_id
+    other.class == self.class && other.id == id
   end
 
   def self.max_id
@@ -45,12 +45,10 @@ class Base
     'unknown'
   end
 
-  def id
-    @mysql_id
-  end
+  alias :id :mysql_id
 
   def [](value)
-    mysql[value]
+    mysql[value.to_s]
   end
 
   def exists?
@@ -72,18 +70,28 @@ class Base
   end
 
   def name
-    data[:name]
+    lookup_data[:name]
   end
 
   def lookup_data
-    @lookup_data ||= lookup_table_row(self.class.lookup_table, mysql['type_id'])
+    @lookup_data ||= lookup_table_row(self.class.lookup_table.to_sym, self.type_id)
   end
 
   def self.data_fields(*fields)
     fields.each do |field|
       class_eval %(
         def #{field}
-	        data[:#{field}]
+	        lookup_data[:#{field}]
+	      end
+      )
+    end
+  end
+
+  def self.data_int_fields(*fields)
+    fields.each do |field|
+      class_eval %(
+        def #{field}
+	        lookup_data[:#{field}].to_i
 	      end
       )
     end

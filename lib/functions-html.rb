@@ -317,6 +317,9 @@ def html_select_item(display = :name, user_id = nil)
   html = '<select name="item" style="width:10em">'
   items = lookup_table(:item).values
   items = items.select { |item| yield(item) } if block_given?
+
+  selected_item = $params['item'] || $cookie['item']
+
   items.each do |item|
     html << '<option '
     html << 'selected="yes" ' if $params && $params['item'].to_i == item[:id]

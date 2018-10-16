@@ -142,7 +142,7 @@ $Data =
                        name: 'beehive',
                        plural: 'beehives',
                        habitats: [:forest],
-                       immobile: :true,
+                       immobile: true,
                        max_hp: 20,
                        attack_dmg: 1,
                        hit_msg: 'is surrounded by a swarm of angry bees, which sting you',

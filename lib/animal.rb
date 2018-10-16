@@ -2,9 +2,9 @@ require 'base'
 
 class Animal < Base
   data_fields 'attack_odds', 'attack_dmg', 'habitats', 'hit_msg', 'loot',
-              'max_hp', 'when_attacked', 'loot_bonus'
+              'max_hp', 'when_attacked', 'loot_bonus', 'immobile'
 
-  mysql_int_fields 'mysql', 'x', 'y', 'z', 'hp', 'type_id'
+  mysql_int_fields 'mysql', 'x', 'y', 'z', 'hp', 'type_id', 'id'
 
   def self.mysql_table
     'animals'
@@ -12,10 +12,6 @@ class Animal < Base
 
   def self.lookup_table
     :animal
-  end
-
-  def data
-    @data ||= lookup_table_row(:animal, self.type_id)
   end
 
   def self.at_location(x, y)

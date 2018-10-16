@@ -1225,9 +1225,8 @@ end
 def move_animal(animal)
   animal = Animal.ensure(animal)
   # tile = Tile.new(animal['x'], animal['y'])
-  animal_data = animal.data
 
-  return false if animal_data[:immobile]
+  return false if animal.immobile
 
   habitats = habitats(animal.type_id)
   8.times do
