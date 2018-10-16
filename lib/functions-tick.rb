@@ -31,10 +31,7 @@ def tick_change_leader
   result.each { |row| settlements << Settlement.new(row['id']) }
   settlements.each do |settlement|
     leader = settlement.inhabitants.max_by(&:supporters)
-    leader_id = if leader.nil? || leader.supporters.zero?
-                  0
-                else
-                  leader.mysql_id end
+    leader_id = (leader.nil? || leader.supporters.zero?) ? 0 : leader.mysql_id
     mysql_update('settlements', settlement.mysql_id, 'leader_id' => leader_id)
     puts "#{leader.name} (#{leader_id}) " \
          "is now #{settlement.title} of #{settlement.name}."
@@ -49,7 +46,8 @@ def tick_settlement_membership
 
     mysql_update('accounts', player['id'], 'settlement_id' => player['temp_sett_id'])
     mysql_update('accounts', player['id'], 'temp_sett_id' => 0)
-    Message.insert('$ACTOR, having made it through the day, are now entitled to the benefits of settlement membership.', speaker: player['id'])
+    Message.insert('$ACTOR, having made it through the day, are now entitled to the benefits of settlement membership.',
+                   speaker: player['id'])
   end
   'Settlement membership updated!'
 end
@@ -71,12 +69,12 @@ def tick_damage_buildings
       next if building.special == :ruins # prevents storm damage
 
       # 17 = walls-reduce dmg odds/amt
-      if building.id == 17 then
+      if building.id == 17
         dmg -= 3
         next if dmg <= 0
       end
 
-      destroy = deal_damage(dmg, building)
+      deal_damage(dmg, building)
       msg = "A storm blew across #{region[:name]}, doing #{dmg} damage to #{building.a}"
       mysql_insert('messages',
                    'x' => building.x,
@@ -127,7 +125,7 @@ def tick_hunger
       if player.skills.count < 2
         player.change_inv(23, -1)
         Message.insert("Feeling hungry, $ACTOR ate #{a_an('noobcake')}",
-                          speaker: player)
+                       speaker: player)
         puts 'Om nom nom noobarific'
         next
       end
@@ -141,7 +139,7 @@ def tick_hunger
 
       mysql_change_inv(player['id'], food[:id], -1)
       Message.insert("Feeling hungry, $ACTOR ate #{a_an(food[:name])}",
-                        speaker: player)
+                     speaker: player)
       eaten = true
       puts 'Om nom nom'
       break
@@ -153,20 +151,20 @@ def tick_hunger
     maxhp_dmg = mysql_bounded_update('users', 'maxhp', player['id'], -2, 25)
     if hp_dmg != 0
       Message.insert("$ACTOR, weakened by lack of food, lost <b>#{-hp_dmg} hp</b>",
-                        speaker: player['id'])
+                     speaker: player['id'])
       if player['hp'].to_i + hp_dmg <= 0 # dazed from hunger
         temp = mysql_select('accounts', 'id' => player['id']).first
         if temp['temp_sett_id'].to_i != 0
           mysql_update('accounts', player['id'], 'temp_sett_id' => 0)
           Message.insert('$ACTOR, dazed by hunger, have lost your pending settlement residency.',
-                            speaker: player['id'])
+                         speaker: player['id'])
         end
       end
     end
-    next unless maxhp_dmg != 0
+    next if maxhp_dmg.zero?
 
     Message.insert("$ACTOR, weakened by lack of food, lost <b>#{-maxhp_dmg} max hp</b>",
-                      speaker: player['id'])
+                   speaker: player['id'])
   end
 
   'Hungry guys!'
@@ -226,13 +224,9 @@ def tick_delete_rotten_food
     onground = true
     builtpiles = mysql_select('grid', 'building_id' => 3)
     builtpiles.each do |built|
-      if (stock['x'] == built['x']) && (stock['y'] == built['y'])
-        onground = false
-      end
+      onground = false if (stock['x'] == built['x']) && (stock['y'] == built['y'])
     end
-    if onground == true
-      mysql_delete('stockpiles', 'x' => stock['x'], 'y' => stock['y'], 'item_id' => '33')
-    end
+    mysql_delete('stockpiles', 'x' => stock['x'], 'y' => stock['y'], 'item_id' => '33') if onground == true
   end
   'And so the rotten food on the ground became dirt.'
 end
@@ -291,7 +285,7 @@ def tick_spawn_animals
         if rand < freq
           mysql_insert('animals', 'x' => tile['x'], 'y' => tile['y'],
                                   'type_id' => animal_id, 'hp' => animal_hp, 'region_id' => region[:id])
-         end
+        end
       end
     end
   end
@@ -308,7 +302,8 @@ def tick_terrain_transitions
     odds = if transition_odds.is_a?(Integer)
              transition_odds
            else
-             transition_odds[season] end
+             transition_odds[season]
+           end
     odds = transition_odds[:default] if odds.nil?
     next unless rand(100) < odds || odds == 100
 

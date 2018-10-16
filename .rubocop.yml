@@ -48,3 +48,6 @@ Naming/AccessorMethodName:
 
 Style/FrozenStringLiteralComment:
   Enabled: false
+
+Style/TernaryParentheses:
+  Enabled: false
