@@ -1,5 +1,3 @@
-
-
 def lookup_table(table)
   $Data[table] || {}
 end
@@ -13,7 +11,7 @@ def lookup_table_row(table, row, field = nil)
              lookup_row_where(table, :id, row.to_i)
            else
              lookup_table(table)[row]
-    end || {}
+           end || {}
   field ? record[field.to_sym] : record
 end
 
