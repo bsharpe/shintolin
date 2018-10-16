@@ -47,6 +47,12 @@ class CGI
   end
 end
 
+class String
+  def capitalize
+    self.split.map{|x| x[0].upcase + x[1..-1]}.join(' ')
+  end
+end
+
 class Time
   def self.str_to_time(str)
     Time.parse(str.to_s).localtime
