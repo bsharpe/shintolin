@@ -8,27 +8,26 @@ class User < Base
   mysql_float_fields "mysql", "ap"
 
   mysql_int_fields "mysql", "x", "y", "z", "hp", "maxhp", "hunger",
-    "wander_xp", "herbal_xp", "combat_xp", "craft_xp", "active", "is_admin"
+                   "wander_xp", "herbal_xp", "combat_xp", "craft_xp", "active", "is_admin"
 
   mysql_int_fields "mysql_2", "settlement_id", "temp_sett_id",
-    "frags", "kills", "deaths", "revives", "vote"
-
+                   "frags", "kills", "deaths", "revives", "vote"
 
   def self.find_by_username(username)
     user = mysql_row('users', 'name' => username) || {}
-    self.new(user['id']) if user['id']
+    new(user['id']) if user['id']
   end
 
   def validate(password)
     BCrypt::Password.new(self.password) == password
   end
 
-  def ==(user)
-    user.class == User && user.mysql_id == mysql_id
+  def ==(other)
+    other.class == User && other.mysql_id == mysql_id
   end
 
   def description
-    if mysql_2["description"] != "" then mysql_2["description"]     else "A rather non-descript individual." end
+    mysql_2["description"] != "" ? mysql_2["description"] : "A rather non-descript individual."
   end
 
   def donated?
@@ -56,13 +55,13 @@ class User < Base
   end
 
   def level(type = :all)
-    if type == :all
-      skills = lookup_table(:skill).values
-    else
-      skills = lookup_all_where(:skill, :type, type)
-    end
+    skills = if type == :all
+               lookup_table(:skill).values
+             else
+               lookup_all_where(:skill, :type, type)
+             end
     level = 0
-    skills.each { |skill| level += 1 if self.has_skill?(skill[:id]) }
+    skills.each { |skill| level += 1 if has_skill?(skill[:id]) }
     level
   end
 
@@ -78,11 +77,10 @@ class User < Base
     case target.class.name
     when "User"
       return :ally if self == target
-      type = mysql_row("enemies", {"user_id" => mysql_id, "enemy_id" => target.mysql_id})
-      if type == nil
-        if self.settlement.exists? && self.settlement == target.settlement
-          return :ally
-        end
+
+      type = mysql_row("enemies", "user_id" => mysql_id, "enemy_id" => target.mysql_id)
+      if type.nil?
+        return :ally if settlement.exists? && settlement == target.settlement
       else
         case type["enemy_type"]
         when "1" then return :ally
@@ -98,7 +96,8 @@ class User < Base
       end
       :neutral
     when "Settlement"
-      return :ally if self.settlement == target
+      return :ally if settlement == target
+
       :neutral
     end
   end
@@ -108,53 +107,51 @@ class User < Base
   end
 
   def supporters
-    result = mysql_select("accounts", {"settlement_id" => settlement_id, "vote" => mysql_id})
+    result = mysql_select("accounts", "settlement_id" => settlement_id, "vote" => mysql_id)
     # return 0 if result.count.zero?
-    supporters = result.each_with_object([]) { |row, result| result << User.new(row["id"]) }
+    supporters = result.each_with_object([]) { |row, array| array << User.new(row["id"]) }
     supporters.delete_if { |user| user.hp.zero? || user.active.zero? }
     supporters.nitems
   end
 
   def tile
-    @tile = Tile.new(self.x, self.y)
+    @tile = Tile.new(x, y)
   end
 
   def magic
-    "#{self.lastaction.to_i}:#{self.name}"
+    "#{lastaction.to_i}:#{name}"
   end
 
   def give_xp(kind, value)
     value = rand_to_i(value) if value.is_a?(Float)
     value = value&.abs || 0
-    mysql_bounded_update(self.class.mysql_table, "#{kind}_xp", self.id, value, 1000)
+    mysql_bounded_update(self.class.mysql_table, "#{kind}_xp", id, value, 1000)
   end
 
   def change_ap(value)
-    mysql_change_ap(self.id, value)
+    mysql_change_ap(id, value)
   end
 
   def item_count(item_id)
-    if item_id.is_a?(Symbol)
-      item_id = lookup_table_row(:item, item_id, :id)
-    end
-    query = "SELECT amount FROM `inventories`" + mysql_where({"user_id" => self.id, "item_id" => item_id})
+    item_id = lookup_table_row(:item, item_id, :id) if item_id.is_a?(Symbol)
+    query = "SELECT amount FROM `inventories`" + mysql_where("user_id" => id, "item_id" => item_id)
     (db.query(query).first || {})['amount'].to_i
   end
 
   def has_item?(item_id)
-    self.item_count(item_id).positive?
+    item_count(item_id).positive?
   end
 
   def has_all_items?(item_list)
-    item_list.map{|e| self.has_item?(e)}.all?
+    item_list.map { |e| has_item?(e) }.all?
   end
 
   def change_inv(item_id, delta)
-    mysql_change_inv(self.id, item_id, delta)
+    mysql_change_inv(id, item_id, delta)
   end
 
   def outside?
-    self.z.zero?
+    z.zero?
   end
 
   def inside?
@@ -165,26 +162,25 @@ class User < Base
     weight = 0
     items = lookup_table(:item) || []
     items.each do |item, info|
-      amount = self.item_count(item)
-      weight += amount * (info[:weight].to_f)
+      amount = item_count(item)
+      weight += amount * info[:weight].to_f
     end
     weight
   end
 
   def skills
-    db.query("SELECT * FROM `skills` WHERE `user_id` = #{self.id}")
+    db.query("SELECT * FROM `skills` WHERE `user_id` = #{id}")
   end
 
   def has_skill?(skill_id)
-    return true if skill_id.zero? || skill_id == nil || skill_id == :default
+    return true if skill_id.zero? || skill_id.nil? || skill_id == :default
 
     skill_id = lookup_table_row(:skill, skill_id, :id) if skill_id.is_a?(Symbol)
 
-    !!mysql_row("skills", {user_id: self.id, skill_id: skill_id})
+    mysql_row("skills", user_id: id, skill_id: skill_id)
   end
 
   def others_at_location
-    mysql_select(self.class.mysql_table, { x: self.x, y: self.y, z: self.z, active: 1 }, id: self.id)
+    mysql_select(self.class.mysql_table, { x: x, y: y, z: z, active: 1 }, id: id)
   end
-
 end

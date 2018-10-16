@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'yaml'
 require 'json'
 require 'ostruct'
@@ -15,7 +13,7 @@ def db
       database: db_config.database
     )
   end
-rescue Exception => e
+rescue StandardError => e
   # print "Error code: ", e.errno, "\n"
   puts "Error message: #{e}".yellow
 end
@@ -29,7 +27,7 @@ end
 def mysql_bounded_update(table, field, where_clause, change, bound = nil)
   return 0 if change.zero?
 
-  bound ||= change.positive?  ? 9_999_999 : 0
+  bound ||= change.positive? ? 9_999_999 : 0
   bound = bound.to_i
   current_amt = mysql_row(table, where_clause)[field].to_f
 
@@ -42,15 +40,13 @@ def mysql_bounded_update(table, field, where_clause, change, bound = nil)
       mysql_update(table, where_clause, field => bound)
       bound - current_amt # actual amount changed
     end
-  else
+  elsif (current_amt + change) > bound
     # if change is negative, treat bound as a lower bound
-    if (current_amt + change) > bound
-      mysql_update(table, where_clause, field => (current_amt + change))
-      change
-    else
-      mysql_update(table, where_clause, field => bound)
-      bound - current_amt # actual amount changed
-    end
+    mysql_update(table, where_clause, field => (current_amt + change))
+    change
+  else
+    mysql_update(table, where_clause, field => bound)
+    bound - current_amt # actual amount changed
   end
 end
 
@@ -108,17 +104,15 @@ def mysql_change_inv(inv, item_id, amt)
     else
       mysql_bounded_update(table, 'amount', row_id, amt, 0)
     end
+  elsif amt >= 0
+    # add new record if one doesn't exist,
+    # create one for this inventory-item combo
+    row_id['amount'] = amt
+    mysql_insert(table, row_id)
+    amt
   else
-    if amt >= 0
-      # add new record if one doesn't exist,
-      # create one for this inventory-item combo
-      row_id['amount'] = amt
-      mysql_insert(table, row_id)
-      amt
-    else
-      # if trying to reduce items the user doesn't have, do nothing and return 0
-      0
-    end
+    # if trying to reduce items the user doesn't have, do nothing and return 0
+    0
   end
 end
 
@@ -128,7 +122,7 @@ def mysql_change_stockpile(x, y, item_id, change)
   if !current_amount.nil?
     current_amount = current_amount['amount'].to_i
     new_amount = current_amount + change
-    if new_amount < 0
+    if new_amount.negative?
       # if the change would set that item below 0, set that item to 0
       # and return the actual amount changed
       change = -current_amount
@@ -137,15 +131,13 @@ def mysql_change_stockpile(x, y, item_id, change)
       mysql_update('stockpiles',
                    { 'x' => x, 'y' => y, 'item_id' => item_id }, 'amount' => new_amount)
     end
+  elsif change >= 0
+    mysql_insert('stockpiles',
+                 'x' => x, 'y' => y, 'item_id' => item_id, 'amount' => change)
   else
-    if change >= 0
-      mysql_insert('stockpiles',
-                   'x' => x, 'y' => y, 'item_id' => item_id, 'amount' => change)
-    else
-      # if trying to reduce items the stockpile doesn't have,
-      # do nothing and return 0
-      change = 0
-    end
+    # if trying to reduce items the stockpile doesn't have,
+    # do nothing and return 0
+    change = 0
   end
   change
 end
@@ -191,7 +183,7 @@ def mysql_row(table, where_clause, not_clause = nil)
 end
 
 def mysql_tile(x, y)
-  mysql_row('grid', 'x' => x, 'y' => y) || { 'x' => x, 'y' => y, 'terrain' => '3', 'region_id' => '3', 'building_id' => '0', 'hp' => 3, 'building_hp' => 0 }
+  mysql_row('grid', x: x, y: y) || { x: x, y: y, terrain: 3, region_id: 3, building_id: 0, hp: 3, building_hp: 0 }
 end
 
 def mysql_update(table, where_clause, column_values_hash, not_clause = nil)
@@ -218,35 +210,36 @@ def mysql_where(clause, not_clause = nil)
   # if passed an integer, returns 'WHERE id = clause
   # if passed a hash map, returns 'WHERE key1 = value1, key2 = value2..."
   clause = clause.to_i if clause.is_a?(String)
+  result = nil
+
   if clause.is_a?(Integer)
     # assume where_clause is an id value
-    where_clause = ' WHERE ' \
-                   "`id` =  '#{clause}'"
+    result = " WHERE `id` =  '#{clause}'"
 
   elsif clause.is_a?(Hash)
-    where_clause = ' WHERE'
+    result = ' WHERE'
     where_array = clause.map do |column, value|
       if !value.is_a?(Enumerable)
         " `#{column}` = #{mysql_value(value)}"
       else
         # if hash->value is "x => [1,2,3]", query should be
-        # WHERE ('x' = 1 OR 'x' = 2 OR 'x' = 3)
-        or_array = value.map { |v| "`#{column}` = #{mysql_value(v)}" }
-        or_clause = " (#{or_array.join(' OR ')})"
+        # WHERE ('x' in(1,2,3))
+        result << "(`#{column}` in(#{mysql_value(v).join(',')}))"
       end
     end
-    where_clause += where_array.join(' AND')
+    result << where_array.join(' AND')
 
     unless not_clause.nil?
-      where_clause += ' AND NOT ('
+      result += ' AND NOT ('
       not_array = not_clause.map do |column, value|
         "`#{column}` = #{mysql_value(value)}"
       end
-      where_clause += not_array.join(' AND ') + ')'
+      result << not_array.join(' AND ') + ')'
     end
   else
     puts 'ERROR: argument to mysql_where_clause must be an integer or hash.'
-    where_clase = ' WHERE FALSE'
+    result = ' WHERE FALSE'
   end
-  where_clause
+
+  result
 end

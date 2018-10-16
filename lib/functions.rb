@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 load 'data.rb'
 
 require 'functions-lookup'
@@ -895,7 +893,9 @@ def get_user
       return nil if $cookie.nil?
 
       user_id = $cookie[0]
-      user = User.new(user_id) if $cookie[1] == user.password
+
+      user = User.new(user_id)
+      user = nil if $cookie[1] != user.password
       user
     end
   end
