@@ -5,6 +5,17 @@ class Base
     self.new(row: mysql_row(self.mysql_table, id.to_i))
   end
 
+  def self.ensure(thing)
+    case thing
+    when NilClass
+      nil
+    when self
+      thing
+    when String,Integer
+      self.new(thing)
+    end
+  end
+
   def initialize(id = nil, row: nil)
     @mysql_id = id.to_i
     if row

@@ -245,7 +245,7 @@ def html_messages(user, x, y, z)
   user = User.new(user)
   html = []
   Message.for_user(user).each do |message|
-    html << "<div class='#{row['type']}'>#{message.to_s(user.id)}</div>"
+    html << "<div class='#{message['type']}'>#{message.to_s(user.id)}</div>"
   end
   html.join
 end
@@ -393,10 +393,11 @@ end
 def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
   # <b style='color:#777777'>Butchering</b> -
   # <i>obtain more meat when killing animals </i><br>
+  user = User.ensure(user_id)
 
   skill_name = id_to_key(:skill, skill_name) if skill_name.is_a?(Integer)
   skill = lookup_table_row(:skill, skill_name)
-  style = has_skill?(user_id, skill[:id]) ? 'bought' : 'unbought'
+  style = user.has_skill?(skill[:id]) ? 'bought' : 'unbought'
 
   html = '<div style="padding:8px">'
   indent.times { html += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp' }

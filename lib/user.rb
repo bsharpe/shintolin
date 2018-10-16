@@ -19,17 +19,6 @@ class User < Base
     self.new(user['id']) if user['id']
   end
 
-  def self.ensure(user)
-    case user
-    when NilClass
-      nil
-    when User
-      user
-    when String,Integer
-      User.new(user)
-    end
-  end
-
   def validate(password)
     BCrypt::Password.new(user.password) == password
   end
@@ -73,7 +62,7 @@ class User < Base
       skills = lookup_all_where(:skill, :type, type)
     end
     level = 0
-    skills.each { |skill| level += 1 if has_skill?(self, skill[:id]) }
+    skills.each { |skill| level += 1 if self.has_skill?(skill[:id]) }
     level
   end
 
@@ -177,6 +166,10 @@ class User < Base
     self.z.zero?
   end
 
+  def inside?
+    !outside?
+  end
+
   def weight
     weight = 0
     items = lookup_table(:item) || []
@@ -189,6 +182,14 @@ class User < Base
 
   def skills
     db.query("SELECT * FROM `skills` WHERE `user_id` = #{self.id}")
+  end
+
+  def has_skill?(skill_id)
+    return true if skill_id == 0 || skill_id == nil || skill_id == :default
+
+    skill_id = lookup_table_row(:skill, skill_id, :id) if skill_id.is_a?(Symbol)
+
+    mysql_row("skills", {user_id: self.id, skill_id: skill_id}).exists?
   end
 
   def others_at_location

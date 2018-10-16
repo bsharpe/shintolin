@@ -15,7 +15,7 @@ end
 
 
 Map =
-  if has_skill?($user, :tracking)
+  if $user.has_skill?(:tracking)
     html_map($user.tile, 9, $user, :show_occupants)
   else
     html_map($user.tile, 9, $user, :no_occupants)

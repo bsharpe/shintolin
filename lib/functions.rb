@@ -41,6 +41,7 @@ end
 
 def altitude_mod(dest_terrain, start_terrain, user_id = nil, targ_sett = nil)
   return 0 if start_terrain == dest_terrain
+  user = User.ensure(user_id)
 
   start_altitude = lookup_table_row(:terrain, start_terrain.to_i, :altitude)
   dest_altitude = lookup_table_row(:terrain, dest_terrain.to_i, :altitude)
@@ -48,7 +49,7 @@ def altitude_mod(dest_terrain, start_terrain, user_id = nil, targ_sett = nil)
   mod = case altitude
         when (-1..0) then 0
         when 1
-          (user_id != nil && has_skill?(user_id, 17)) ? 1 : 2 # 17=mountaineering
+          (user_id != nil && user.has_skill?(17)) ? 1 : 2 # 17=mountaineering
         else
           nil # can't climb more than two height differences
         end
@@ -78,6 +79,7 @@ def ap_cost(dest_terrain, start_terrain = nil, user_id = nil, targ_sett = nil)
     altitude_mod = 0
   end
   return nil if altitude_mod == nil
+  user = User.ensure(user_id)
 
   ap_data = lookup_table_row(:terrain, dest_terrain.to_i, :ap)
   if ap_data.is_a?(Numeric)
@@ -88,7 +90,7 @@ def ap_cost(dest_terrain, start_terrain = nil, user_id = nil, targ_sett = nil)
     default + altitude_mod if default
  else
     # find lowest ap cost that user has skill for
-    ap_data.delete_if { |skill, ap_cost| skill != :default && !has_skill?(user_id, skill) }
+    ap_data.delete_if { |skill, ap_cost| skill != :default && !user.has_skill?(skill) }
     costs = ap_data.values
     costs.empty? ? nil : costs.min + altitude_mod
   end
@@ -177,7 +179,7 @@ def attack(attacker, target, item_id, magic)
         |item, amt| attacker.change_inv(item, +amt)       end
       msg += ", killing it! From the carcass you collect " +
              "#{describe_items_list(target.loot, "long")}."
-      if has_skill?(attacker, 7) # 7 ->butchering temporary fix for butchering
+      if attacker.has_skill?(7) # 7 ->butchering temporary fix for butchering
         target.loot_bonus.each do
           |item, amt| attacker.change_inv(item, +amt)
           msg += "<br><br>You also manage to collect #{describe_items_list(target.loot_bonus, "long")} extra with your butchering prowess."         end
@@ -328,7 +330,7 @@ end
 def build_list(user)
   buildings = user.tile.building.improvements
   buildings.delete_if do |building|
-    building[:build_skill] != nil && !has_skill?(user, building[:build_skill])
+    building[:build_skill] != nil && !user.has_skill?(building[:build_skill])
   end
 end
 
@@ -414,7 +416,7 @@ def can_build?(user, building)
     building = lookup_table_row(:building, building)
   end
 
-  unless has_skill?(user, building[:build_skill])
+  unless user.has_skill?(building[:build_skill])
     return false, "You don't have the required skills " +
                   "to build #{a_an(building[:name])}."
   end
@@ -465,17 +467,21 @@ def can_build?(user, building)
 end
 
 def can_buy_skill?(user_id, skill_id)
-  if has_skill?(user_id, skill_id) then return false end
+  user = User.ensure(user_id)
+  return false if user.has_skill?(skill_id)
+
   prereq = lookup_table_row(:skill, skill_id, :prereq)
-  if prereq == nil || has_skill?(user_id, prereq) then true   else false end
+  prereq == nil || user.has_skill?(prereq)
 end
 
 def can_sell_skill?(user_id, skill_id)
-  unless has_skill?(user_id, skill_id) then return false end
+  user = User.ensure(user_id)
+  return false unless user.has_skill?(skill_id)
+
   skill = id_to_key(:skill, skill_id)
   post_reqs = lookup_all_where(:skill, :prereq, skill)
   post_reqs.each do |skill|
-    return false if has_skill?(user_id, skill[:id])
+    return false if user.has_skill?(skill[:id])
   end
   true
 end
@@ -508,28 +514,29 @@ def chat(user, text, magic)
   "You shout <i>\"#{CGI::escapeHTML(text)}\"</i> to the whole world."
 end
 
-def chop_tree(user_id, magic)
-  return "Error. Try again." if magic != $user.magic
-  user = User.find(user_id)
-  tile = mysql_tile(user.x, user.y)
+def chop_tree(user, magic)
+
+  user = User.find(user)
+  tile = user.tile
   tile_actions = lookup_table_row(:terrain, tile["terrain"], :actions)
   if tile_actions == nil || !tile_actions.include?(:chop_tree)
     return "There are no trees here."
   end
 
-  if user.z.to_i != 0
+  if !user.outside?
     return "You cannot chop down trees while inside."
   end
 
-  unless user.has_item?(:hand_axe) ||
-         user.has_item?(:stone_axe)
+  unless user.has_item?(:hand_axe) || user.has_item?(:stone_axe)
     return "You need an axe to chop down trees."
   end
 
-  user_id.change_ap(-chop_tree_ap(user_id))
-  user_id.give_xp(:wander, 2)
-  user_id.change_inv(15, +1) # 15 -> log
-  Message.insert("$ACTOR chopped down a tree", speaker: user_id, type: "persistent")
+  mysql_transaction do
+    user.change_ap(-chop_tree_ap(user))
+    user.give_xp(:wander, 2)
+    user.change_inv(15, +1) # 15 -> log
+  end
+  Message.insert("$ACTOR chopped down a tree", speaker: user, type: "persistent")
   msg = "You chop down a tree, taking the heavy log."
 
   if rand < 0.12
@@ -537,26 +544,22 @@ def chop_tree(user_id, magic)
     new_terrain =
       case tile["terrain"]
       when "21"
-        if tile["hp"] == "0" then 82         else 24 end
+        tile["hp"] == "0" ? 82 : 24
       when "22" then 21
       when "23" then 22
       when "6" then 2
       when "2" then 7
       when "7"
-        if tile["hp"] == "0" then 81         else 4 end
+        tile["hp"] == "0" ? 81 : 4
       end
-    mysql_update("grid", {x: tile["x"], y: tile["y"]},
-                 {terrain: new_terrain})
+    tile.update(terrain: new_terrain) if new_terrain
   end
   msg
 end
 
-def chop_tree_ap(user_id)
-  if has_skill?(user_id, 15) # 15 -> lumberjack
-    4
-  else
-    8
-  end
+def chop_tree_ap(user)
+  user = User.ensure(user)
+  user.has_skill?(15) ? 4 : 9 # 15 -> lumberjack
 end
 
 def craft(user, item_id, magic)
@@ -570,7 +573,7 @@ def craft(user, item_id, magic)
     return "That item cannot be crafted."
   end
   craft_skill = product[:craft_skill]
-  if craft_skill != nil && !has_skill?(user, craft_skill)
+  if craft_skill != nil && !user.has_skill?(craft_skill)
     return "You do not have the required skills to craft that."
   end
 
@@ -618,9 +621,10 @@ def craft(user, item_id, magic)
 end
 
 def craft_list(user_id)
+  user = User.ensure(user_id)
   items = lookup_all_where(:item, :craftable, true)
   items.delete_if do |item|
-    item[:craft_skill] != nil && !has_skill?(user_id, item[:craft_skill])
+    item[:craft_skill] != nil && !user.has_skill?(item[:craft_skill])
   end
 end
 
@@ -790,7 +794,8 @@ def describe_occupants(x, y, z, omit = 0)
                            {x: x, y: y, z: z, active: 1}, {id: omit})
   if occupants.count == 0 then return "" end
 
-  show_hp = true if has_skill?(omit, :triage)
+  omit = User.ensure(omit)
+  show_hp = true if omit.has_skill?(:triage)
   occupant_links = []
   occupants.each do |occupant|
     occupant_links << html_userlink(occupant["id"], occupant["name"], :details, show_hp)
@@ -1011,33 +1016,13 @@ def habitats(animal)
   habitats.flatten!
 end
 
-def has_skill?(user, skill_id)
-
-  # Delete this after OOP refactoring
-  user_id =
-    if user.kind_of?(Integer) || user.kind_of?(String)
-      user
-    else
-      user.mysql_id
-    end
-
-  if skill_id == 0 || skill_id == nil || skill_id == :default
-    return true
-  end
-  if skill_id.is_a?(Symbol)
-    skill_id = lookup_table_row(:skill, skill_id, :id)
-  end
-  row = mysql_row("skills", {user_id: user_id, skill_id: skill_id})
-  if row == nil then false   else true end
-end
 
 def harvest(user, magic)
-  return "Error. Try again." if magic != $user.magic
   if season != :Autumn
     return "You must wait until Autumn before the crops can be harvested."
   end
 
-  unless has_skill?(user, :agriculture)
+  unless user.has_skill?(:agriculture)
     return "You have not yet discovered the secrets of agriculture."
   end
 
@@ -1176,10 +1161,11 @@ def is_are(num)
 end
 
 def item_building_bonus(item_id, stat, user)
+  user = User.ensure(user)
   building = user.tile.building
   return 1 unless building.exists?
   return 1 if building.use_skill == nil
-  return 1 unless has_skill?(user, building.use_skill)
+  return 1 unless user.has_skill?(building.use_skill)
   item_type = lookup_table_row :item, item_id, :use
   return 1 if item_type == nil
 
@@ -1195,13 +1181,14 @@ def item_building_bonus(item_id, stat, user)
 end
 
 def item_stat(item_id, stat, user)
+  user = User.ensure(user)
   multiplier = item_building_bonus item_id, stat, user
   data = lookup_table_row(:item, item_id, stat)
   return (data * multiplier).floor if data.is_a?(Integer)
 
   if data.is_a?(Hash)
     # data should be a hash of {skill => value}, find max/min value
-    user_skills = data.delete_if { |skill, value| !has_skill?(user, skill) }
+    user_skills = data.delete_if { |skill, value| !user.has_skill?(skill) }
     if stat == :ap_cost
       data = user_skills.values.min
     else
@@ -1493,9 +1480,9 @@ def offset_to_dir(x_offset, y_offset, z_offset = 0, length = :short)
 end
 
 def quarry(user, magic)
-  return "Error. Try again." if magic != $user.magic
+  user = User.ensure(user)
   return "You cannot quarry here." unless user.tile.actions.include?(:quarry)
-  unless has_skill?(user, :quarrying)
+  unless user.has_skill?(:quarrying)
     return "You do not have the required skills to quarry."
   end
   return "You need a pick to quarry here." unless user.has_item?(:bone_pick) ||
@@ -1553,9 +1540,10 @@ def rand_to_i(x)
 end
 
 def repair(user)
+  user = User.ensure(user)
   building = user.tile.building.repair
 
-  unless has_skill?(user, building[:build_skill])
+  unless user.has_skill?(building[:build_skill])
     return "You don't have the required skills " +
              "to repair the #{building[:name]}."
   end
@@ -1776,7 +1764,7 @@ def search(user, magic)
   total_odds = sum_coll(items.values)
 
   tile_change = user.tile.mysql
-  if !has_skill?(user, :foraging)
+  if !user.has_skill?(:foraging)
     hp_msg =
       case total_odds
       when 0
@@ -1922,12 +1910,13 @@ def skill_cost(level)
 end
 
 def sow(user, item_id, magic)
-  return "Error. Try again." if magic != $user.magic
+  user = User.ensure(user)
+
   if season != :Spring
     return "Crops can only be planted in Spring."
   end
 
-  unless has_skill?(user, :agriculture)
+  unless user.has_skill?(:agriculture)
     return "You have not yet discovered the secrets of agriculture."
   end
 

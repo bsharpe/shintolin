@@ -96,4 +96,28 @@ class Tile < Base
   def settlement
     settlement_id ? @settlement : nil
   end
+
+  def update(**params)
+    mysql_update(self.class.mysql_table, {x: self.x, y: self.y}, params)
+  end
+
+  def change_inv(item_id, amount)
+    if amount.positive?
+      if (row = mysql_row("stockpiles", {x: self.x, y: self.y, item_id: item_id}))
+        mysql_update("stockpiles", { x: self.x, y: self.y, item_id: item_id }, amount: row['amount'].to_i + amount)
+      else
+        mysql_insert("stockpiles",  x: self.x, y: self.y, item_id: item_id, amount: amount )
+      end
+    else
+      if (row = mysql_row("stockpiles", {x: self.x, y: self.y, item_id: item_id}))
+        if row['amount'].to_i - amount <= 0
+          mysql_delete("stockpiles", { x: self.x, y: self.y, item_id: item_id } )
+        else
+          mysql_update("stockpiles", { x: self.x, y: self.y, item_id: item_id }, amount: row['amount'].to_i - amount )
+        end
+      else
+        mysql_insert("stockpiles",  x: self.x, y: self.y, item_id: item_id, amount: amount )
+      end
+    end
+  end
 end
