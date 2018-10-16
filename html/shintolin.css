@@ -5,7 +5,7 @@ a {
 }
 body {
   background: #d0d0b0;
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif
+  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
 }
 form {
   font-size: normal;
@@ -22,10 +22,11 @@ img {
 input {
   color: #000;
   background: #99ccff;
-  border: 2px outset #ccdaff;
   font-size: 80%;
-  padding: 1px 2px 1px 2px;
   text-decoration: none;
+  border: 2px solid #335;
+  padding: 0.25em 0.5em;
+  border-radius: 5px;
 }
 input.text {
   color: #000;
@@ -42,7 +43,6 @@ select {
   background: #ffffff;
   border: 1px outset #aaaaaa;
   margin: 1px;
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif
 }
 td {
   vertical-align: top;
@@ -59,7 +59,6 @@ textarea {
   color: #000;
   background: #ffffff;
   border: 1px outset #aaaaaa;
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
   margin-bottom: 1px;
   margin-top: 1px
 }
@@ -88,13 +87,13 @@ textarea {
 .buttonlink {
   color: #000;
   background: #99ccff;
-  border: 2px outset #ccdaff;
   font-size: 0.8em;
   font-weight: normal;
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-  padding: 2px 3px 2px 3px;
   margin: 1px;
   text-decoration: none;
+  border: 2px solid #335;
+  padding: 0.25em 0.5em;
+  border-radius: 5px;
 }
 .enterbutton {
   width: 44px;
@@ -170,7 +169,11 @@ textarea {
   height: 24px;
   margin: 0px;
   position: relative;
-  top: 2px;
+  top: 2.96em;
+  font-weight: bold;
+  border: 2px solid #335;
+  padding: 0.25em 0.5em;
+  border-radius: 5px;
 }
 .msgbox {
   width: 25em;
