@@ -20,7 +20,7 @@ class User < Base
   end
 
   def validate(password)
-    BCrypt::Password.new(user.password) == password
+    BCrypt::Password.new(self.password) == password
   end
 
   def ==(user)
@@ -126,15 +126,9 @@ class User < Base
   end
 
   def give_xp(kind, value)
-    xp_field = case kind
-               when :wander then 'wander_xp'
-               when :craft then 'craft_xp'
-               when :herbal then 'herbal_xp'
-               when :warrior then 'warrior_xp'
-    end
     value = rand_to_i(value) if value.is_a?(Float)
-    value = value.abs || 0
-    mysql_bounded_update(self.class.mysql_table, xp_field, self.id, value, 1000)
+    value = value&.abs || 0
+    mysql_bounded_update(self.class.mysql_table, "#{kind}_xp}".to_sym, self.id, value, 1000)
   end
 
   def change_ap(value)
@@ -189,7 +183,7 @@ class User < Base
 
     skill_id = lookup_table_row(:skill, skill_id, :id) if skill_id.is_a?(Symbol)
 
-    mysql_row("skills", {user_id: self.id, skill_id: skill_id}).exists?
+    !!mysql_row("skills", {user_id: self.id, skill_id: skill_id})
   end
 
   def others_at_location

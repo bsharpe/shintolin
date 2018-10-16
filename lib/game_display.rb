@@ -28,7 +28,7 @@ puts <<~ENDTEXT
     <a class="buttonlink" href="/html/faq.html">FAQ</a>
 ENDTEXT
 if $user.is_admin?
-  puts '<a class="buttonlink" href="/edit-map.cgi">Edit Map</a>'
+  puts "<a class=\"buttonlink\" href=\"/edit-map.cgi?x=#{$user.x}&y=#{$user.y}\">Edit Map</a>"
 end
 puts <<~ENDTEXT
     #{Logout_Button}

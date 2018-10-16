@@ -493,9 +493,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
     animals = mysql_select('animals', 'x' => x, 'y' => y)
     animals = values_freqs_hash(animals, 'type_id')
     animals.each do |type, amt|
-      html += '<span class="mapdata" style="color:#0000BB">' +
-              describe_animals(amt, type).capitalize +
-              '</span><br>'
+      html << "<span class=\"mapdata\" style=\"color:#0000BB\">#{describe_animals(amt, type).capitalize}</span></br>"
     end
   end
 
@@ -503,18 +501,13 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   if z == 0 || user.tile == tile
     users = mysql_select('users',
                          { 'x' => x, 'y' => y, 'z' => z, 'active' => 1 },
-                         'id' => user.mysql_id)
+                         'id' => user&.mysql_id)
     users = users.count
     if users > 0
-      html += '<span class="mapdata">' +
-              users.to_s + ' ' +
-              if users == 1 then 'person'
-              else 'people'
-              end
-      html += '</span>'
-    end
+      html << "<span class=\"mapdata\">#{users} #{users == 1 ? 'person' : 'people'}</span>"
+     end
   end
-  html += "</td>"
+  html << "</td>"
   html
 end
 

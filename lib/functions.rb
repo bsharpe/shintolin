@@ -42,34 +42,38 @@ end
 def altitude_mod(dest_terrain, start_terrain, user_id = nil, targ_sett = nil)
   return 0 if start_terrain == dest_terrain
   user = User.ensure(user_id)
+  dest_terrain = dest_terrain.to_i
+  start_terrain = start_terrain.to_i
 
-  start_altitude = lookup_table_row(:terrain, start_terrain.to_i, :altitude)
-  dest_altitude = lookup_table_row(:terrain, dest_terrain.to_i, :altitude)
+  start_altitude = lookup_table_row(:terrain, start_terrain, :altitude).to_i
+  dest_altitude  = lookup_table_row(:terrain, dest_terrain,  :altitude).to_i
   altitude = dest_altitude - start_altitude
-  mod = case altitude
-        when (-1..0) then 0
+
+  cost = case altitude
+        when (-1..0)
+           0
         when 1
-          (user_id != nil && user.has_skill?(17)) ? 1 : 2 # 17=mountaineering
+          user&.has_skill?(17) ? 1 : 2 # 17=mountaineering
         else
           nil # can't climb more than two height differences
         end
 
-  if mod
-    if dest_terrain.to_i == 44 # goto wall
-      if start_terrain.to_i == 45 || start_terrain.to_i == 47 # from gate/guardhouse
-        mod = mod + 4
+  if cost
+    if dest_terrain == 44 # goto wall
+      if [45, 47].include?(start_terrain) # from gate/guardhouse
+        cost += 4
       else
-        mod = mod + 69
+        cost += 69
       end # anything besides a gate/guardhouse/wall to a wall
-    elsif dest_terrain.to_i == 47 # gatehouse
-      if start_terrain.to_i == 44 || start_terrain.to_i == 45 # || start_terrain.to_i == 45 # wall /#or guardstand/ to gatehouse
-      elsif targ_sett && (targ_sett != User.new(user_id).settlement) then
-        mod = mod + 50
+    elsif dest_terrain == 47 # gatehouse
+      # || start_terrain.to_i == 45 # wall /#or guardstand/ to gatehouse
+      if ![45, 44].include?(start_terrain) && targ_sett && (targ_sett != user.settlement) then
+        cost += 50
       end
     end
   end
 
-  return mod
+  cost
 end
 
 def ap_cost(dest_terrain, start_terrain = nil, user_id = nil, targ_sett = nil)
@@ -80,17 +84,18 @@ def ap_cost(dest_terrain, start_terrain = nil, user_id = nil, targ_sett = nil)
   end
   return nil if altitude_mod == nil
   user = User.ensure(user_id)
+  dest_terrain = dest_terrain.to_i
 
-  ap_data = lookup_table_row(:terrain, dest_terrain.to_i, :ap)
+  ap_data = lookup_table_row(:terrain, dest_terrain, :ap)
   if ap_data.is_a?(Numeric)
     ap_data + altitude_mod
-  elsif user_id == nil
+  elsif user.nil?
     # ap cost depends on skill, but we have no user_id, so return default cost
     default = ap_data[:default]
     default + altitude_mod if default
  else
     # find lowest ap cost that user has skill for
-    ap_data.delete_if { |skill, ap_cost| skill != :default && !user.has_skill?(skill) }
+    ap_data.delete_if { |skill, ap_cost| skill != :default && !user&.has_skill?(skill) }
     costs = ap_data.values
     costs.empty? ? nil : costs.min + altitude_mod
   end
@@ -147,8 +152,7 @@ def attack(attacker, target, item_id, magic)
   attacker.change_ap(-1)
 
   accuracy = item_stat(item_id, :accuracy, attacker)
-  dmg =
-    if target.kind_of? Building then rand_to_i(1.333)     else item_stat(item_id, :effect, attacker) end
+  dmg = target.kind_of? Building ? rand_to_i(1.333) : item_stat(item_id, :effect, attacker)
 
   if rand(100) > accuracy || accuracy == 0
     msg = lookup_table_row(:weapon_class, weapon[:weapon_class], :miss_msg) +
@@ -1536,7 +1540,7 @@ end
 def rand_to_i(x)
   # eg, if x is 1.4, returns 1 60% of the time and 2 40% of the time
   fraction = x - x.floor
-  if rand < fraction then x.floor + 1   else x.floor end
+  rand < fraction ? x.floor + 1 : x.floor
 end
 
 def repair(user)

@@ -15,32 +15,6 @@ class Integer
   end
 end
 
-class NilClass
-  def each
-    nil
-  end
-
-  def exists?
-    false
-  end
-
-  def include?(x)
-    false
-  end
-
-  def mysql_id
-    nil
-  end
-
-  def name
-    nil
-  end
-
-  def link
-    nil
-  end
-end
-
 class CGI
   def str_params
     $cgi.params

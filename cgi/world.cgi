@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
+$LOAD_PATH << '../lib'
 require 'header.rb'
 
 print $cgi.header

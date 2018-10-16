@@ -7,16 +7,12 @@ def lookup_row_where(table, column, value)
 end
 
 def lookup_table_row(table, row, field = nil)
-  result = if row.is_a?(Integer) || row.is_a?(String)
+  record = if row.is_a?(Integer) || row.is_a?(String)
       lookup_row_where(table, :id, row.to_i)
     else
       lookup_table(table)[row]
     end || {}
-  if field
-    result[field]
-  else
-    result
-  end
+  field ? record[field.to_sym] : record
 end
 
 def lookup_all_where(table, column, value)

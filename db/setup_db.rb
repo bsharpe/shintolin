@@ -2,7 +2,7 @@
 
 require 'bundler/setup'
 Bundler.require
-$LOAD_PATH << '../lib' $LOAD_PATH << '../lib/models'
+$LOAD_PATH << '../lib'
 Dotenv.load
 require 'yaml'
 require 'json'
