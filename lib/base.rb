@@ -5,9 +5,12 @@ class Base
     self.new(row: mysql_row(self.mysql_table, id.to_i))
   end
 
-  def initialize(id, row: nil)
+  def initialize(id = nil, row: nil)
     @mysql_id = id.to_i
-    @mysql = row
+    if row
+      @mysql = row
+      @mysql_id = row['id']
+    end
   end
 
   def self.max_id
@@ -37,6 +40,10 @@ class Base
 
   def mysql
     @mysql ||= mysql_row(self.class.mysql_table, mysql_id)
+  end
+
+  def update(**params)
+    mysql_update(self.class.mysql_table, {id: self.id}, params)
   end
 
   def reload!
