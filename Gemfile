@@ -11,6 +11,7 @@ gem 'dotenv'
 gem 'awesome_print'
 gem 'bcrypt'
 gem 'fast_blank'
+gem 'numbers_and_words'
 
 group :development do
   gem 'chunky_png'

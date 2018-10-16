@@ -15,7 +15,8 @@ else
 end
 
 def input_action(action)
-  return 'Error. Try again.' if action.nil? || $params['magic'] != $user.magic
+  return '' if action.nil?
+  return 'Error. Try again.' if  $params['magic'] != $user.magic
   result = case action
     when 'add fuel' then add_fuel($user.id, $params['magic'])
     when 'attack' then attack($user, $target, $params['item'], $params['magic'])
@@ -68,7 +69,7 @@ end
 
 $user.update(active: 1)
 
-if can_act?($user) || $params['action'] == 'log out' || $params['action'] == 'chat'
+if (!$params['action'].blank? && can_act?($user)) || $params['action'] == 'log out' || $params['action'] == 'chat'
   Action_Outcome = input_action($params['action'])
 else
   Action_Outcome = ''

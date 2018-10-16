@@ -683,8 +683,7 @@ def describe_animals_on_tile(x, y)
   if animals.count == 0 then return "" end
 
   animals = values_freqs_hash(animals, "type_id")
-  animal_descs = animals.map do
-    |type, amt| describe_animals(amt, type, :long)   end
+  animal_descs = animals.map {|type, amt| describe_animals(amt, type, :long) }
   "#{describe_list(animal_descs).capitalize} #{is_are(num_animals)} here."
 end
 
@@ -740,63 +739,33 @@ end
 def describe_list(coll)
   # correctly formats an english list
   # eg -> [1,2,3,4] -> "1, 2, 3 and 4"
-  array = coll.find_all { |x| x != nil }.to_a
-  case array.length
-  when 0
-    ""
-  when 1
-    array[0].to_s
-  when 2
-    array[0].to_s + " and " + array[1].to_s
+  coll = coll.compact
+  if coll.size > 1
+    "#{coll[0..-2].join(', ')} and #{coll.last}"
   else
-    array[0].to_s + ", " + describe_list(array.slice(1..array.length))
+    coll.join(' and ')
   end
 end
 
 def describe_location(user_id)
   user = User.new(user_id)
-  desc = user.tile.description(user.z)
-  desc += " " + describe_animals_on_tile(user.x, user.y) if user.z == 0
-  desc += " " + describe_occupants(user.x, user.y, user.z, user_id)
+  desc = "#{user.tile.description(user.z)}"
+  desc << " #{describe_animals_on_tile(user.x, user.y)}" if user.z == 0
+  desc << " #{describe_occupants(user.x, user.y, user.z, user_id)}"
 end
 
-
 def describe_number(n)
-  case n.to_i
-  when 0 then "no"
-  when 1 then "one"
-  when 2 then "two"
-  when 3 then "three"
-  when 4 then "four"
-  when 5 then "five"
-  when 6 then "six"
-  when 7 then "seven"
-  when 8 then "eight"
-  when 9 then "nine"
-  when 10 then "ten"
-  when 11 then "eleven"
-  when 12 then "twelve"
-  when 13 then "thirteen"
-  when 14 then "fourteen"
-  when 15 then "fifteen"
-  when 16 then "sixteen"
-  when 17 then "seventeen"
-  when 18 then "eighteen"
-  when 19 then "nineteen"
-  when 20 then "twenty"
-  when (21..29) then "twenty-" + describe_number(n - 20)
-  when 30 then "thirty"
-  when (31..39) then "thirty-" + describe_number(n - 30)
-  when 40 then "forty"
-  when (41..49) then "forty-" + describe_number(n - 40)
-  else "loads of"
+  n = n.to_i
+  if n < 50
+    n.to_words
+  else
+    "loads of"
   end
 end
 
 def describe_occupants(x, y, z, omit = 0)
-  occupants = mysql_select("users",
-                           {x: x, y: y, z: z, active: 1}, {id: omit})
-  if occupants.count == 0 then return "" end
+  occupants = mysql_count("users", {x: x, y: y, z: z, active: 1}, {id: omit})
+  return "" if occupants.zero?
 
   omit = User.ensure(omit)
   show_hp = true if omit.has_skill?(:triage)
@@ -804,51 +773,56 @@ def describe_occupants(x, y, z, omit = 0)
   occupants.each do |occupant|
     occupant_links << html_userlink(occupant["id"], occupant["name"], :details, show_hp)
   end
-  if occupants.count == 1 then desc = "Standing here is "   else desc = "Standing here are " end
-  desc += describe_list(occupant_links) + "."
+  if occupants.count == 1 then
+    desc = "Standing here is "
+  else
+    desc = "Standing here are "
+  end
+  desc << describe_list(occupant_links) << "."
 end
 
 def describe_weapon(item, user_id)
-  # OOP delete!
   user = User.new(user_id)
   accuracy = item_stat(item[:id], :accuracy, user)
   dmg = item_stat(item[:id], :effect, user)
-  desc = "#{item[:name].capitalize} (#{accuracy}%, #{dmg} dmg)"
-  desc
+  "#{item[:name].capitalize} (#{accuracy}%, #{dmg} dmg)"
 end
 
 def destroy_building(building)
-  mysql_insert("messages", {x: building.x, y: building.y, z: 0,
-                            type: "persistent", message: "#{building.a.capitalize} was destroyed!"})
-  mysql_delete("writings", {x: building.x, y: building.y})
-  mysql_update("users", {x: building.x, y: building.y}, {z: 0})
-  mysql_update("grid", building.mysql_id,
-               {building_hp: 0, building_id: 0})
-  if building.special == :settlement
-    destroy_settlement(building.tile.settlement)
-  end
-  if building.special == :walls
+  mysql_transaction do
+    mysql_insert("messages", {x: building.x, y: building.y, z: 0,
+                              type: "persistent", message: "#{building.a.capitalize} was destroyed!"})
+    mysql_delete("writings", {x: building.x, y: building.y})
+    mysql_update("users", {x: building.x, y: building.y}, {z: 0})
     mysql_update("grid", building.mysql_id,
-                 {building_hp: 0, building_id: 0, terrain: 8, hp: 0})
+                 {building_hp: 0, building_id: 0})
+    if building.special == :settlement
+      destroy_settlement(building.tile.settlement)
+    end
+    if building.special == :walls
+      mysql_update("grid", building.mysql_id,
+                   {building_hp: 0, building_id: 0, terrain: 8, hp: 0})
+    end
   end
 end
 
 def destroy_settlement(settlement)
-  mysql_insert("messages", {x: settlement.x, y: settlement.y, z: 0,
-                            type: "persistent", message: "The settlement of #{settlement.name} was destroyed!"})
-  mysql_update("accounts", {settlement_id: settlement.mysql_id}, {settlement_id: 0})
-  mysql_update("accounts", {temp_sett_id: settlement.mysql_id}, {temp_sett_id: 0})
-  mysql_delete("settlements", settlement.mysql_id)
+  mysql_transaction do
+    mysql_insert("messages", {x: settlement.x, y: settlement.y, z: 0,
+                              type: "persistent", message: "The settlement of #{settlement.name} was destroyed!"})
+    mysql_update("accounts", {settlement_id: settlement.mysql_id}, {settlement_id: 0})
+    mysql_update("accounts", {temp_sett_id: settlement.mysql_id}, {temp_sett_id: 0})
+    mysql_delete("settlements", settlement.mysql_id)
+  end
 end
 
 def dig(user, magic)
-  return "Error. Try again." if magic != $user.magic
+  user = User.ensure(user)
   tile = user.tile
-  return "You would rather not dig a hole in the floor." unless user.z == 0
-  return "You cannot dig here." unless tile.actions.include?(:dig)
-  unless user.has_item?(:digging_stick)
-    return "You need a digging stick to dig here."
-  end
+
+  return "You would rather not dig a hole in the floor." if user.inside?
+  return "You cannot dig here." if !tile.actions.include?(:dig)
+  return "You need a digging stick to dig here." if !user.has_item?(:digging_stick)
 
   diggables = lookup_table_row(:terrain, tile.terrain, :dig)
   found_item = random_select(diggables, 100)
@@ -856,17 +830,15 @@ def dig(user, magic)
     msg = "You dig a hole, but find nothing of use."
     user.change_ap(-2)
   else
-    user.change_inv(found_item, 1)
-    user.change_ap(-2)
-    user.give_xp(:wander, 1)
+    mysql_transaction do
+      user.change_inv(found_item, 1)
+      user.change_ap(-2)
+      user.give_xp(:wander, 1)
+    end
     msg = "Digging a hole, you find #{lookup_table_row(:item, found_item, :desc)}."
   end
 
-  msg += " " + break_attempt(user, :digging_stick)
-end
-
-def directions
-  ["N", "NW", "W", "SW", "S", "SE", "E", "NE"]
+  msg << " #{break_attempt(user, :digging_stick)}"
 end
 
 def dir_to_offset(dir)
@@ -1450,35 +1422,40 @@ def ocarina(user, target, item_id)
   end
 end
 
+SHORT_DIRECTIONS = %w[N NW W SW S SE E NE In Out].freeze
+LONG_DIRECTIONS = %w[North Northwest West Southwest South Southeast East Northeast inside outside].freeze
+
 def offset_to_dir(x_offset, y_offset, z_offset = 0, length = :short)
+  dirs = (length == :short) ? SHORT_DIRECTIONS : LONG_DIRECTIONS
   case z_offset
   when 0
     case y_offset
     when -1
       case x_offset
-      when -1 then if length == :short then "NW"         else "Northwest" end
-      when 0 then if length == :short then "N"         else "North" end
-      when 1 then if length == :short then "NE"         else "Northeast" end
-      else nil
+      when -1 then dirs[1]
+      when 0 then dirs[0]
+      when 1 then dirs[7]
+      else
+        nil
       end
     when 0
       case x_offset
-      when -1 then if length == :short then "W"         else "West" end
+      when -1 then  dirs[2]
       when 0 then nil
-      when 1 then if length == :short then "E"         else "East" end
+      when 1 then dirs[6]
       else nil
       end
     when 1
       case x_offset
-      when -1 then if length == :short then "SW"         else "Southwest" end
-      when 0 then if length == :short then "S"         else "South" end
-      when 1 then if length == :short then "SE"         else "Southeast" end
+      when -1 then dirs[3]
+      when 0 then dirs[4]
+      when 1 then dirs[5]
       else nil
       end
     else nil
     end
-  when 1 then if length == :short then "In"     else "inside" end
-  when -1 then if length == :short then "Out"     else "outside" end
+  when 1 then dirs[8]
+  when -1 then dirs[9]
   else nil
   end
 end
@@ -1508,7 +1485,7 @@ def quarry(user, magic)
 end
 
 def random_dir
-  directions[rand(8)]
+  DIRECTIONS[rand(8)]
 end
 
 def random_select(hash, denom = 0)
@@ -1520,9 +1497,7 @@ def random_select(hash, denom = 0)
   # if not, chance of option1 being returned equals
   # probability1/sum of probabilities
 
-  if denom == 0
-    denom = sum_coll(hash.values)
-  end
+  denom = hash.values.sum if denom == 0
   rnd = rand() * denom
   selected = nil
   hash.each { |option, chance|
@@ -1531,7 +1506,7 @@ def random_select(hash, denom = 0)
       selected = option
       break
     else
-      rnd = rnd - chance
+      rnd -= chance
     end
   }
   selected
@@ -1539,8 +1514,7 @@ end
 
 def rand_to_i(x)
   # eg, if x is 1.4, returns 1 60% of the time and 2 40% of the time
-  fraction = x - x.floor
-  rand < fraction ? x.floor + 1 : x.floor
+  rand < (x - x.floor) ? x.floor + 1 : x.floor
 end
 
 def repair(user)
@@ -1765,7 +1739,7 @@ def search(user, magic)
   when 2
     items.collect { |item, odds| items[item] = odds * 0.75 }
   end
-  total_odds = sum_coll(items.values)
+  total_odds = items.values.sum
 
   tile_change = user.tile.mysql
   if !user.has_skill?(:foraging)
@@ -1967,28 +1941,12 @@ def stockpile_has_item?(x, y, item_id)
 end
 
 def stockpile_item_amount(x, y, item_id)
-  query = "SELECT amount FROM `stockpiles`" +
-          mysql_where({x: x, y: y, item_id: item_id})
-
+  query = "SELECT amount FROM `stockpiles` #{mysql_where({x: x, y: y, item_id: item_id})}"
   result = db.query(query)
-  if result.count != 0
+  if result.count.positive?
     result.first['amount'].to_i # = result['amount']
   else
     0
-  end
-end
-
-def sum_coll(coll)
-  array = coll.to_a
-  case array.length
-  when 0
-    0
-  when 1
-    array[0]
-  when 2
-    array[0] + array[1]
-  else
-    array[0] + sum_coll(array.slice(1..array.length))
   end
 end
 
@@ -2146,14 +2104,10 @@ def valid_location?(x, y, z)
   (0..floors).cover?(z)
 end
 
-def values_freqs_hash(mysql_resource, field)
-  hash = Hash.new
-  hash.default = 0
-  mysql_resource.each do |row|
-    value = row[field]
-    hash[value] += 1
+def values_freqs_hash(resources, field)
+  resources.each_with_object(Hash.new(0)) do |row, hash|
+    hash[row[field]] += 1
   end
-  hash
 end
 
 def vote(voter, candidate)

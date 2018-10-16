@@ -108,11 +108,9 @@ class User < Base
   end
 
   def supporters
-    result = mysql_select("accounts",
-                          {"settlement_id" => settlement_id, "vote" => mysql_id})
+    result = mysql_select("accounts", {"settlement_id" => settlement_id, "vote" => mysql_id})
     # return 0 if result.count == 0
-    supporters = []
-    result.each { |row| supporters << User.new(row["id"]) }
+    supporters = result.each_with_object([]) { |row, result| result << User.new(row["id"]) }
     supporters.delete_if { |user| user.hp == 0 || user.active == 0 }
     supporters.nitems
   end
@@ -128,7 +126,7 @@ class User < Base
   def give_xp(kind, value)
     value = rand_to_i(value) if value.is_a?(Float)
     value = value&.abs || 0
-    mysql_bounded_update(self.class.mysql_table, "#{kind}_xp}".to_sym, self.id, value, 1000)
+    mysql_bounded_update(self.class.mysql_table, "#{kind}_xp", self.id, value, 1000)
   end
 
   def change_ap(value)
@@ -140,8 +138,7 @@ class User < Base
       item_id = lookup_table_row(:item, item_id, :id)
     end
     query = "SELECT amount FROM `inventories`" + mysql_where({"user_id" => self.id, "item_id" => item_id})
-    result = db.query(query)
-    result.count != 0 ? result.first['amount'].to_i : 0
+    (db.query(query).first || {})['amount'].to_i
   end
 
   def has_item?(item_id)

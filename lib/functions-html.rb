@@ -479,13 +479,11 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   end
 
   if !tile.building_id.nil? && tile.building_id != 0
-    html += '<span class="mapdata" style="color:#990000">' +
-            lookup_table_row(:building, tile.building_id, :name).capitalize +
-            '</span><br>'
+    html << "<span class=\"mapdata\" style=\"color:#990000\">#{lookup_table_row(:building, tile.building_id, :name).capitalize}</span></br>"
   end
 
   if occupants != true && occupants != :show_occupants
-    html += "</td>"
+    html << "</td>"
     return html
   end
 
@@ -499,10 +497,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
 
   # show tile occupants if user is outside, or user is on tile
   if z == 0 || user.tile == tile
-    users = mysql_select('users',
-                         { 'x' => x, 'y' => y, 'z' => z, 'active' => 1 },
-                         'id' => user&.mysql_id)
-    users = users.count
+    users = mysql_count('users', { x: x, y: y, z: z, active: 1 }, id: user&.mysql_id)
     if users > 0
       html << "<span class=\"mapdata\">#{users} #{users == 1 ? 'person' : 'people'}</span>"
      end
@@ -524,14 +519,10 @@ def html_userlink(id, name = nil, desc = false, show_hp = false)
     if user.hp == 0
       extra = '<span class="small"> [dazed]</span>'
     elsif user.hp < Max_HP
-      extra = "<span class=\"small\"> [#{user.hp}/#{user.maxhp}]</span>" end
+      extra = "<span class=\"small\"> [#{user.hp}/#{user.maxhp}]</span>"
+    end
   end
-  relation =
-    if !$user.nil? then $user.relation(user).to_s
-    else 'neutral' end
+  relation = !$user.nil? ? $user.relation(user).to_s : 'neutral'
 
-  "<a href=\"profile.cgi?id=#{id}\" " \
-    "class=\"#{relation}\" " \
-    "title=\"#{description}\">" \
-    "#{name}</a>#{extra}"
+  "<a href=\"profile.cgi?id=#{id}\" class=\"#{relation}\" title=\"#{description}\">#{name}</a>#{extra}"
 end

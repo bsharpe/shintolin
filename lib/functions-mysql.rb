@@ -175,6 +175,11 @@ def mysql_select(table, where_clause, not_clause = nil)
 end
 alias mysql_query mysql_select
 
+def mysql_count(table, where_clause, not_clause = nil)
+  query = "SELECT COUNT(*) AS count FROM `#{table}` #{mysql_where(where_clause, not_clause)}"
+  db.query(query).first['count']
+end
+
 def mysql_select_all(table)
   query = "SELECT * FROM `#{table}`"
   db.query(query)
