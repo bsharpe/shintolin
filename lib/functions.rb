@@ -2112,39 +2112,34 @@ end
 def user_actions(user)
   # returns an array containing the forms to display for user
   tile = user.tile
-  forms = []
+  actions = []
   if can_act?(user)
     if user.hp > 0
-      forms << :attack
-      forms << :build
-      forms << :craft
-      forms << :write if tile.building_id != 0
-      building_forms = lookup_table_row(:building, tile.building_id, :actions)
-      forms += building_forms if building_forms != nil
-      tile_forms = lookup_table_row(:terrain, tile.terrain, :actions)
-      forms += tile_forms if tile_forms != nil
+      actions << %i[attack build craft]
+      actions << :write if tile.building_id != 0
+
+      building_forms = lookup_table_row(:building, tile.building_id, :actions) || []
+      actions << building_forms
+
+      tile_forms = lookup_table_row(:terrain, tile.terrain, :actions) || []
+      actions << tile_forms
     else
-      forms << :offer
+      actions << :offer
     end
-    forms << :search
-    forms << :give
-    forms << :use
-    forms << :drop
-    forms << :speak
+    actions << %i[search give use drop speak]
   elsif user.ap < 1
-    forms << :no_ap
+    actions << :no_ap
   else
-    forms << :no_ip
+    actions << :no_ip
   end
-  forms
+  actions.flatten.compact
 end
 
 
 def valid_location?(x, y, z)
   tile = mysql_tile(x, y)
-  floors = lookup_table_row(:building, tile["building_id"], :floors)
-  if floors == nil then floors = 0 end
-  (0..floors).include? z
+  floors = lookup_table_row(:building, tile["building_id"], :floors).to_i
+  (0..floors).cover?(z)
 end
 
 def values_freqs_hash(mysql_resource, field)
