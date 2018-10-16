@@ -70,7 +70,7 @@ class User < Base
     if type == :all
       skills = lookup_table(:skill).values
     else
-      skills = all_where(:skill, :type, type)
+      skills = lookup_all_where(:skill, :type, type)
     end
     level = 0
     skills.each { |skill| level += 1 if has_skill?(self, skill[:id]) }
@@ -136,12 +136,16 @@ class User < Base
     "#{self.lastaction.to_i}:#{self.name}"
   end
 
-  def update(**changes)
-    mysql_update(self.class.mysql_table, self.id, changes)
-  end
-
   def give_xp(kind, value)
-    mysql_give_xp(kind, value, self.id)
+    xp_field = case kind
+               when :wander then 'wander_xp'
+               when :craft then 'craft_xp'
+               when :herbal then 'herbal_xp'
+               when :warrior then 'warrior_xp'
+    end
+    value = rand_to_i(value) if value.is_a?(Float)
+    value = value.abs || 0
+    mysql_bounded_update(self.class.mysql_table, xp_field, self.id, value, 1000)
   end
 
   def change_ap(value)
@@ -161,12 +165,16 @@ class User < Base
     self.item_count(item_id).positive?
   end
 
-  def outside?
-    self.z.zero?
+  def has_all_items?(item_list)
+    item_list.map{|e| self.has_item?(e)}.all?
   end
 
-  def update_item_count(item_id, delta)
+  def change_inv(item_id, delta)
     mysql_change_inv(self.id, item_id, delta)
+  end
+
+  def outside?
+    self.z.zero?
   end
 
   def weight

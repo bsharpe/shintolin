@@ -103,7 +103,7 @@ class Building < Base
       key = nil
     end
 
-    all_where(:building, :prereq, key)
+    lookup_all_where(:building, :prereq, key)
   end
 
   def mysql

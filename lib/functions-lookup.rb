@@ -19,4 +19,6 @@ def lookup_table_row(table, row, field = nil)
   end
 end
 
-
+def lookup_all_where(table, column, value)
+  lookup_table(table).values.find_all { |row| row[column] == value }
+end

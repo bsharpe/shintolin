@@ -18,7 +18,7 @@ def html_chat_box(limit = 30)
   end.join
 end
 
-def html_chat_large(chats = 150)
+def html_chat_large(limit = 150)
   chats = ''
   Message.chats(limit).each do |message|
     chats << "<div>#{message.to_s}</div>"
@@ -421,7 +421,7 @@ def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
   end
 
   html += "</div>"
-  subskills = all_where(:skill, :prereq, skill_name)
+  subskills = lookup_all_where(:skill, :prereq, skill_name)
   unless subskills.empty?
     subskills.each do |sub|
       html += html_skill(sub[:id], user_id, indent + 1, xp, form)
@@ -431,7 +431,7 @@ def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
 end
 
 def html_skills_list(type, user_id = 0)
-  skills = all_where(:skill, :type, type)
+  skills = lookup_all_where(:skill, :type, type)
   skills.delete_if { |skill| !skill[:prereq].nil? }
   html = ''
   if user_id != 0
