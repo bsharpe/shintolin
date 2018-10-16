@@ -9,8 +9,7 @@ require 'digest/md5'
 require 'cgi'
 require 'cgi/session'
 require 'time'
-Dotenv.load("../.env")
+Dotenv.load('../.env')
 
 $cgi = CGI.new
 $params = $cgi
-

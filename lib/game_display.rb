@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 puts <<~ENDTEXT
   <html>
 
@@ -27,9 +29,7 @@ puts <<~ENDTEXT
     <a class="buttonlink" href="rankings.cgi">Rankings</a>
     <a class="buttonlink" href="/html/faq.html">FAQ</a>
 ENDTEXT
-if $user.is_admin?
-  puts "<a class=\"buttonlink\" href=\"/edit-map.cgi?x=#{$user.x}&y=#{$user.y}\">Edit Map</a>"
-end
+puts "<a class=\"buttonlink\" href=\"/edit-map.cgi?x=#{$user.x}&y=#{$user.y}\">Edit Map</a>" if $user.is_admin?
 puts <<~ENDTEXT
     #{Logout_Button}
 
@@ -49,10 +49,10 @@ puts <<~ENDTEXT
           <div style="beigeoverlay">
 ENDTEXT
 
-puts "<b><i>#{Dazed_Message}</i></b></br>"  if Dazed_Message != ''
+puts "<b><i>#{Dazed_Message}</i></b></br>" if Dazed_Message != ''
 puts "<b>#{Action_Outcome}</b>" if Action_Outcome != ''
 puts "<b>#{Tired_Message}</b>" if Tired_Message != ''
-puts "<br><br>" if Action_Outcome != '' || Tired_Message != ''
+puts '<br><br>' if Action_Outcome != '' || Tired_Message != ''
 puts Location_Info
 
 puts <<ENDTEXT
@@ -85,7 +85,7 @@ puts <<~ENDTEXT
            <a class="buttonlink" href="chat.cgi">Chat page</a>
           </center><br>
         </div>
-         #{html_action_form('Chat', false, nil, 'game.cgi') do html_text_box(200) end}
+         #{html_action_form('Chat', false, nil, 'game.cgi') { html_text_box(200) }}
        </div>
       </td>
     </tr>

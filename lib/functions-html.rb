@@ -1,27 +1,29 @@
+# frozen_string_literal: true
+
 def html_action_form(action, inline = false, ap = nil, post = 'game.cgi')
   html = "<form action=\"#{post}\" method=\"post\" "
   html += 'style="display:inline" ' if inline
-  html += "><input type=\"submit\" value=\"" +
+  html += '><input type="submit" value="' +
           action
   html += ": #{ap}" unless ap.nil?
-  html += "\" />" +
+  html += '" />' +
           html_hidden('action', action.downcase) +
           html_hidden('magic', $user.magic)
   html += yield if block_given?
-  html += "</form>"
+  html += '</form>'
   html
 end
 
 def html_chat_box(limit = 30)
   Message.chats(limit).each_with_object([]) do |message, result|
-    result << "<div>#{message.to_s}</div>"
+    result << "<div>#{message}</div>"
   end.join
 end
 
 def html_chat_large(limit = 150)
   chats = ''
   Message.chats(limit).each do |message|
-    chats << "<div>#{message.to_s}</div>"
+    chats << "<div>#{message}</div>"
   end
   html_action_form('Chat', false, nil, 'chat.cgi') do
     html_text_box(200)
@@ -53,9 +55,7 @@ def html_forms(user)
   animals = []
   building = []
   user.others_at_location.each { |row| players << User.new(row: row) }
-  if user.outside?
-    animals = Animal.at_location(user.x, user.y)
-  end
+  animals = Animal.at_location(user.x, user.y) if user.outside?
   building << tile.building if tile.has_building?
 
   has_players = !players.empty?
@@ -146,17 +146,15 @@ def html_forms(user)
     end
   end
   html += html_action_form('Search', :inline) if actions.include?(:search)
-  html += html_action_form('Chop Tree', :inline, "#{chop_tree_ap(user.id)}ap") if actions.include?(:chop_tree) && (user.z == 0)
+  html += html_action_form('Chop Tree', :inline, "#{chop_tree_ap(user.id)}ap") if actions.include?(:chop_tree) && (user.z.zero?)
   html += html_action_form('Harvest', :inline, "#{harvest_ap(user.id)}ap") if actions.include?(:harvest)
   html += html_action_form('Add Fuel', :inline) if actions.include?(:add_fuel)
   html += html_action_form('Fill', :inline) if actions.include?(:fill)
   html += html_action_form('Water', :inline) if actions.include?(:water)
-  html += html_action_form('Dig', :inline, '2 ap') if actions.include?(:dig) && (user.z == 0)
+  html += html_action_form('Dig', :inline, '2 ap') if actions.include?(:dig) && (user.z.zero?)
   html += html_action_form('Quarry', :inline, '4 ap') if actions.include?(:quarry)
   if actions.include?(:join)
-    if user.settlement_id != tile.settlement_id
-      html += html_action_form('Join Settlement', :inline, '25 ap')
-    end
+    html += html_action_form('Join Settlement', :inline, '25 ap') if user.settlement_id != tile.settlement_id
   end
   html += msg_no_ap(user.id) if actions.include?(:no_ap)
   html += msg_no_ip if actions.include?(:no_ip)
@@ -172,7 +170,7 @@ def html_inventory(user_id, y = nil, infix = ' x ', commas = false, inline = fal
   # if y is passed, look for stockpile at location (user_id, y)
   user = User.ensure(user_id)
   items = lookup_table(:item).values
-  html = ""
+  html = ''
   weight = 0
   item_descs = items.map do |item|
     item_desc = nil
@@ -181,7 +179,7 @@ def html_inventory(user_id, y = nil, infix = ' x ', commas = false, inline = fal
              else
                user.item_count(item[:id])
              end
-    if amount > 0
+    if amount.positive? 
       weight += (amount * item[:weight])
       item_desc = "<div title=\"#{item[:desc]}\""
       item_desc += ' style="display:inline"' if inline != false
@@ -218,7 +216,7 @@ def html_location_box(user)
   rescue Exception => e
     html += 'The Wilderness'
   end
-  html += "[#{user.x},#{user.y}]"  + ' - ' + month + '</div>'
+  html += "[#{user.x},#{user.y}]" + ' - ' + month + '</div>'
   html
 end
 
@@ -229,19 +227,19 @@ def html_map(centre, size, user = nil, show_occupants = true, &block)
   range = (size.to_f / 2).floor
   z = !user.nil? ? user.z : 0
 
-  html = "<table>"
+  html = '<table>'
   (-range..range).map do |y_offset|
-    html += "<tr>"
+    html += '<tr>'
     (-range..range).map do |x_offset|
       html += html_tile((centre.x + x_offset), (centre.y + y_offset), z, user, show_buttons, show_occupants, &block)
-     end
-     html += "</tr>"
+    end
+    html += '</tr>'
   end
-  html += "</table>"
+  html += '</table>'
   html
 end
 
-def html_messages(user, x, y, z)
+def html_messages(user, _x, _y, _z)
   user = User.new(user)
   html = []
   Message.for_user(user).each do |message|
@@ -256,10 +254,10 @@ def html_move_button(dir, ap = 0)
   return '' if ap.nil? || dir.blank?
 
   x, y, z = dir_to_offset(dir)
-  ap = 1 if z != 0  # ap always 1 when entering/exiting
+  ap = 1 if z != 0 # ap always 1 when entering/exiting
 
-  html = %Q[<form method = "POST" action="game.cgi">
-            <input class="movebutton" type="submit" value="#{dir}]
+  html = %(<form method = "POST" action="game.cgi">
+            <input class="movebutton" type="submit" value="#{dir})
   html << ": #{ap}ap" if ap > 1
   html << '"/>'
   html << html_hidden('action', 'move')
@@ -295,33 +293,33 @@ def html_player_data(user)
 end
 
 def html_select(coll, selected = nil)
-  html = "<select name=\"option\">"
+  html = '<select name="option">'
   coll.each do |x|
     disp = block_given? ? yield(x) : x
     html += "<option value=\"#{x}\""
     html += ' selected="yes"' if selected == x
     html += ">#{disp}</option>"
   end
-  html += "</select>"
+  html += '</select>'
 end
 
 def html_select_building(buildings)
-  html = "<select name=\"building\" style=\"width:10em\">"
+  html = '<select name="building" style="width:10em">'
   buildings.each do |building|
     html += "<option value=\"#{building[:id]}\">"
     html += "#{describe_craft(building)}</option>"
   end
-  html += "</select>"
+  html += '</select>'
 end
 
 def html_select_item(display = :name, user_id = nil)
   # <select name=weapon style='width:10em'><option value=fist>Fist</option>
   # <option value='hand axe'>Hand axe</option></select>
-  html = "<select name=\"item\" style=\"width:10em\">"
+  html = '<select name="item" style="width:10em">'
   items = lookup_table(:item).values
   items = items.select { |item| yield(item) } if block_given?
   items.each do |item|
-    html += "<option "
+    html += '<option '
     html += 'selected="yes" ' if $params && $params['item'].to_i == item[:id]
     html += 'value="' +
             item[:id].to_s + '">' +
@@ -331,26 +329,25 @@ def html_select_item(display = :name, user_id = nil)
             when :craft then describe_craft(item)
             when :weapon then describe_weapon(item, user_id)
             end
-    html += "</option>"
+    html += '</option>'
   end
-  html += "</select>"
+  html += '</select>'
 end
 
 def html_select_num(number)
-  html = "<select name=\"number\">"
+  html = '<select name="number">'
   (1..number).each do |n|
-    html += "<option value=\"" +
+    html += '<option value="' +
             n.to_s + '">' +
             n.to_s +
-            "</option>"
+            '</option>'
   end
-  html += "</select>"
+  html += '</select>'
 end
 
 def html_select_target(targets, default = 'No-one', &block)
-  html = "<select name=\"target\" style=\"width:10em\">"
+  html = '<select name="target" style="width:10em">'
   html += "<option value=\"0:user\">#{default}</option>"
-
 
   targets.each do |target|
     html += case target.class.name
@@ -362,22 +359,22 @@ def html_select_target(targets, default = 'No-one', &block)
               html_option_user(target, &block)
             end
   end
-  html += "</select>"
+  html += '</select>'
 end
 
 def html_option_animal(animal)
-  html = "<option "
+  html = '<option '
   html += 'selected="yes" ' if $target.mysql_id == animal.mysql_id
   html += "value=\"#{animal.mysql_id}:animal\">" \
           "#{animal.name} " \
           "(#{animal.hp}hp)" \
-          "</option>"
+          '</option>'
 end
 
 def html_option_building(building)
   return '' unless building.exists?
 
-  html = "<option "
+  html = '<option '
   html += 'selected="yes" ' if $target.is_a?(Building)
   html += "value=\"#{building.x},#{building.y}:building\">#{building.name}</option>"
 end
@@ -385,7 +382,7 @@ end
 def html_option_user(user)
   display = block_given? ? yield(user) : user.name
 
-  html = "<option "
+  html = '<option '
   html += 'selected="yes" ' if !$target.nil? && $target.mysql_id == user.mysql_id
   html += "value=\"#{user.mysql_id}:user\">#{display}</option>"
 end
@@ -421,7 +418,7 @@ def html_skill(skill_name, user_id = 0, indent = 0, xp = 0, form = 'buy')
     html += '</a>'
   end
 
-  html += "</div>"
+  html += '</div>'
   subskills = lookup_all_where(:skill, :prereq, skill_name)
   unless subskills.empty?
     subskills.each do |sub|
@@ -442,7 +439,7 @@ def html_skills_list(type, user_id = 0)
     html += "<h2>Level #{level} #{lookup_table_row(:skills_renamed, :name, type).to_s.capitalize}</h2>" \
             "You have #{user.mysql[xp_field]} #{lookup_table_row(:skills_renamed, :name, type)} experience points.<br>"
   end
-  form = (user.level < Max_Level) ? 'buy' : 'sell'
+  form = user.level < Max_Level ? 'buy' : 'sell'
 
   skills.each do |skill|
     html += html_skill(skill[:id], user_id, 0, skill_cost(level), form)
@@ -466,7 +463,7 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
 
   html = "<td class=\"map\" style=\"background-image:url(#{Image_Folder}#{tile.image}); "
   html << ";box-shadow: #{-tile.altitude}px #{tile.altitude}px 5px rgba(0,0,0,0.5);" if tile.altitude.positive?
-  html << "\">"
+  html << '">'
 
   html << yield(tile) if block_given?
 
@@ -483,11 +480,11 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   end
 
   if occupants != true && occupants != :show_occupants
-    html << "</td>"
+    html << '</td>'
     return html
   end
 
-  if z == 0
+  if z.zero?
     animals = mysql_select('animals', 'x' => x, 'y' => y)
     animals = values_freqs_hash(animals, 'type_id')
     animals.each do |type, amt|
@@ -496,13 +493,13 @@ def html_tile(x, y, z = 0, user = nil, button = false, occupants = true)
   end
 
   # show tile occupants if user is outside, or user is on tile
-  if z == 0 || user.tile == tile
+  if z.zero? || user.tile == tile
     users = mysql_count('users', { x: x, y: y, z: z, active: 1 }, id: user&.mysql_id)
-    if users > 0
+    if users.positive? 
       html << "<span class=\"mapdata\">#{users} #{users == 1 ? 'person' : 'people'}</span>"
      end
   end
-  html << "</td>"
+  html << '</td>'
   html
 end
 
@@ -515,8 +512,8 @@ def html_userlink(id, name = nil, desc = false, show_hp = false)
     description = mysql_row('accounts', id)['description']
     description = description.slice(0, 140) + '...' if description.length > 140
   end
-  if show_hp || user.hp == 0
-    if user.hp == 0
+  if show_hp || user.hp.zero?
+    if user.hp.zero?
       extra = '<span class="small"> [dazed]</span>'
     elsif user.hp < Max_HP
       extra = "<span class=\"small\"> [#{user.hp}/#{user.maxhp}]</span>"

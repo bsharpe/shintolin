@@ -1,9 +1,10 @@
+# frozen_string_literal: true
 
 module Math
-  def Math.binomial(trials, probability)
+  def self.binomial(trials, probability)
     successes = 0
     trials.times do
-      if rand < probability then successes += 1 end
+      successes += 1 if rand < probability
     end
     successes
   end
@@ -11,7 +12,7 @@ end
 
 class Integer
   def to_1
-    self == 0 ? 0 : (self < 0) ? -1 : 1
+    self.zero? ? 0 : self < 0 ? -1 : 1
   end
 end
 
@@ -23,7 +24,7 @@ end
 
 class String
   def capitalize
-    self.split.map{|x| x[0].upcase + x[1..-1]}.join(' ')
+    split.map { |x| x[0].upcase + x[1..-1] }.join(' ')
   end
 end
 
@@ -33,9 +34,9 @@ class Time
   end
 
   def ago
-    secs = (Time.now.to_i - self.to_i)
+    secs = (Time.now.to_i - to_i)
     if secs < 5
-      "just now"
+      'just now'
     elsif secs < 60
       "#{secs} seconds ago"
     elsif secs < 3600
@@ -50,4 +51,3 @@ class Time
     end
   end
 end
-

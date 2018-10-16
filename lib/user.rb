@@ -104,14 +104,14 @@ class User < Base
   end
 
   def settlement
-    settlement_id == 0 ? nil : Settlement.new(settlement_id)
+    settlement_id.zero? ? nil : Settlement.new(settlement_id)
   end
 
   def supporters
     result = mysql_select("accounts", {"settlement_id" => settlement_id, "vote" => mysql_id})
-    # return 0 if result.count == 0
+    # return 0 if result.count.zero?
     supporters = result.each_with_object([]) { |row, result| result << User.new(row["id"]) }
-    supporters.delete_if { |user| user.hp == 0 || user.active == 0 }
+    supporters.delete_if { |user| user.hp.zero? || user.active.zero? }
     supporters.nitems
   end
 
@@ -176,7 +176,7 @@ class User < Base
   end
 
   def has_skill?(skill_id)
-    return true if skill_id == 0 || skill_id == nil || skill_id == :default
+    return true if skill_id.zero? || skill_id == nil || skill_id == :default
 
     skill_id = lookup_table_row(:skill, skill_id, :id) if skill_id.is_a?(Symbol)
 

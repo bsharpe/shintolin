@@ -21,3 +21,27 @@ Metrics/PerceivedComplexity:
 
 Metrics/LineLength:
   Max: 130
+
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
+Lint/EmptyWhen:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Metrics/BlockNesting:
+  Enabled: false
+
+Naming/PredicateName:
+  Enabled: false
+
+Style/IdenticalConditionalBranches:
+  Enabled: false
+
+Naming/AccessorMethodName:
+  Enabled: false

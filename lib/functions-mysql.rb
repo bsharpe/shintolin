@@ -21,15 +21,15 @@ rescue Exception => e
 end
 
 def mysql_transaction
-  db.query("BEGIN WORK;")
+  db.query('BEGIN WORK;')
   yield
-  db.query("COMMIT;")
+  db.query('COMMIT;')
 end
 
 def mysql_bounded_update(table, field, where_clause, change, bound = nil)
-  return 0 if change == 0
+  return 0 if change.zero?
 
-  bound ||= (change > 0) ? 9_999_999 : 0
+  bound ||= change.positive?  ? 9_999_999 : 0
   bound = bound.to_i
   current_amt = mysql_row(table, where_clause)[field].to_f
 
@@ -69,7 +69,7 @@ def mysql_change_ap(user, change)
     mysql_bounded_update('users', 'ap', user_id, change, Max_AP)
   else
     mysql_bounded_update('users', 'ap', user_id, change, -Max_AP)
-    if ($user.ap + change) < -10 then
+    if ($user.ap + change) < -10
       ip_hit(user_id, $user.ap * 10 + 90)
     else
       ip_hit(user_id, -(change * 10) - 10)
@@ -85,7 +85,7 @@ def mysql_change_inv(inv, item_id, amt)
   # OOP refactoring needed!
   table = 'inventories'
   case inv.class.name
-  when 'Fixnum','String'
+  when 'Fixnum', 'String'
     row_id = { 'user_id' => inv }
   when 'User'
     table = 'inventories'
@@ -151,7 +151,7 @@ def mysql_change_stockpile(x, y, item_id, change)
 end
 
 def mysql_delete(table, where_clause = nil)
-  raise ArgumentError.new("Can't delete everything (where_clause is nil)") unless where_clause
+  raise ArgumentError, "Can't delete everything (where_clause is nil)" unless where_clause
 
   db.query("DELETE FROM `#{table}` #{mysql_where(where_clause)}")
 end

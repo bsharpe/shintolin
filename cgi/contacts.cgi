@@ -46,7 +46,7 @@ def change_contacts(x) # x = charlist array
 	num_enemies = result['COUNT(*)'].to_i
 
   for i in (1..x.size/2)
-    # if type == 0, then delete
+    # if type.zero?, then delete
     if x[i*2-1].to_i <= 0
       if mysql_row('enemies',{'user_id'=>UserID, 'enemy_id'=>x[i*2-2].to_i}) == nil
         next
@@ -126,7 +126,7 @@ result.each {|row|
   puts '</select></td></tr>'
 }
 
-if contacts > 0
+if contacts.positive? 
   puts '<tr><td></td><td><br><input type="submit" value="Make Changes"></td></tr>'
 end
 puts '</form>'

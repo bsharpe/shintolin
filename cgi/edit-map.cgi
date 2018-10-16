@@ -52,7 +52,7 @@ def update_tile(x, y, new_terrain)
   else
       if tile.terrain == new_terrain
       nil
-    elsif new_terrain == 0
+    elsif new_terrain.zero?
       mysql_delete('grid',{'x'=>x,'y'=>y})
     else
       mysql_update('grid',{'x'=>x,'y'=>y}, {'terrain'=>new_terrain,'region_id'=>$params['option']})
@@ -63,7 +63,7 @@ end
 $x = $params['x'].to_i || 0
 $y = $params['y'].to_i || 0
 $size = $params['size'].to_i
-$size = 7 if $size == 0
+$size = 7 if $size.zero?
 input_action($params['action'])
 $tile = Tile.new($x, $y)
 

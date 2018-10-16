@@ -2,7 +2,7 @@ def tick_campfires
   puts '<li>Campfires burned!</li><ul>'
   campfire_tiles = mysql_select('grid', 'building_id' => 5)
   campfire_tiles.each do |tile|
-    next unless rand(2) == 0
+    next unless rand(2).zero?
 
     puts "<li>hp #{tile['building_hp']}"
     if tile['building_hp'].to_i <= 1
@@ -31,7 +31,7 @@ def tick_change_leader
   result.each { |row| settlements << Settlement.new(row['id']) }
   settlements.each do |settlement|
     leader = settlement.inhabitants.max_by(&:supporters)
-    leader_id = if leader.nil? || leader.supporters == 0
+    leader_id = if leader.nil? || leader.supporters.zero?
                   0
                 else
                   leader.mysql_id end
@@ -243,7 +243,7 @@ def tick_rot_food
     next if lookup_table_row(:item, inv['item_id'], :use) != :food
 
     rot_amount = Math.binomial(inv['amount'].to_i, Food_Rot_Chance)
-    next if rot_amount == 0
+    next if rot_amount.zero?
 
     puts rot_amount
     mysql_change_inv(inv['user_id'], inv['item_id'], -rot_amount)
@@ -255,7 +255,7 @@ def tick_rot_food
     next if lookup_table_row(:item, stock['item_id'], :use) != :food
 
     rot_amount = Math.binomial(stock['amount'].to_i, Food_Rot_Chance)
-    next if rot_amount == 0
+    next if rot_amount.zero?
 
     puts rot_amount
     mysql_change_stockpile(stock['x'], stock['y'], stock['item_id'], -rot_amount)

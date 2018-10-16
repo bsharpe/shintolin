@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Message < Base
   def self.mysql_table
     'messages'
@@ -11,7 +13,7 @@ class Message < Base
       type: type, message: message,
       speaker_id: speaker.id, target_id: target.id
     }
-    mysql_insert(self.mysql_table, **params)
+    mysql_insert(mysql_table, **params)
   end
 
   def self.chats(limit = 30)
@@ -19,7 +21,7 @@ class Message < Base
             "WHERE `type` = 'chat' AND `speaker_id` != 0 " \
             'ORDER BY `time` DESC ' \
             "LIMIT 0,#{limit}"
-    db.query(query).map{|e| Message.new(row: e)}
+    db.query(query).map { |e| Message.new(row: e) }
   end
 
   def self.for_user(user)
@@ -51,68 +53,65 @@ class Message < Base
             "AND (`time` + INTERVAL 24 HOUR) > '#{user.lastaction}')" \
             ' ORDER BY `time`'
 
-    db.query(query).map{|e| Message.new(row: e)}
+    db.query(query).map { |e| Message.new(row: e) }
   end
-
 
   def to_s(user_id = nil)
     desc =
-      case self["type"]
-      when "talk"
-        "#{you_or_him(user_id, self["speaker_id"], "You")} said " +
-        "<i>\"#{self["message"]}\"</i>" +
-        if self["target_id"] != "0"
-          " to #{you_or_him(user_id, self["target_id"])}"
+      case self['type']
+      when 'talk'
+        "#{you_or_him(user_id, self['speaker_id'], 'You')} said " \
+        "<i>\"#{self['message']}\"</i>" +
+        if self['target_id'] != '0'
+          " to #{you_or_him(user_id, self['target_id'])}"
         else
-          ""
+          ''
         end
-      when "whisper"
-        case self["target_id"]
-        when "0"
-          if user_id.to_s == self["speaker_id"]
-            "<b>You</b> mumbled something under your breath"
+      when 'whisper'
+        case self['target_id']
+        when '0'
+          if user_id.to_s == self['speaker_id']
+            '<b>You</b> mumbled something under your breath'
           else
-            html_userlink(self["speaker_id"]) +
-            "mumbled something under their breath"
+            html_userlink(self['speaker_id']) +
+              'mumbled something under their breath'
           end
         when user_id.to_s
-          "#{html_userlink(self["speaker_id"])} whispered " +
-            "<i>\"#{self["message"]}\"</i> to <b>you</b>"
+          "#{html_userlink(self['speaker_id'])} whispered " \
+          "<i>\"#{self['message']}\"</i> to <b>you</b>"
         else
-          if user_id.to_s == self["speaker_id"]
-            "<b>You</b> whispered <i>\"#{self["message"]}\"</i> " +
-              "to #{html_userlink(self["target_id"])}"
+          if user_id.to_s == self['speaker_id']
+            "<b>You</b> whispered <i>\"#{self['message']}\"</i> " \
+              "to #{html_userlink(self['target_id'])}"
           else
-            "#{html_userlink(self["speaker_id"])} whispered something " +
-              "to #{html_userlink(self["target_id"])}"
+            "#{html_userlink(self['speaker_id'])} whispered something " \
+              "to #{html_userlink(self['target_id'])}"
           end
         end
-      when "shout"
-        you_or_him(user_id, self["speaker_id"], "You") +
-        " shouted <i>\"#{self["message"]}\"</i>" +
-        if self["target_id"] != "0"
-          " to #{you_or_him(user_id, self["target_id"])}"
-        else ""       end
-      when "game"
-        self["message"]
-      when "distant"
-        "Someone nearby shouted <i>\"#{self["message"]}\"</i>"
-      when "persistent"
-        insert_names(self["message"], self["speaker_id"].to_i, self["target_id"].to_i, user_id)
-      when "action"
-        insert_names(self["message"], self["speaker_id"].to_i, self["target_id"].to_i, user_id)
-      when "slash_me"
-        insert_names(self["message"], self["speaker_id"].to_i, self["target_id"].to_i, user_id)
-      when "visible_all"
-        insert_names(self["message"], self["speaker_id"].to_i, self["target_id"].to_i, user_id)
-      when "chat"
-        html_userlink(self["speaker_id"]) + ": " + self["message"]
+      when 'shout'
+        you_or_him(user_id, self['speaker_id'], 'You') +
+        " shouted <i>\"#{self['message']}\"</i>" +
+        if self['target_id'] != '0'
+          " to #{you_or_him(user_id, self['target_id'])}"
+        else '' end
+      when 'game'
+        self['message']
+      when 'distant'
+        "Someone nearby shouted <i>\"#{self['message']}\"</i>"
+      when 'persistent'
+        insert_names(self['message'], self['speaker_id'].to_i, self['target_id'].to_i, user_id)
+      when 'action'
+        insert_names(self['message'], self['speaker_id'].to_i, self['target_id'].to_i, user_id)
+      when 'slash_me'
+        insert_names(self['message'], self['speaker_id'].to_i, self['target_id'].to_i, user_id)
+      when 'visible_all'
+        insert_names(self['message'], self['speaker_id'].to_i, self['target_id'].to_i, user_id)
+      when 'chat'
+        html_userlink(self['speaker_id']) + ': ' + self['message']
       else
-        return ""
+        return ''
       end
-    desc + "<span class=\"time\"> " +
-      "#{Time.str_to_time(self["time"]).ago}.</span>"
+    desc + '<span class="time"> ' \
+      "#{Time.str_to_time(self['time']).ago}.</span>"
   end
-
-
 end

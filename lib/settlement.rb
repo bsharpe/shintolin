@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 class Settlement < Base
   def self.mysql_table
     'settlements'
   end
 
-  mysql_int_fields "mysql", "x", "y", "leader_id", "allow_new_users"
+  mysql_int_fields 'mysql', 'x', 'y', 'leader_id', 'allow_new_users'
 
-  mysql_fields "mysql", "name", "motto", "title", "type",
-    "founded", "website"
+  mysql_fields 'mysql', 'name', 'motto', 'title', 'type',
+               'founded', 'website'
 
   def ==(settlement)
     settlement.class == Settlement && settlement.mysql_id == mysql_id
@@ -17,16 +19,16 @@ class Settlement < Base
   end
 
   def image
-    mysql['image'].present? ? http(mysql["image"]) : "images/p_huts_small.jpg"
+    mysql['image'].present? ? http(mysql['image']) : 'images/p_huts_small.jpg'
   end
 
   def pending_ids
-    query = "SELECT `accounts`.`id` " +
-            "FROM `users` , `accounts` " +
-            "WHERE `users`.`id` = `accounts`.`id` " +
-            "AND `accounts`.`temp_sett_id` = '#{mysql_id}' " +
+    query = 'SELECT `accounts`.`id` ' \
+            'FROM `users` , `accounts` ' \
+            'WHERE `users`.`id` = `accounts`.`id` ' \
+            "AND `accounts`.`temp_sett_id` = '#{mysql_id}' " \
             "AND `users`.`active` = '1'"
-    db.query(query).each_with_object([]) { |row, result| result << row["id"] }
+    db.query(query).each_with_object([]) { |row, result| result << row['id'] }
   end
 
   def pendings
@@ -34,7 +36,7 @@ class Settlement < Base
   end
 
   def pending_links
-    pendings.map { |user| user.link }
+    pendings.map(&:link)
   end
 
   #  def pending_names
@@ -42,12 +44,12 @@ class Settlement < Base
   #  end
 
   def inhabitant_ids
-    query = "SELECT `accounts`.`id` " +
-            "FROM `users` , `accounts` " +
-            "WHERE `users`.`id` = `accounts`.`id` " +
-            "AND `accounts`.`settlement_id` = '#{mysql_id}' " +
+    query = 'SELECT `accounts`.`id` ' \
+            'FROM `users` , `accounts` ' \
+            'WHERE `users`.`id` = `accounts`.`id` ' \
+            "AND `accounts`.`settlement_id` = '#{mysql_id}' " \
             "AND `users`.`active` = '1' ORDER BY `accounts`.`when_sett_joined`,`accounts`.`id` ASC"
-    db.query(query).each_with_object([]) { |row, result| result << row["id"] }
+    db.query(query).each_with_object([]) { |row, result| result << row['id'] }
   end
 
   def inhabitants
@@ -67,29 +69,27 @@ class Settlement < Base
   end
 
   def leader_link
-    @leader_link ||= leader ? leader.link : "None"
+    @leader_link ||= leader ? leader.link : 'None'
   end
 
   def leader_name
-    @leader_name ||= leader ? leader.name : "None"
+    @leader_name ||= leader ? leader.name : 'None'
   end
 
   def link
     if exists?
       desc = description
-      if desc.length > 140
-        desc = description.slice(0, 140) + "..."
-      end
-      desc.gsub!('"', '\'') # double - single quotes
+      desc = description.slice(0, 140) + '...' if desc.length > 140
+      desc.tr!('"', '\'') # double - single quotes
 
       relation =
-        if $user != nil then $user.relation(self)         else "neutral" end
-      "<a href=\"settlement.cgi?id=#{mysql_id}\" " +
-      "class=\"#{relation}\" " +
-      "title=\"#{desc}\" " +
-      ">#{name}</a>"
+        !$user.nil? ? $user.relation(self) : 'neutral'
+      "<a href=\"settlement.cgi?id=#{mysql_id}\" " \
+        "class=\"#{relation}\" " \
+        "title=\"#{desc}\" " \
+        ">#{name}</a>"
     else
-      "<i>None</i>"
+      '<i>None</i>'
     end
   end
 
@@ -98,7 +98,7 @@ class Settlement < Base
   end
 
   def tile
-    @tile ||= Tile.new(x,y)
+    @tile ||= Tile.new(x, y)
   end
 
   def region_id
@@ -109,4 +109,3 @@ class Settlement < Base
     tile.region_name
   end
 end
-

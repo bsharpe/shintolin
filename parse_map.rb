@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rubygems'
 require 'chunky_png'
 require 'colorize'
@@ -16,15 +18,15 @@ y_inc = 11
 map_offset_x = -32
 map_offset_y = -32
 
-tile_lookup = $Data[:terrain].each_with_object({}) do |(k,v), result|
+tile_lookup = $Data[:terrain].each_with_object({}) do |(k, v), result|
   result[k] = v[:id]
 end
 
 y = y_offset
-while y < height do
+while y < height
   x = x_offset
-  while x < width do
-    hex = ChunkyPNG::Color.to_hex(old_map[x,y], false)
+  while x < width
+    hex = ChunkyPNG::Color.to_hex(old_map[x, y], false)
 
     map_x = ((x - x_offset) / x_inc) + map_offset_x
     map_y = ((y - y_offset) / y_inc) + map_offset_y
@@ -41,9 +43,9 @@ while y < height do
       tile = :flood_plain
     when '#99B254'
       tile = :high_hillside
-    when '#A7C772','#ABC284'
+    when '#A7C772', '#ABC284'
       tile = :mid_hillside
-    when '#B9D389','#8FB146','#ABC784'
+    when '#B9D389', '#8FB146', '#ABC784'
       tile = :low_hillside
     when '#7E8EE2'
       tile = %i[shallow_river deep_river stream].sample
@@ -57,13 +59,13 @@ while y < height do
       tile = :sand_beach
     when '#989888'
       tile = :low_cliff_face
-    when '#ADAE93','#ADAF93'
+    when '#ADAE93', '#ADAF93'
       tile = :cliff_bottom
     when '#63A251'
       tile = :grassland
-    when '#94BCD7','#94BBD7'
+    when '#94BCD7', '#94BBD7'
       tile = :deep_lake
-    when '#274120','#23521C'
+    when '#274120', '#23521C'
       tile = %i[pine_forest_1 pine_forest_2 pine_forest_3].sample
     when '#80D991'
       tile = :cleared_wood

@@ -91,7 +91,7 @@ def input_action(action)
         total = total + 1
       end
         msg = msg + describe_list(list)
-        if total == 0 then msg = msg + "no one" end
+        if total.zero? then msg = msg + "no one" end
         msg = msg + " from your settlement."
       return msg
 
@@ -127,7 +127,7 @@ def input_action(action)
         total = total + 1
       end
         msg = msg + describe_list(list)
-        if total == 0 then msg = msg + "no one" end
+        if total.zero? then msg = msg + "no one" end
         msg = msg + " to full settlement membership."
       return msg
     else ''
@@ -262,7 +262,7 @@ if $user == $leader
 
 ENDTEXT
 if not [1,11,23,24,28].include?($settlement.region_id)
-if $settlement.allow_new_users == 0
+if $settlement.allow_new_users.zero?
   puts "New characters are unable to join #{$settlement.name}. " +
     "Open #{$settlement.name} to new players?"
 else
@@ -353,7 +353,7 @@ puts <<ENDTEXT
     </form>
 ENDTEXT
   supported = User.new($user.vote)
-  if !supported.exists? || supported.active == 0 || supported.settlement_id != $user.settlement_id || $user.settlement_id == 0 then puts "Current vote: N/A"
+  if !supported.exists? || supported.active.zero? || supported.settlement_id != $user.settlement_id || $user.settlement_id.zero? then puts "Current vote: N/A"
   else
     puts "Current vote: #{User.new($user.vote).name}"
   end
@@ -398,7 +398,7 @@ $settlement.pendings.each do |member|
   pending = pending + 1
   puts "<input type='checkbox' name ='option#{pending}' value ='#{member.mysql_id}'>#{member.name}&nbsp;&nbsp;"
 end
-if pending == 0 then puts "No one is currently pending." end
+if pending.zero? then puts "No one is currently pending." end
 puts <<ENDTEXT
 <input type='hidden' name='pending' value='#{pending}'>
 <br><br>
@@ -420,7 +420,7 @@ $settlement.inhabitants.each do |member|
     puts "<input type='checkbox' name ='option#{dazed}' value ='#{member.mysql_id}'>#{member.name}&nbsp;&nbsp;"
   end
 end
-if dazed == 0 then puts "No one is currently dazed." end
+if dazed.zero? then puts "No one is currently dazed." end
 puts <<ENDTEXT
 <input type='hidden' name='dazed' value='#{dazed}'>
 <br><br>

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'base'
 
 class Building < Base
@@ -9,22 +11,24 @@ class Building < Base
     'building'
   end
 
-  data_fields "floors", "max_hp", "ap_recovery", "build_ap",
-              "build_xp", "build_skill", "materials", "build_msg", "actions",
-              "special", "prereq", "tools", "unwritable", "name", "interior",
-              "use_skill", "effect_bonus", "craft_ap_bonus", "accuracy_bonus",
-              "id"
+  data_fields 'floors', 'max_hp', 'ap_recovery', 'build_ap',
+              'build_xp', 'build_skill', 'materials', 'build_msg', 'actions',
+              'special', 'prereq', 'tools', 'unwritable', 'name', 'interior',
+              'use_skill', 'effect_bonus', 'craft_ap_bonus', 'accuracy_bonus',
+              'id'
 
   attr_reader :x, :y
 
   def initialize(x = nil, y = nil, tile: nil)
     if tile.nil?
-      @x, @y = x.to_i, y.to_i
+      @x = x.to_i
+      @y = y.to_i
     else
-      @x, @y = tile.x, tile.y
+      @x = tile.x
+      @y = tile.y
       @tile = tile
     end
-    @mysql_id = {"x" => x, "y" => y}
+    @mysql_id = { 'x' => x, 'y' => y }
   end
 
   def a
@@ -32,54 +36,54 @@ class Building < Base
   end
 
   def hp
-    mysql["building_hp"].to_i
+    mysql['building_hp'].to_i
   end
 
   def description(z = 0)
-    return "" unless self.exists?
+    return '' unless exists?
 
     dmg = case (hp.to_f / max_hp)
           when (0...0.33)
-            if mysql["building_id"] == "5" then "dying "  else "ruined " end
+            mysql['building_id'] == '5' ? 'dying ' : 'ruined '
           when (0.33...0.67)
-            if mysql["building_id"] == "5" then "" else "damaged " end
+            mysql['building_id'] == '5' ? '' : 'damaged '
           when (0.67...1)
-            if mysql["building_id"] == "5" then "roaring " else "dilapidated " end
+            mysql['building_id'] == '5' ? 'roaring ' : 'dilapidated '
           else
-            if mysql["building_id"] == "5" then "raging "else "" end
+            mysql['building_id'] == '5' ? 'raging ' : ''
           end
 
-    if z == 0
+    if z.zero?
       desc = "There is #{a_an(dmg + data[:name])} here"
     else
-      desc = self.interior
-      desc = "You are inside #{a_an(dmg + data[:name])}" if desc == nil
+      desc = interior
+      desc = "You are inside #{a_an(dmg + data[:name])}" if desc.nil?
     end
 
-    if self.item_storage?
+    if item_storage?
       desc += ', containing: <span class="small">'
-      contents, _ = html_inventory(x, y, " ", :commas, :inline)
-      desc += contents + "</span>"
+      contents, = html_inventory(x, y, ' ', :commas, :inline)
+      desc += contents + '</span>'
     end
-    if contents == "\n" then desc += "nothing" end
-    desc += "."
+    desc += 'nothing' if contents == "\n"
+    desc += '.'
 
     writing = writing(z)
     if writing
-      if z == 0
-        desc += " Written on #{name} are the words <i>\"#{writing}\"</i>"
-      else
-        desc += " Written on the wall are the words <i>\"#{writing}\"</i>"
-      end
+      desc += if z.zero?
+                " Written on #{name} are the words <i>\"#{writing}\"</i>"
+              else
+                " Written on the wall are the words <i>\"#{writing}\"</i>"
+              end
     end
     desc
   end
 
   def data
-    @data ||= lookup_table_row(self.class.lookup_table, mysql["building_id"]) || {}
+    @data ||= lookup_table_row(self.class.lookup_table, mysql['building_id']) || {}
   end
 
-  def description(z)
+  def description(_z)
     data[:description]
   end
 
@@ -88,16 +92,17 @@ class Building < Base
   end
 
   def exists?
-    building_id > 0
+    building_id.positive? 
   end
 
   def item_storage?
-    actions != nil && actions.include?(:take)
+    !actions.nil? && actions.include?(:take)
   end
 
   def improvements
-    if self.exists?
-      return [self.repair] if hp < max_hp && building_id != 5 # 5 = campfire
+    if exists?
+      return [repair] if hp < max_hp && building_id != 5 # 5 = campfire
+
       key = id_to_key(:building, building_id)
     else
       key = nil
@@ -115,7 +120,7 @@ class Building < Base
   end
 
   def prereq_id
-    (prereq != nil) ? lookup_table_row(self.class.lookup_table, prereq, :id) : 0
+    !prereq.nil? ? lookup_table_row(self.class.lookup_table, prereq, :id) : 0
   end
 
   def repair
@@ -148,8 +153,7 @@ class Building < Base
       settlement = tile.settlement
       return "#{settlement.name}, population #{settlement.population}. #{settlement.motto}"
     end
-    writing = mysql_row("writings", {"x" => x, "y" => y, "z" => z}) || {}
-    writing["message"]
+    writing = mysql_row('writings', 'x' => x, 'y' => y, 'z' => z) || {}
+    writing['message']
   end
 end
-
