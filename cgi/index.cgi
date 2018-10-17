@@ -4,7 +4,12 @@ Bundler.require
 $LOAD_PATH << '../lib'
 require 'header.rb'
 
-print $cgi.header
+if !current_user
+  puts $cgi.header($header)
+else
+  puts $cgi.header(Location: 'game.cgi')
+  exit
+end
 
 def settlement_box
   settlements = mysql_select('settlements',{'allow_new_users'=>1})

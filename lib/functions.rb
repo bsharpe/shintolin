@@ -9,7 +9,7 @@ require 'user'
 require 'message'
 require 'utils'
 
-def add_fuel(user, _magic)
+def add_fuel(user)
   player = User.ensure(user)
   tile = player.tile
 
@@ -108,7 +108,7 @@ def ap_recovery(user)
   ap == ap.to_i ? ap.to_i : ap
 end
 
-def attack(attacker, target, item_id, _magic)
+def attack(attacker, target, item_id)
   if !(item_id.to_i == 24 || attacker.has_item?(item_id)) # 24 -> fist
     return "You don't have #{a_an(lookup_table_row(:item, item_id, :name))}"
   end
@@ -249,9 +249,7 @@ def break_attempt(user, items)
   msg
 end
 
-def build(user, building_id, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def build(user, building_id)
   building_id = building_id.to_i
   tile = user.tile
   return repair(user) if tile.building_id == building_id
@@ -334,9 +332,7 @@ def buildings_in_radius(tile, radius_squared, building)
   tiles.select { |e| e.building_id == building_id }.size
 end
 
-def buy_skill(user_id, skill_id, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def buy_skill(user_id, skill_id)
   user = User.new(user_id)
   if user.level >= Max_Level
     return 'You have reached the current maximum level; you must unlearn ' \
@@ -468,8 +464,7 @@ def can_settle?(tile)
     'Please choose a name for your new community.']
 end
 
-def chat(user, text, magic)
-  return 'Error. Try again.' if magic != current_user.magic
+def chat(user, text)
   return "You can't think of anything to say." if text == ''
   return 'Message too long.' if text.length > 255
 
@@ -477,7 +472,7 @@ def chat(user, text, magic)
   "You shout <i>\"#{CGI.escapeHTML(text)}\"</i> to the whole world."
 end
 
-def chop_tree(user, _magic)
+def chop_tree(user)
   user = User.find(user)
   tile = user.tile
   tile_actions = lookup_table_row(:terrain, tile['terrain'], :actions)
@@ -518,7 +513,7 @@ def chop_tree_ap(user)
   user.has_skill?(15) ? 4 : 9 # 15 -> lumberjack
 end
 
-def craft(user, item_id, _magic)
+def craft(user, item_id)
   user = User.ensure(user)
   return "In your dazed state, you can't remember how to craft." if user.hp.zero?
 
@@ -756,7 +751,7 @@ def destroy_settlement(settlement)
   end
 end
 
-def dig(user, _magic)
+def dig(user)
   user = User.ensure(user)
   tile = user.tile
 
@@ -816,8 +811,7 @@ def dir_to_offset(dir)
   end
 end
 
-def drop(user, item_id, amount, magic)
-  return 'Error. Try again.' if magic != current_user.magic
+def drop(user, item_id, amount)
   return 'You drop nothing.' if item_id.nil?
   return "That's an invalid quantity to drop." if amount.to_i < 1 || amount.to_i > 15
 
@@ -848,9 +842,7 @@ def feed(feeder_id, target_id, item_id)
   end
 end
 
-def fill(user, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def fill(user)
   tile = user.tile
   return 'You cannot fill a pot here.' if !tile.actions.include?(:fill)
   return "You don't have any container to fill with water." if !user.has_item?(:pot)
@@ -861,9 +853,7 @@ def fill(user, magic)
   'You fill a pot with water.'
 end
 
-def give(giver, receiver, amount, item_id, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def give(giver, receiver, amount, item_id)
   return '' if !receiver.exists?
 
   return 'ERROR: Invalid user.' if giver.nil? || receiver.nil?
@@ -904,7 +894,7 @@ def habitats(animal)
   habitats.flatten!
 end
 
-def harvest(user, _magic)
+def harvest(user)
   return 'You must wait until Autumn before the crops can be harvested.' if season != :Autumn
 
   return 'You have not yet discovered the secrets of agriculture.' if !user.has_skill?(:agriculture)
@@ -1089,9 +1079,7 @@ def item_stat(item_id, stat, user)
   STAT_DEFAULTS[stat].to_i if data.nil?
 end
 
-def join(user, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def join(user)
   tile = user.tile
   building = tile.building
   return 'You must be at a totem pole to join a settlement.' if !building.exists?
@@ -1124,8 +1112,7 @@ def join(user, magic)
   msg
 end
 
-def leave(user, magic)
-  return 'Error. Try again.' if magic != current_user.magic
+def leave(user)
   return 'You are not currently a member of any settlement.' if user.settlement_id.zero? && user.temp_sett_id.zero?
 
   if user.settlement_id != 0
@@ -1144,7 +1131,7 @@ def leave(user, magic)
   "You are no longer a resident of #{user.settlement.name}."
 end
 
-def logout(user, magic)
+def logout(user)
   # delete cookies
   $cookie.expires = Time.now
 
@@ -1156,7 +1143,7 @@ def logout(user, magic)
 end
 
 
-def move(user, x, y, z, _magic)
+def move(user, x, y, z)
   x = x.to_i
   y = y.to_i
   z = z.to_i
@@ -1298,7 +1285,7 @@ def ocarina(user, target, _item_id)
   end
 end
 
-def quarry(user, _magic)
+def quarry(user)
   user = User.ensure(user)
   return 'You cannot quarry here.' if !user.tile.actions.include?(:quarry)
   return 'You do not have the required skills to quarry.' if !user.has_skill?(:quarrying)
@@ -1447,9 +1434,7 @@ def same_location?(a, b)
   a.x == b.x && a.y == b.y && a.z == b.z
 end
 
-def say(speaker, message, volume, magic, target = nil)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def say(speaker, message, volume, target = nil)
   return 'Error. Try again.' if volume != 'Talk' && volume != 'Shout' && volume != 'Whisper'
 
   return 'Message too long.' if message.length > 255
@@ -1495,7 +1480,7 @@ def say(speaker, message, volume, magic, target = nil)
   end
 end
 
-def search(user, _magic)
+def search(user)
   tile = user.tile
 
   user.change_ap(-1)
@@ -1611,9 +1596,7 @@ def search_hidden_items(user)
     ' which someone has abandoned.'
 end
 
-def sell_skill(user_id, skill_id, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def sell_skill(user_id, skill_id)
   if !can_sell_skill?(user_id, skill_id)
     return "You cannot sell #{lookup_table_row(:skill, skill_id, :name)} " \
            'until you have sold all the skills that come after it.'
@@ -1625,9 +1608,7 @@ def sell_skill(user_id, skill_id, magic)
     "#{lookup_table_row(:skill, skill_id, :name)}."
 end
 
-def settle(user, settlement_name, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def settle(user, settlement_name)
   user = User.ensure(user)
   tile = user.tile
   can_settle, settle_msg = can_settle?(tile)
@@ -1654,7 +1635,7 @@ def settle(user, settlement_name, magic)
     'May it grow and prosper.'
 end
 
-def sow(user, item_id, _magic)
+def sow(user, item_id)
   user = User.ensure(user)
 
   return 'Crops can only be planted in Spring.' if season != :Spring
@@ -1705,9 +1686,7 @@ def stockpile_item_amount(x, y, item_id)
   end
 end
 
-def take(user_id, amount, item_id, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def take(user_id, amount, item_id)
   user = User.new(user_id)
   stockpile = user.tile.building
   return 'There is nothing you can take here.' if !stockpile.item_storage?
@@ -1766,9 +1745,7 @@ def transfer_frags(attacker, target)
   end
 end
 
-def use(user, target, item_id, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def use(user, target, item_id)
   target = user if !target.exists?
 
   return "That person isn't in the vicinity." if !same_location?(user, target)
@@ -1844,7 +1821,6 @@ def valid_location?(x_loc, y_loc, floor)
 end
 
 def vote(voter, candidate)
-  return 'Error. Try again.' if $params['magic'] != current_user.magic
   return 'You are not currently a member of any settlement.' if voter.settlement.nil? && voter.temp_sett_id.zero?
 
   if candidate.id.zero?
@@ -1863,9 +1839,7 @@ def vote(voter, candidate)
   "You pledge your support for <b>#{candidate.name}</b> as #{candidate.settlement.title} of #{candidate.settlement.name}."
 end
 
-def water(user, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def water(user)
   tile = user.tile
   return 'You cannot water here.' if !tile.actions.include?(:water)
   return 'You dont have any water.' if !user.has_item?(:water_pot)
@@ -1884,9 +1858,7 @@ def water(user, magic)
     'You can almost hear the wheat growing.'
 end
 
-def write(user, msg, magic)
-  return 'Error. Try again.' if magic != current_user.magic
-
+def write(user, msg)
   building = Building.new(user.x, user.y)
   return 'There is no building to write on in the vicinity.' if !building.exists?
 

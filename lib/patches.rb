@@ -1,5 +1,6 @@
 class Array
   def sum
+    # NOTE: this is built-into ruby 2.4+
     self.inject(0){ |sum, x| sum + x }
   end
 end

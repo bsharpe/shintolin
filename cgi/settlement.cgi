@@ -202,7 +202,7 @@ if current_user == $leader
     <br><br>
     <input type='hidden' name='action' value='description' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -214,7 +214,7 @@ if current_user == $leader
     <input type='text' class='text' name='text' maxlength='32' style='width:300px' value="#{$settlement.name}"/>
     <input type='hidden' name='action' value='name' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -224,7 +224,7 @@ if current_user == $leader
     <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.image}"/>
     <input type='hidden' name='action' value='image' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='submit' value='Submit' />
     <br>
     <i>Images must be hosted on external sites. Offensive content will be removed.</i>
@@ -236,7 +236,7 @@ if current_user == $leader
     <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.motto}"/>
     <input type='hidden' name='action' value='motto' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -246,7 +246,7 @@ if current_user == $leader
     <input type='text' class='text' name='text' maxlength='20' style='width:300px' value="#{$settlement.title}"/>
     <input type='hidden' name='action' value='title' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -256,7 +256,7 @@ if current_user == $leader
     <input type='text' class='text' name='text' maxlength='100' style='width:300px' value="#{$settlement.website}"/>
     <input type='hidden' name='action' value='website' />
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='submit' value='Submit' />
   </form>
 
@@ -277,7 +277,7 @@ puts <<ENDTEXT
     &nbsp;&nbsp;
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
     <input type='hidden' name='action' value='allow_new_users' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='submit' value='Submit' />
   </form>
 ENDTEXT
@@ -348,7 +348,7 @@ puts <<ENDTEXT
       #{select_user}
     <input type='hidden' name='id' value='#{$settlement.mysql_id}' />
     <input type='hidden' name='action' value='vote' />
-    <input type="hidden" value="#{current_user.magic}" name = "magic">
+    <input type="hidden" value="#{current_user.magic}" name="magic">
     <input type='Submit' value='Pledge Support' />
     </form>
 ENDTEXT
@@ -391,7 +391,7 @@ The following players are pending residents and can be granted settlement member
 <form action='settlement.cgi' method='post'>
 <input type='hidden' name='action' value='allow_in'>
 <input type='hidden' name='id' value='#{$settlement.mysql_id}'>
-<input type="hidden" value="#{current_user.magic}" name = "magic">
+<input type="hidden" value="#{current_user.magic}" name="magic">
 ENDTEXT
 pending = 0
 $settlement.pendings.each do |member|
@@ -411,7 +411,7 @@ The following players are dazed and their ties to your settlement can be revoked
 <form action='settlement.cgi' method='post'>
 <input type='hidden' name='action' value='evict'>
 <input type='hidden' name='id' value='#{$settlement.mysql_id}'>
-<input type="hidden" value="#{current_user.magic}" name = "magic">
+<input type="hidden" value="#{current_user.magic}" name="magic">
 ENDTEXT
 dazed = 0
 $settlement.inhabitants.each do |member|
