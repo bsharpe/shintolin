@@ -27,7 +27,7 @@ puts <<~ENDTEXT
     <a class="buttonlink" href="rankings.cgi">Rankings</a>
     <a class="buttonlink" href="/html/faq.html">FAQ</a>
 ENDTEXT
-puts "<a class=\"buttonlink\" href=\"/edit-map.cgi?x=#{current_user.x}&y=#{current_user.y}\">Edit Map</a>" if current_user.is_admin?
+puts "<a class=\"admin buttonlink\" href=\"/edit-map.cgi?x=#{current_user.x}&y=#{current_user.y}\">Edit Map</a>" if current_user.is_admin?
 puts <<~ENDTEXT
     #{Logout_Button}
 
@@ -59,7 +59,7 @@ puts <<ENDTEXT
     </td>
   </tr>
   <tr>
-    <td>
+    <td width="25%">
       <div style="opacity:.82" class="gamebox invbox">
         <b>Weight: #{Encumberance}</b>
 	<hr>

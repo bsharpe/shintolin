@@ -67,7 +67,6 @@ textarea {
 }
 
 .actionbox {
-  width: 36em;
   left: 543px;
 }
 .beigebox {
@@ -97,6 +96,9 @@ textarea {
   border: 2px solid #335;
   padding: 0.25em 0.5em;
   border-radius: 5px;
+}
+.admin {
+  background: gold;
 }
 .enterbutton {
   width: 44px;
@@ -134,25 +136,26 @@ textarea {
 }
 .infobox {
   border: thick solid #c8c8a0;
-  width: 36em;
 }
 .infotable {
   position: absolute;
   top: 5px;
   left: 540px;
+  width: 50%;
+  border-collapse: collapse;
 }
 .invbox {
-  width: 10em;
   font-size: 70%;
 }
 .locationbox {
-  width: 520px;
+  width: 100%;
+  padding: 0.5em ;
   text-align: center;
   font-size: 130%;
   background: #cccc99;
-  margin-bottom: 0px;
-  margin-top: 0px;
-  opacity: .65
+  margin: auto;
+  opacity: .65;
+  font-weight: bold;
 }
 .map {
   postion: absolute;
@@ -172,7 +175,7 @@ textarea {
   color: rgba(3,3,10,0.5);
   border-radius: 5px;
   padding: 2px 4px;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255,255,255,0.6);
   border: 1px dotted white;
 }
 .movebutton {

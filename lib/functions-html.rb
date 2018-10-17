@@ -210,7 +210,6 @@ def html_location_box(user)
   html = '<div class="locationbox">'
   html << tile.settlement.link if tile.settlement
   begin
-    html << '<br>'
     html << lookup_table_row(:region, tile.region_id, :name)
   rescue StandardError
     html << 'The Wilderness'
