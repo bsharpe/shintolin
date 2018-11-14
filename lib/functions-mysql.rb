@@ -172,8 +172,8 @@ def mysql_count(table, where_clause, not_clause = nil)
   db.query(query).first['count']
 end
 
-def mysql_select_all(table)
-  query = "SELECT * FROM `#{table}`"
+def mysql_select_all(table, options = nil)
+  query = "SELECT * FROM `#{table}` #{options}"
   db.query(query)
 end
 

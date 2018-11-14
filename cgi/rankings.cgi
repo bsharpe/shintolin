@@ -53,56 +53,33 @@ if type == "players"
   order = "DESC" if order == nil
   query = "SELECT * FROM `users`, `accounts` " +
     "WHERE `users`.`id` = `accounts`.`id` " +
-    if clause != nil then " AND #{clause} " else '' end +
+    (clause ? " AND #{clause} " : '') +
     "AND `active` = '1' " +
     "ORDER BY `#{metric}` #{order} " +
     "LIMIT 0, 100"
   result = db.query(query)
-  i = 1
   column = metric.capitalize if column == nil
-  $rankings = "<tr>" +
-    "<td><b>Rank</b></td>" +
-    "<td><b>Name</b></td>" +
-    "<td><b>#{column}</b></td></tr>\n"
-  result.each do |row|
-
+  $rankings = "<tr> <th>Rank</th> <th>Name</th> <th>#{column}</th></tr>\n"
+  result.each_with_index do |row, index|
     user = User.new(row['id'])
-    disp =
-    if display != nil then display.call(row[metric])
-    else row[metric] end
-    $rankings += "<tr>\n" +
-      "<td>#{i}</td>" +
-      "<td>#{user.link}</td>" +
-      "<td>#{disp}</td>\n" +
-      "<tr>\n"
-    i += 1
+    disp = row[metric]
+    disp = display.call(row[metric]) if display
+    $rankings << "<tr> <td>#{index + 1}</td> <td>#{user.link}</td> <td>#{disp}</td> <tr>\n"
   end
 end
 
 if type == "settlements"
-  result = mysql_select_all('settlements')
-  settlements = []
-  result.each {|row| settlements << Settlement.new(row['id'])}
-  settlements.sort! {|x, y| y.send(metric) <=> x.send(metric)}
-  settlements.reverse! if order == "ASC"
+  settlements = mysql_select_all('settlements').map{|e| Settlement.new(row: e) }
+  settlements = settlements.sort{|x, y| y.send(metric) <=> x.send(metric)}
+  settlements = settlements.reverse if order == "ASC"
 
   column = metric.capitalize if column == nil
-  $rankings = "<tr>" +
-    "<td><b>Rank</b></td>" +
-    "<td><b>Name</b></td>" +
-    "<td><b>Region</b></td>" +
-    "<td><b>#{column}</b></td></tr>\n"
-  settlements.each_with_index do
-    |settlement, i|
-    disp =
-    if display != nil then display.call(settlement.send(metric))
-    else settlement.send(metric) end
-    $rankings += "<tr>\n" +
-      "<td>#{i + 1}</td>" +
-      "<td>#{settlement.link}</td>" +
-      "<td><i>#{settlement.region_name}</i></td>" +
-      "<td>#{disp}</td>\n" +
-      "<tr>\n"
+  $rankings = "<tr> <th>Rank</th> <th>Name</th> <th>Region</th> <th>#{column}</th> </tr>\n"
+  settlements.each_with_index do |settlement, index|
+    disp = settlement.send(metric)
+    disp = display.call(disp) if display
+
+    $rankings << "<tr> <td>#{index + 1}</td> <td>#{settlement.link}</td> <td><i>#{settlement.region_name}</i></td> <td>#{disp}</td> <tr>\n"
   end
 end
 

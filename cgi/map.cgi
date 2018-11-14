@@ -13,13 +13,10 @@ else
   exit
 end
 
+occupant_flag = :no_occupants
+occupant_flag = :show_occupants if current_user.has_skill?(:tracking)
 
-Map =
-  if current_user.has_skill?(:tracking)
-    html_map(current_user.tile, 9, current_user, :show_occupants)
-  else
-    html_map(current_user.tile, 9, current_user, :no_occupants)
-  end
+Map = html_map(current_user.tile, 9, current_user, occupant_flag)
 
 puts <<ENDTEXT
   <html>

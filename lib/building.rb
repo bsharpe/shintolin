@@ -42,13 +42,13 @@ class Building < Base
 
     dmg = case (hp.to_f / max_hp)
           when (0...0.33)
-            mysql['building_id'] == '5' ? 'dying ' : 'ruined '
+            building_code == :campfire ? 'dying ' : 'ruined '
           when (0.33...0.67)
-            mysql['building_id'] == '5' ? '' : 'damaged '
+            building_code == :campfire ? '' : 'damaged '
           when (0.67...1)
-            mysql['building_id'] == '5' ? 'roaring ' : 'dilapidated '
+            building_code == :campfire ? 'roaring ' : 'dilapidated '
           else
-            mysql['building_id'] == '5' ? 'raging ' : ''
+            building_code == :campfire ? 'raging ' : ''
           end
 
     if z.zero?
@@ -89,6 +89,10 @@ class Building < Base
     mysql['building_id'].to_i
   end
 
+  def building_code
+    data[:name].to_sym
+  end
+
   def exists?
     building_id.positive?
   end
@@ -99,7 +103,7 @@ class Building < Base
 
   def improvements
     if exists?
-      return [repair] if hp < max_hp && building_id != 5 # 5 = campfire
+      return [repair] if hp < max_hp && building_code != :campfire
 
       key = id_to_key(:building, building_id)
     else
@@ -129,8 +133,8 @@ class Building < Base
       case (hp.to_f / max_hp)
       when (0...0.33) then 0.66
       when (0.33...0.67) then 0.33
-      when (0.67..1) then 0
-      else 0
+      else
+        0
       end
     repair[:repair] = true
     repair[:build_ap] = (build_ap * (multiplier + 0.33)).to_i
@@ -147,11 +151,13 @@ class Building < Base
   end
 
   def writing(z)
-    if special == :settlement
+    case special
+    when :settlement
       settlement = tile.settlement
       return "#{settlement.name}, population #{settlement.population}. #{settlement.motto}"
+    else
+      writing = mysql_row('writings', x: x, y: y, z: z) || {}
+      writing['message']
     end
-    writing = mysql_row('writings', x: x, y: y, z: z) || {}
-    writing['message']
   end
 end

@@ -57,7 +57,7 @@ end
 
 profile = User.new($params['id'])
 
-name = profile.exists? ? profile.name : ''
+name = profile&.name || ''
 
 msg = ''
 input_action($params['action']) if current_user == profile
@@ -66,7 +66,7 @@ if current_user && $params['action'] == 'update_contact' && $params['enemy'] != 
 end
 # bug-fix: have to update profile reference as input_action may have
 # changed it
-profile = User.new($params['id'])
+profile.reload!
 
 puts <<~ENDTEXT
   <html>

@@ -55,13 +55,12 @@ if !$params['target'].nil?
   target_id, target_type = $params['target'].split(':')
   $target =
     case target_type
-    when 'animal'
+    when 'animal','user'
+      target_type.constantize.new(target_id)
       Animal.new(target_id)
     when 'building'
       x, y = target_id.split(',')
       Building.new(x.to_i, y.to_i)
-    when 'user'
-      User.new(target_id)
     end
 else
   $target = nil
@@ -69,10 +68,9 @@ end
 
 current_user.update(active: 1)
 
+Action_Outcom = ''
 if (!$params['action'].blank? && current_user.can_act?) || $params['action'] == 'log out' || $params['action'] == 'chat'
   Action_Outcome = input_action($params['action'])
-else
-  Action_Outcome = ''
 end
 
 $ip_hits = ip_hit(current_user.id)
