@@ -26,7 +26,7 @@ class Markov
     (n - 1).times do
       new_word = @hash[last_word].rand_select
       new_word = @hash.keys.rand_select if !new_word
-      text += ' ' + new_word
+      text << ' ' + new_word
       last_word = new_word
     end
     text
@@ -50,6 +50,6 @@ else
 end
 
 str = ''
-result.each {|row| str += ' ' + row['message']}
+result.each {|row| str << ' ' + row['message']}
 markov = Markov.new str
 5.times {puts '<p>' + markov.chain(50) + '</p>'}

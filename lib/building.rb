@@ -59,20 +59,19 @@ class Building < Base
     end
 
     if item_storage?
-      desc += ', containing: <span class="small">'
+      desc << ', containing: <span class="small">'
       contents, = html_inventory(x, y, ' ', :commas, :inline)
-      desc += contents + '</span>'
+      desc << contents
+      desc << '</span>'
     end
-    desc += 'nothing' if contents == "\n"
-    desc += '.'
+    desc << 'nothing' if contents == "\n"
+    desc << '.'
 
     writing = writing(z)
     if writing
-      desc += if z.zero?
-                " Written on #{name} are the words <i>\"#{writing}\"</i>"
-              else
-                " Written on the wall are the words <i>\"#{writing}\"</i>"
-              end
+      t_name = "the wall"
+      t_name = name if z.zero?
+      desc << " Written on #{t_name} are the words <i>\"#{writing}\"</i>"
     end
     desc
   end

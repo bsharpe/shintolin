@@ -143,7 +143,7 @@ def attack(attacker, target, item_id)
     msg = lookup_table_row(:weapon_class, weapon[:weapon_class], :miss_msg) +
           weapon[:name] +
           ', but missed!'
-    msg += ' ' + attack_response(target, attacker)
+    msg << ' ' + attack_response(target, attacker)
 
     return insert_names(msg, attacker.id, target.name, attacker.id, :no_link)
   end
@@ -158,8 +158,8 @@ def attack(attacker, target, item_id)
     when 'User'
       mysql_change_stat(attacker, 'kills', +1)
       mysql_change_stat(target, 'deaths', +1)
-      msg += ', knocking $TARGET out.'
-      msg += ' ' + transfer_frags(attacker, target)
+      msg << ', knocking $TARGET out.'
+      msg << ' ' + transfer_frags(attacker, target)
       Message.insert("$ACTOR dazed $TARGET with #{a_an(lookup_table_row(:item, item_id, :name))}.",
                      type: 'visible_all',
                      speaker: attacker, target: target)
@@ -167,7 +167,7 @@ def attack(attacker, target, item_id)
       target.loot.each do |item, amt|
         attacker.change_inv(item, +amt)
       end
-      msg += ', killing it! From the carcass you collect ' \
+      msg << ', killing it! From the carcass you collect ' \
              "#{describe_items_list(target.loot, 'long')}."
       if attacker.has_skill?(7) # 7 ->butchering temporary fix for butchering
         target.loot_bonus.each do |item, amt|
@@ -180,7 +180,7 @@ def attack(attacker, target, item_id)
                        speaker: attacker, target: target)
       end
     when 'Building'
-      msg += ', destroying it!'
+      msg << ', destroying it!'
     end
   else
     xp = ((dmg + 1) / 2).ceil
@@ -491,7 +491,7 @@ def chop_tree(user)
   msg = 'You chop down a tree, taking the heavy log.'
 
   if rand < 0.12
-    msg += ' The tree cover in this area has been reduced.'
+    msg << ' The tree cover in this area has been reduced.'
     new_terrain =
       case tile['terrain']
       when '21'
@@ -1554,11 +1554,11 @@ def search(user)
     when 0
       # nothing
     when 1
-      hp_msg += ' and is below average for this time of year.'
+      hp_msg << ' and is below average for this time of year.'
     when 2
-      hp_msg += ' and is roughly average for this time of year.'
+      hp_msg << ' and is roughly average for this time of year.'
     else
-      hp_msg += ' and is above average for this time of year.'
+      hp_msg << ' and is above average for this time of year.'
     end
   end
 

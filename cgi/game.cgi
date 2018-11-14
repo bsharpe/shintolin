@@ -56,8 +56,7 @@ if !$params['target'].nil?
   $target =
     case target_type
     when 'animal','user'
-      target_type.constantize.new(target_id)
-      Animal.new(target_id)
+      Object.const_get(target_type.capitalize).new(target_id)
     when 'building'
       x, y = target_id.split(',')
       Building.new(x.to_i, y.to_i)

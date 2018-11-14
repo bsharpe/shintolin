@@ -179,7 +179,7 @@ def html_inventory(user_id, y = nil, infix = ' x ', commas = false, inline = fal
     if amount.positive?
       weight += (amount * item[:weight])
       item_desc = "<div title=\"#{item[:desc]}\""
-      item_desc += ' style="display:inline"' if inline != false
+      item_desc << ' style="display:inline"' if inline != false
       item_desc += ">#{describe_items(amount, item[:id], :short, infix)}" \
                    '</div>'
     end

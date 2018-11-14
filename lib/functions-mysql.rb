@@ -25,29 +25,26 @@ def mysql_transaction
 end
 
 def mysql_bounded_update(table, field, where_clause, change, bound = nil)
-  return 0 if change.zero?
-
   bound ||= change.positive? ? 9_999_999 : 0
   bound = bound.to_i
-  current_amt = mysql_row(table, where_clause)[field].to_f
+
+  current_amount = mysql_row(table, where_clause)[field].to_f
 
   if change.positive?
     # if change is positive, treat bound as an upper bound
-    if (current_amt + change) < bound
-      mysql_update(table, where_clause, field => (current_amt + change))
-      change
-    else
-      mysql_update(table, where_clause, field => bound)
-      bound - current_amt # actual amount changed
+    if (current_amount + change) > bound
+      change = [bound - current_amount, 0].max
     end
-  elsif (current_amt + change) > bound
+  elsif change.negative?
     # if change is negative, treat bound as a lower bound
-    mysql_update(table, where_clause, field => (current_amt + change))
-    change
-  else
-    mysql_update(table, where_clause, field => bound)
-    bound - current_amt # actual amount changed
+    if (current_amount + change) < bound
+      change = [current_amount - bound, 0].max
+    end
   end
+
+  mysql_update(table, where_clause, field => current_amount + change) if !change.zero?
+
+  change
 end
 
 def mysql_change_ap(user, change)
@@ -99,11 +96,7 @@ def mysql_change_inv(inv, item_id, amt)
   row_id['item_id'] = item_id
   current_amount = mysql_row(table, row_id)
   if !current_amount.nil?
-    if amt >= 0
-      mysql_bounded_update(table, 'amount', row_id, amt, Max_Items)
-    else
-      mysql_bounded_update(table, 'amount', row_id, amt, 0)
-    end
+    mysql_bounded_update(table, 'amount', row_id, amt, (amt >= 0) ? Max_Items : 0)
   elsif amt >= 0
     # add new record if one doesn't exist,
     # create one for this inventory-item combo
@@ -149,13 +142,8 @@ def mysql_delete(table, where_clause = nil)
 end
 
 def mysql_insert(table, column_values_hash)
-  columns = []
-  values = []
-
-  column_values_hash.each do |key, value|
-    columns << key
-    values << mysql_value(value)
-  end
+  columns = column_values_hash.keys
+  values = column_values_hash.values.map{|e| mysql_value(e)}
 
   query = "INSERT INTO #{table} (#{columns.join(',')}) VALUES (#{values.join(',')})"
   db.query(query)
@@ -178,7 +166,7 @@ def mysql_select_all(table, options = nil)
 end
 
 def mysql_row(table, where_clause, not_clause = nil)
-  query = "SELECT * FROM `#{table}` #{mysql_where(where_clause, not_clause)}"
+  query = "SELECT * FROM `#{table}` #{mysql_where(where_clause, not_clause)} LIMIT 1"
   db.query(query).first
 end
 
@@ -209,14 +197,13 @@ end
 def mysql_where(clause, not_clause = nil)
   # if passed an integer, returns 'WHERE id = clause
   # if passed a hash map, returns 'WHERE key1 = value1, key2 = value2..."
-  clause = clause.to_i if clause.is_a?(String)
-  result = nil
-
-  if clause.is_a?(Integer)
+  case clause
+  when Integer, String
     # assume where_clause is an id value
-    result = " WHERE `id` = '#{clause}'"
+    clause = clause.to_i
+    " WHERE `id` = '#{clause}'"
 
-  elsif clause.is_a?(Hash)
+  when Hash
     result = ' WHERE'
     where_array = clause.map do |column, value|
       if !value.is_a?(Enumerable)
@@ -227,19 +214,18 @@ def mysql_where(clause, not_clause = nil)
         "(`#{column}` in(#{value.map{|e| mysql_value(e)}.join(',')}))"
       end
     end
-    result << where_array.join(' AND')
+    result << where_array.join(' AND ')
 
     if !not_clause.nil?
-      result += ' AND NOT ('
+      result << ' AND NOT ('
       not_array = not_clause.map do |column, value|
         "`#{column}` = #{mysql_value(value)}"
       end
       result << not_array.join(' AND ') + ')'
     end
+    result
   else
-    puts 'ERROR: argument to mysql_where_clause must be an integer or hash.'
-    result = ' WHERE FALSE'
+    puts "ERROR: argument[#{clause.class}] to mysql_where_clause must be an integer or hash."
+    ' WHERE FALSE'
   end
-
-  result
 end

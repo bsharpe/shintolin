@@ -18,7 +18,7 @@ def settlement_box
   settlements.each do |row|
 
     html += "\n\t\t<option value=\"#{row['id']}\""
-    html += 'selected="yes" ' if $cgi['settlement'] == row['id']
+    html << 'selected="yes" ' if $cgi['settlement'] == row['id']
     html += ">#{row['name']}, #{row['motto']}</option>"
   end
   html += "\n\t</select>"

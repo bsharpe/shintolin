@@ -41,7 +41,7 @@ ys.each do |y|
 
   $map += "\n</tr>\n"
 end
-$map += '</table>'
+$map << '</table>'
 
 
 
